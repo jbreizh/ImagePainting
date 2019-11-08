@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP8266 Web Server</title>
+  <meta charset="utf-8" />
+  <style>
+body
+{
+  text-align: center ;
+}
+div
+{
+  background-color: #A9A9A9;
+  max-width: 90% ;
+  margin: 0 auto ;
+}
+
+.title {
+  width: 100%;
+  font-size:  4vw;
+  padding: 1vh;
+}
+
+.subTitle {
+  color: #f44336;
+  font-size:  3vw;
+}
+
+.tabcenter{
+   width: 100%;
+   margin-left:auto;
+   margin-right:auto;
+   text-align: left ;
+}
+
+.button { 
+  width: 100%;
+  font-size:  3vw;
+  border-radius: 4px;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.buttonOn {
+  background-color: #008CBA;
+}
+
+.buttonLight {
+  background-color: #FFA500;
+}
+
+.buttonOff {
+  background-color: #f44336;;
+}
+
+.label {
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+
+}
+.input {
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+}
+  </style>
+</head>
+
+<body>
+<div id="conteneur">  
+
+  <h1 class="title">ImagePainting Web Server</h1>
+  
+  <h2 class="subTitle" id="status"> Status </h1>
+    
+  <table class="tabcenter">
+  <tr>
+    <td><label class="label" for="delay">Delay:</label></td>
+    <td><input class="input" type="text" id="delay" /></td>
+    <td><button class="button buttonOn" onclick="requestParameterWrite()">Write</button></td>
+  </tr>
+  <tr>
+    <td><label class="label" for="brightness">Brightness:</label></td>
+    <td><input class="input" type="text" id="brightness"/></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><label class="label" for="repeat">Repeat:</label></td>
+    <td><input class="input" type="text" id="repeat"/></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><label class="label" for="endoff">End Off:</label></td>
+    <td><input class="input" type="text" id="endoff"/></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><input class="input" id="fileInput" type="file" /></td>
+    <td><button class="button buttonOn" onclick="requestFileUpload()">Upload</button></td>
+  </tr>
+  <tr>
+    <td><label class="label" for="fileList">Select file :</label></td>
+    <td>
+    <select  class="input" id="fileList" onchange="requestBitmapLoad()">
+      <option value=""></option>
+    </select>
+    </td>
+    <td><button class="button buttonOff" onclick="requestFileDelete()">Delete</button></td>
+  </tr>
+  </table>
+  
+  <img id="img" src="" alt="img" />
+  
+  <table class="tabcenter">
+  <tr>
+    <td><button class="button buttonLight" onclick="requestLight()">Light</button></td>
+    <td><button class="button buttonOn" onclick="requestBitmapPlayPause()">Play</button></td>
+    <td><button class="button buttonOff" onclick="requestBitmapStop()">Stop</button></td>
+  </tr>
+  </table>
+</div>
+</body>
+
+
+<script>
+//--------------------------------------------------
+requestParameterRead();
+requestFileList();
+
+//--------------------------------------------------
+function requestFileList()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4 && (this.status == 200 || this.status == 0))
+    {
+      var element = document.getElementById("fileList");
+      var options = this.responseText.split(",");
+      element.options.length = options.length;
+        
+      for (var j = 0; j < options.length; j++)
+      {
+        element.options[j].value= options[j]; 
+        element.options[j].text= options[j]; 
+      }
+      requestBitmapLoad();
+    }
+  };
+
+  xhr.open("GET", "/list", true);
+  xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestFileDelete()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4)
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+      requestFileList();
+    }
+  };
+  
+  var params = "file=/"+document.getElementById("fileList").value;
+  xhr.open("DELETE", "/delete", true);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  xhr.send(params);
+}
+
+//--------------------------------------------------
+function requestFileUpload()
+{
+    var fileInput = document.getElementById("fileInput");
+    if (fileInput.files.length == 0)
+    {
+      document.getElementById("status").innerHTML = "ERROR : File not chosen";
+      return;
+    }
+    
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function()
+    {
+      if (this.status == 200)
+      {
+        document.getElementById("status").innerHTML = this.responseText;
+        requestFileList();
+      }
+      else
+      {
+        document.getElementById("status").innerHTML = "ERROR : Upload failed";
+      }
+    };
+    
+    xhr.onerror = function()
+    {
+      document.getElementById("status").innerHTML = "ERROR : Can not connect to server";
+    };
+    
+    xhr.open("POST", "/upload", true);
+    var form = new FormData();
+    form.append('file', fileInput.files[0]);
+    xhr.send(form);
+}
+
+//--------------------------------------------------
+function requestBitmapLoad()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4)
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+      
+      if (this.status == 200 || this.status == 0)
+      {
+        document.getElementById("img").src = document.getElementById("fileList").value;
+      }
+      else
+      {
+        document.getElementById("img").src = "";
+      }
+    }
+  };
+  
+  var params = "file=/"+document.getElementById("fileList").value;
+  xhr.open("POST", "/bitmapLoad", true);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  xhr.send(params);
+}
+
+//--------------------------------------------------
+function requestBitmapPlayPause()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4)
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+    }
+  };
+  
+  xhr.open("GET", "/bitmapPlayPause", true);
+  xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestBitmapStop()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4)
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+    }
+  };
+  
+  xhr.open("GET", "/bitmapStop", true);
+  xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestLight()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4)
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+    }
+  };
+  
+  xhr.open("GET", "/light", true);
+  xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestParameterRead()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if ((this.readyState == 4) && (this.status == 200 || this.status == 0))
+    {
+      var json = JSON.parse(this.responseText);
+      document.getElementById("delay").value = json["delay"];
+      document.getElementById("delay").text = json["delay"];
+      document.getElementById("brightness").value = json["brightness"];
+      document.getElementById("brightness").text = json["brightness"];
+      document.getElementById("repeat").value = json["repeat"];
+      document.getElementById("repeat").text = json["repeat"];
+      document.getElementById("endoff").value = json["endoff"];
+      document.getElementById("endoff").text = json["endoff"];
+    }
+  };
+  
+  xhr.overrideMimeType("application/json");
+  xhr.open("GET", "/parameterRead", true);
+  xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestParameterWrite()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+  {
+    if (this.readyState == 4)
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+      requestParameterRead();
+    }
+  };
+  
+  var json = new Object();
+  json.delay = document.getElementById("delay").value;
+  json.brightness = document.getElementById("brightness").value;
+  json.repeat = document.getElementById("repeat").value;
+  json.endoff = document.getElementById("endoff").value;
+  var jsonString = JSON.stringify(json);
+  
+  xhr.open("POST", "/parameterWrite", true);
+  xhr.setRequestHeader('Content-type', 'application/json');
+  xhr.send(jsonString);
+}
+
+</script>
+</html>
