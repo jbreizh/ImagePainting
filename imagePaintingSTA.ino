@@ -46,7 +46,7 @@ bool BOUNCE = false;
 
 //SHADER --------------
 const RgbColor Black(0);
-template<typename T_COLOR_FEATURE> class BrightnessShader : public NeoShaderBase
+template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
 {
   public:
     BrightnessShader():
@@ -54,21 +54,23 @@ template<typename T_COLOR_FEATURE> class BrightnessShader : public NeoShaderBase
       _brightness(255) // default to full bright
     {}
 
-    void Apply(uint16_t index, uint8_t* pDest, uint8_t* pSrc)
+    T_COLOR_OBJECT Apply(uint16_t index, const T_COLOR_OBJECT src)
     {
-      // we don't care what the index is so we ignore it
-      //
-      // to apply our brightness shader,
-      // use the source color, modify, and apply to the destination
+      T_COLOR_OBJECT result;
 
-      // for every byte in the pixel,
-      // scale the source value by the brightness and
-      // store it in the destination byte
-      const uint8_t* pSrcEnd = pSrc + T_COLOR_FEATURE::PixelSize;
+      // below is a fast way to apply brightness to all elements of the color
+      // it does assume each element is only 8bits, but this currently is the
+      // case
+      // This could be replaced with a LinearBlend for safty but is less
+      // optimized
+      const uint8_t* pSrc = reinterpret_cast<const uint8_t*>(&src);
+      uint8_t* pDest = reinterpret_cast<uint8_t*>(&result);
+      const uint8_t* pSrcEnd = pSrc + sizeof(T_COLOR_OBJECT);
       while (pSrc != pSrcEnd)
       {
         *pDest++ = (*pSrc++ * (uint16_t(_brightness) + 1)) >> 8;
       }
+      return result;
     }
 
     // provide an accessor to set brightness
@@ -88,8 +90,12 @@ template<typename T_COLOR_FEATURE> class BrightnessShader : public NeoShaderBase
     uint8_t _brightness;
 };
 
+// create a non-template type to make it easier to be consistent
+typedef BrightnessShader<DotStarBgrFeature::ColorObject> BrightShader;
+
 // create an instance of our shader object with the same feature as our buffer
-BrightnessShader<DotStarBgrFeature> SHADER;
+BrightShader SHADER;
+
 // end SHADER --------------
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -429,8 +435,8 @@ void updateAnimation(const AnimationParam& param)
       ANIMATIONS.RestartAnimation(param.index);
 
       // Fil the strip
-      NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
-      //NEOBMPFILE.Render<BrightnessShader<DotStarBgrFeature>>(STRIP, SHADER, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
+      //NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
+      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
       ANIMATIONSTATE += 1;
     }
 
@@ -445,8 +451,8 @@ void updateAnimation(const AnimationParam& param)
       ANIMATIONSTATE = 0;
 
       // Fil the strip
-      NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
-      //NEOBMPFILE.Render<BrightnessShader<DotStarBgrFeature>>(STRIP, SHADER, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
+      //NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
+      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
       ANIMATIONSTATE += 1;
     }
 
