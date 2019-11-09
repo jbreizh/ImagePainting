@@ -17,8 +17,8 @@ NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_P
 
 // WIFI --------------
 ESP8266WebServer server;
-char* ssid = "Moto C Plus 1105";
-char* password = "12345678";
+const char* ssid = "Moto C Plus 1105";
+const char* password = "12345678";
 // end WIFI-----------
 
 // FS --------------
