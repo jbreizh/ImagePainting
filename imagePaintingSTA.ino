@@ -32,20 +32,20 @@ NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 
 // ANIMATION --------------
 NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
-uint16_t ANIMATIONSTATE;
+uint16_t ANIMATIONINDEXSTART; uint16_t ANIMATIONINDEX; uint16_t ANIMATIONINDEXSTOP;
 // end ANIMATION --------------
 
 // RUNTIME --------------
 uint8_t DELAY = 100;
 uint8_t REPEAT = 0; uint8_t REPEATCOUNTER;
-bool ENDOFF = false;
-bool INVERT = false;
-bool BOUNCE = false;
+bool ISREPEAT = false;
+bool ISENDOFF = false;
+bool ISINVERT = false;
+bool ISBOUNCE = false;
 
 // end RUNTIME --------------
 
 //SHADER --------------
-const RgbColor Black(0);
 template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
 {
   public:
@@ -182,13 +182,16 @@ String getContentType(String filename)
 void handleParameterRead()
 {
   // New json document
-  StaticJsonDocument<200> jsonDoc;
+  StaticJsonDocument<300> jsonDoc;
 
   // Store parameter in json document
   jsonDoc["delay"] = DELAY;
   jsonDoc["brightness"] = BRIGHTNESS;
   jsonDoc["repeat"] = REPEAT;
-  jsonDoc["endoff"] = ENDOFF;
+  jsonDoc["isrepeat"] = ISREPEAT;
+  jsonDoc["isbounce"] = ISBOUNCE;
+  jsonDoc["isinvert"] = ISINVERT;
+  jsonDoc["isendoff"] = ISENDOFF;
 
   // convert json document to String
   String msg = "";
@@ -201,15 +204,8 @@ void handleParameterRead()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleParameterWrite()
 {
-  ENDOFF = false;
-  Serial.print("ENDOFF :");
-  Serial.println(ENDOFF);
-
-  Serial.print("JSON :");
-  Serial.println(server.arg("plain"));
-
   // New json document
-  StaticJsonDocument<200> jsonDoc;
+  StaticJsonDocument<300> jsonDoc;
 
   // Convert json String to json object
   DeserializationError error = deserializeJson(jsonDoc, server.arg("plain"));
@@ -225,11 +221,12 @@ void handleParameterWrite()
   // Write parameters in ESP8266
   DELAY = jsonDoc["delay"];
   BRIGHTNESS = jsonDoc["brightness"];
+  SHADER.setBrightness(BRIGHTNESS);
   REPEAT = jsonDoc["repeat"];
-  ENDOFF = jsonDoc["endoff"];
-
-  Serial.print("ENDOFF :");
-  Serial.println(ENDOFF);
+  ISREPEAT = jsonDoc["isrepeat"];
+  ISBOUNCE = jsonDoc["isbounce"];
+  ISINVERT = jsonDoc["isinvert"];
+  ISENDOFF = jsonDoc["isendoff"];
 
   // Parameter are write
   server.send(200, "text/html", "WRITE SUCCESS");
@@ -319,11 +316,15 @@ void handleFileList()
     // Open the entry
     fs::File entry = dir.openFile("r");
 
-    // Separate by comma if there are multiple files
-    if (fileList != "") fileList += ",";
+    // Hide system file
+    if (String(entry.name()).substring(1) != "index.html")
+    {
+      // Separate by comma if there are multiple files
+      if (fileList != "") fileList += ",";
 
-    // Write the entry in the list
-    fileList += String(entry.name()).substring(1);
+      // Write the entry in the list
+      fileList += String(entry.name()).substring(1);
+    }
 
     // Close the entry
     entry.close();
@@ -357,6 +358,10 @@ void handleBitmapLoad()
   // Check and initialize bitmap from the file
   if (!NEOBMPFILE.Begin(BMPFILE)) return server.send(500, "text/plain", "NOT SUPPORTED BITMAP");
 
+  // Update the index
+  ANIMATIONINDEXSTART = 0;
+  ANIMATIONINDEXSTOP = NEOBMPFILE.Height() - 1;
+
   //Bitmap is load
   String msg = "BITMAP LOAD : Width=" + String(NEOBMPFILE.Width()) + "px Height=" + String(NEOBMPFILE.Height()) + "px";
   server.send(200, "text/plain", msg);
@@ -365,6 +370,8 @@ void handleBitmapLoad()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapPlayPause()
 {
+  //NEOBMPFILE exist ?????????
+
   if (ANIMATIONS.IsPaused())
   {
     // Resume animation
@@ -380,15 +387,18 @@ void handleBitmapPlayPause()
     ANIMATIONS.Pause();
 
     // Blank the strip if needed
-    if (ENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+    if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
 
     // Animation is paused
     server.send(200, "text/plain", "PAUSE");
   }
   else
   {
-    // Initialisation
-    ANIMATIONSTATE = 0;
+    // Index
+    if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
+    else ANIMATIONINDEX = ANIMATIONINDEXSTART;
+
+    // Repeat
     REPEATCOUNTER = REPEAT;
 
     // Launch a new animation
@@ -428,42 +438,59 @@ void updateAnimation(const AnimationParam& param)
   // Wait for this animation to complete,
   if (param.state == AnimationState_Completed)
   {
-    // Pixel to show?
-    if (ANIMATIONSTATE < NEOBMPFILE.Height())
+    // ANIMATIONINDEX is in the limit
+    if ((ANIMATIONINDEXSTART <= ANIMATIONINDEX) && (ANIMATIONINDEX <= ANIMATIONINDEXSTOP))
     {
       // Restart the animation
       ANIMATIONS.RestartAnimation(param.index);
 
       // Fil the strip
-      //NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
-      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
-      ANIMATIONSTATE += 1;
+      //NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONINDEX, NEOBMPFILE.Width());
+      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONINDEX, NEOBMPFILE.Width());
+
+      // Index
+      if (ISINVERT) ANIMATIONINDEX -= 1;
+      else ANIMATIONINDEX = ANIMATIONINDEX += 1;
     }
-
-    // Repetition to do?
-    else if (REPEATCOUNTER > 0)
-    {
-      // Restart the animation
-      ANIMATIONS.RestartAnimation(param.index);
-
-      // Initialisation
-      REPEATCOUNTER -= 1;
-      ANIMATIONSTATE = 0;
-
-      // Fil the strip
-      //NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
-      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONSTATE, NEOBMPFILE.Width());
-      ANIMATIONSTATE += 1;
-    }
-
-    // Nothing more to do
+    // ANIMATIONINDEX is out of the limit
     else
     {
-      // Stop the animation
-      ANIMATIONS.StopAnimation(param.index);
+      // Repeat to do?
+      if (ISREPEAT && (REPEATCOUNTER > 0))
+      {
+        // Restart the animation
+        ANIMATIONS.RestartAnimation(param.index);
 
-      // Blank the strip if needed
-      if (ENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+        // Initialisation
+        REPEATCOUNTER -= 1;
+
+        // Index
+        if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
+        else ANIMATIONINDEX = ANIMATIONINDEXSTART;
+      }
+      // Bounce to do?
+      else if (ISBOUNCE && (REPEATCOUNTER > 0))
+      {
+        // Restart the animation
+        ANIMATIONS.RestartAnimation(param.index);
+
+        // Initialisation
+        REPEATCOUNTER -= 1;
+        ISINVERT = !ISINVERT; //invert the invert (following ??)
+
+        // Index
+        if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
+        else ANIMATIONINDEX = ANIMATIONINDEXSTART;
+      }
+      // Nothing more to do
+      else
+      {
+        // Stop the animation
+        ANIMATIONS.StopAnimation(param.index);
+
+        // Blank the strip if needed
+        if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+      }
     }
   }
 }

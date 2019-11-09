@@ -91,11 +91,6 @@ div
     <td></td>
   </tr>
   <tr>
-    <td><label class="label" for="endoff">End Off:</label></td>
-    <td><input class="input" type="text" id="endoff"/></td>
-    <td></td>
-  </tr>
-  <tr>
     <td></td>
     <td><input class="input" id="fileInput" type="file" /></td>
     <td><button class="button buttonOn" onclick="requestFileUpload()">Upload</button></td>
@@ -112,6 +107,21 @@ div
   </table>
   
   <img id="img" src="" alt="img" />
+  
+  <table class="tabcenter">
+  <tr>
+    <td><label class="label" for="isrepeat">Repeat :</label></td>
+    <td><input class="input" name="isrepeat" type="checkbox" id="isrepeat"/> </td>
+    <td><label class="label" for="isbounce">Bounce :</label></td>
+    <td><input class="input" name="isbounce" type="checkbox" id="isbounce"/> </td>
+  </tr>
+  <tr> 
+    <td><label class="label" for="isinvert">Invert :</label></td>
+    <td><input class="input" name="isinvert" type="checkbox" id="isinvert"/> </td>
+    <td><label class="label" for="isendoff">Endoff :</label></td>
+    <td><input class="input" name="isendoff" type="checkbox" id="isendoff"/> </td>
+  </tr>
+  </table>
   
   <table class="tabcenter">
   <tr>
@@ -298,8 +308,10 @@ function requestParameterRead()
       document.getElementById("brightness").text = json["brightness"];
       document.getElementById("repeat").value = json["repeat"];
       document.getElementById("repeat").text = json["repeat"];
-      document.getElementById("endoff").value = json["endoff"];
-      document.getElementById("endoff").text = json["endoff"];
+      document.getElementById("isrepeat").checked  = json["isrepeat"];
+      document.getElementById("isbounce").checked  = json["isbounce"];
+      document.getElementById("isinvert").checked  = json["isinvert"];
+      document.getElementById("isendoff").checked  = json["isendoff"];
     }
   };
   
@@ -325,7 +337,11 @@ function requestParameterWrite()
   json.delay = document.getElementById("delay").value;
   json.brightness = document.getElementById("brightness").value;
   json.repeat = document.getElementById("repeat").value;
-  json.endoff = document.getElementById("endoff").value;
+  json.isrepeat = document.getElementById("isrepeat").checked;
+  json.isbounce = document.getElementById("isbounce").checked;
+  json.isinvert = document.getElementById("isinvert").checked;
+  json.isendoff = document.getElementById("isendoff").checked;
+  
   var jsonString = JSON.stringify(json);
   
   xhr.open("POST", "/parameterWrite", true);
