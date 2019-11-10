@@ -1,8 +1,8 @@
 # imagePaintingSTA
 
-Yet another project on LightPainting ....
+Yet another project on LightPainting .... WAIT !!!
 
-Existing project on the topic like Adafruit [NeoPixel Painter](https://learn.adafruit.com/neopixel-painter/overview) or [Light Painting with Raspberry Pi](https://learn.adafruit.com/light-painting-with-raspberry-pi/overview) are great and have been a great source of inspiration/information, but i find those to complicated and unpractical on the field. You need to much hardware and you can't be far from your computer to load other image or tweet parameters.
+Existing project on the topic like Adafruit [NeoPixel Painter](https://learn.adafruit.com/neopixel-painter/overview) or [Light Painting with Raspberry Pi](https://learn.adafruit.com/light-painting-with-raspberry-pi/overview) are great and have been a great source of inspiration/information, but i find those too complicated and unpractical on the field. You need too much hardware and you can't be far from your computer to load other image or tweet parameters.
 
 My project is base on hardware and use simplicity. All you need is an USB battery bank, a Led strip, an ESP8266 and a webbrowser (computer of course but mainly smartphone).
 
@@ -10,16 +10,22 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 ### Hardware Prerequisites
 
+![hardware](https://user-images.githubusercontent.com/2498942/68552594-e7a07400-0418-11ea-9d8a-11a54ea146d7.jpg)
+
 * **USB Battery bank :** I use sony CP-V3A for 60 Leds. Take care of the output amps and use regular USB.
 
 * **Board :** I use Wemos D1 mini clone, but i should work on other ESP8266 base board like NodeMCU.
 
 * **Led :** I use APA102. It could work on other led like WS2812, but APA102 are better and faster.
 
-* **Webbrowser :** All modern webbrowser should be good to handle my poor coding and if you read this, you are good ;-)
+### Hardware Assembly
 
-* **Hardware Assembly :**
+* **For software bit bang :** My sketch use pin D1 for DATA and pin D2 for CLOCK, but you can change it.
+
 ![software](https://user-images.githubusercontent.com/2498942/68550264-a05ab900-0401-11ea-81c8-7a4c1f4a8635.png "Hardware assembly for software bit bang")
+
+* **For hardware SPI :** On WEMOS D1, you must use pin D7 for DATA and pin D5 for CLOCK.
+
 ![hardware](https://user-images.githubusercontent.com/2498942/68550268-af416b80-0401-11ea-9a1b-4eb83e9c52c5.png "Hardware assembly for hardware SPI")
 
 ### Software Prerequisites And Installing
