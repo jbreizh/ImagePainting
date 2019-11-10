@@ -62,14 +62,14 @@ This is the webpage that your ESP8266 serve you :
 ![controleScreen](https://user-images.githubusercontent.com/2498942/68551545-3eed1700-040e-11ea-8ee4-be0f984f540b.jpg)
 
 * **File :** Select a picture and upload it on the ESP8266 flash memory (see the **About Picture**)
-* **Image :** Select a picture on the ESP8266 flash memory to stream it or to delete it
-* **Delay :** Time between to frame in ms. Value possible 0ms to 255ms, but no garantee under 10ms
+* **Image :** Select a picture on the ESP8266 flash memory to animate it or to delete it
+* **Delay :** Time between two frames in ms. Value possible 0ms to 255ms, but no garantee under 10ms
 * **Brightness :** Brightness of the LED. Value possible 0 (black) to 255 (full)
-* **Repeat :** Number of time the picture is stream. Value possible 0 (0 repetition so 1 time) to 255 (255 repetition so 256 time)
+* **Repeat :** Number of times the picture is animate. Value possible 0 (0 repetition so 1 animation) to 255 (255 repetitions so 256 animations)
 * **Option :**
-- [x] Repeat : Activate the repetition according the number of time set in **Repeat :**
-- [x] Bounce : Activate the bounce repetition according the number of time set in **Repeat :**
-- [x] Invert : The animation begin by the end of the picture
+- [x] Repeat : Activate the repetition according the number of times set in **Repeat :**
+- [x] Bounce : Activate the bounce repetition according the number of times set in **Repeat :**
+- [x] Invert : The animation start with the end of the picture
 - [x] Endoff : Turn off the LED when the animation is pause/stop or end. Usefull when the picture doesn't end with a black line
 * **Light :** Turn on your LED in white to use it as a flashlight. Usefull in dark situation ;-)
 * **Play :** Play or pause your animation
@@ -77,12 +77,10 @@ This is the webpage that your ESP8266 serve you :
 
 ## About Picture
 
+Due to hardware limitation of the ESP8266, imagePainting only animate Bitmap 24 bits/pixel rotate by 90°.
+
+![bitmapExplanation](https://user-images.githubusercontent.com/2498942/68552286-a3f83b00-0415-11ea-8ec8-e8d4f2450843.jpg)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
