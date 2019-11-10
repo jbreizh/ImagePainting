@@ -18,11 +18,11 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 * **Webbrowser :** All modern webbrowser should be good to handle my poor coding and if you read this, you are good ;-)
 
-* **Hardware assembly :**
+* **Hardware Assembly :**
 ![software](https://user-images.githubusercontent.com/2498942/68550264-a05ab900-0401-11ea-81c8-7a4c1f4a8635.png "Hardware assembly for software bit bang")
 ![hardware](https://user-images.githubusercontent.com/2498942/68550268-af416b80-0401-11ea-9a1b-4eb83e9c52c5.png "Hardware assembly for hardware SPI")
 
-### Software Prerequisites and Installing
+### Software Prerequisites And Installing
 
 **Arduino IDE with the following board/tool/library installed :**
 * [ESP8266](https://github.com/esp8266/Arduino) - The ESP8266 core for Arduino
@@ -57,7 +57,25 @@ const char* password = "12345678";
 
 ## Use
 
-Explain how to run the automated tests for this system
+This is the webpage that your ESP8266 serve you :
+
+![controleScreen](https://user-images.githubusercontent.com/2498942/68551545-3eed1700-040e-11ea-8ee4-be0f984f540b.jpg)
+
+* **File :** Select a picture and upload it on the ESP8266 flash memory (see the **About Picture**)
+* **Image :** Select a picture on the ESP8266 flash memory to stream it or to delete it
+* **Delay :** Time between to frame in ms. Value possible 0ms to 255ms, but no garantee under 10ms
+* **Brightness :** Brightness of the LED. Value possible 0 (black) to 255 (full)
+* **Repeat :** Number of time the picture is stream. Value possible 0 (0 repetition so 1 time) to 255 (255 repetition so 256 time)
+* **Option :**
+- [x] Repeat : Activate the repetition according the number of time set in **Repeat :**
+- [x] Bounce : Activate the bounce repetition according the number of time set in **Repeat :**
+- [x] Invert : The animation begin by the end of the picture
+- [x] Endoff : Turn off the LED when the animation is pause/stop or end. Usefull when the picture doesn't end with a black line
+* **Light :** Turn on your LED in white to use it as a flashlight. Usefull in dark situation ;-)
+* **Play :** Play or pause your animation
+* **Stop :** Turn off your LED. Stop your animation.
+
+## About Picture
 
 ## License
 
