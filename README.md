@@ -19,8 +19,8 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 * **Webbrowser :** All modern webbrowser should be good to handle my poor coding and if you read this, you are good ;-)
 
 * **Hardware assembly :**
-
-schematic
+![software](https://user-images.githubusercontent.com/2498942/68550264-a05ab900-0401-11ea-81c8-7a4c1f4a8635.png "Hardware assembly for software bit bang")
+![hardware](https://user-images.githubusercontent.com/2498942/68550268-af416b80-0401-11ea-9a1b-4eb83e9c52c5.png "Hardware assembly for hardware SPI")
 
 ### Software Prerequisites and Installing
 
@@ -48,6 +48,8 @@ const char* password = "12345678";
 // end WIFI-----------
 ```
 * **NUMPIXELS :** Number of pixel in your led strip
+* **DATA_PIN :** Pin for data in software bit bang mode
+* **CLOCK_PIN :** Pin for clock in software bit bang mode
 * **ssid :** your router ssid
 * **password :** your router password
 
