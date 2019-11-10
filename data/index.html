@@ -4,26 +4,29 @@
   <title>ESP8266 Web Server</title>
   <meta charset="utf-8" />
   <style>
-body
-{
-  text-align: center ;
-}
-div
+.container
 {
   background-color: #A9A9A9;
   max-width: 90% ;
   margin: 0 auto ;
 }
 
-.title {
-  width: 100%;
-  font-size:  4vw;
-  padding: 1vh;
+.center {
+  text-align: center ;
 }
 
-.subTitle {
-  color: #f44336;
+.width {
+  width: 100%;
   font-size:  3vw;
+  vertical-align:middle;
+}
+
+.title {
+  font-size:  4vw;
+}
+
+.status {
+  color: #f44336;
 }
 
 .tabcenter{
@@ -34,8 +37,6 @@ div
 }
 
 .button { 
-  width: 100%;
-  font-size:  3vw;
   border-radius: 4px;
   margin: 2px;
   cursor: pointer;
@@ -52,84 +53,74 @@ div
 .buttonOff {
   background-color: #f44336;;
 }
-
-.label {
-  width: 100%;
-  font-size:  3vw;
-  vertical-align:middle;
-
-}
-.input {
-  width: 100%;
-  font-size:  3vw;
-  vertical-align:middle;
-}
   </style>
 </head>
 
-<body>
-<div id="conteneur">  
+<body class="center">
+<div class="container"> 
 
-  <h1 class="title">ImagePainting Web Server</h1>
-  
-  <h2 class="subTitle" id="status"> Status </h1>
-    
   <table class="tabcenter">
   <tr>
-    <td><label class="label" for="delay">Delay:</label></td>
-    <td><input class="input" type="text" id="delay" /></td>
-    <td><button class="button buttonOn" onclick="requestParameterWrite()">Write</button></td>
+    <td colspan=4><h1 class="width center title">ImagePainting</h1></td>
   </tr>
   <tr>
-    <td><label class="label" for="brightness">Brightness:</label></td>
-    <td><input class="input" type="text" id="brightness"/></td>
-    <td></td>
+    <td colspan=4><h2 class="width center status" id="status"> Status </h1></td>
   </tr>
   <tr>
-    <td><label class="label" for="repeat">Repeat:</label></td>
-    <td><input class="input" type="text" id="repeat"/></td>
-    <td></td>
+    <td><label class="width">Select file :</label></td>
+    <td colspan=2><input class="width" id="fileInput" type="file" /></td>
+    <td><button class="width button buttonOn" onclick="requestFileUpload()">Upload</button></td>
   </tr>
   <tr>
-    <td></td>
-    <td><input class="input" id="fileInput" type="file" /></td>
-    <td><button class="button buttonOn" onclick="requestFileUpload()">Upload</button></td>
-  </tr>
-  <tr>
-    <td><label class="label" for="fileList">Select file :</label></td>
-    <td>
-    <select  class="input" id="fileList" onchange="requestBitmapLoad()">
+    <td><label class="width">Image :</label></td>
+    <td colspan=2>
+    <select  class="width" id="fileList" onchange="requestBitmapLoad()">
       <option value=""></option>
     </select>
     </td>
-    <td><button class="button buttonOff" onclick="requestFileDelete()">Delete</button></td>
+    <td><button class="width button buttonOff" onclick="requestFileDelete()">Delete</button></td>
   </tr>
-  </table>
-  
-  <img id="img" src="" alt="img" />
-  
-  <table class="tabcenter">
+   <tr>
+    <td></td>
+    <td colspan=2><canvas id="canvas" width="300px" height="150"></canvas></td>
+    <td></td>
+  </tr>
   <tr>
-    <td><label class="label" for="isrepeat">Repeat :</label></td>
-    <td><input class="input" name="isrepeat" type="checkbox" id="isrepeat"/> </td>
-    <td><label class="label" for="isbounce">Bounce :</label></td>
-    <td><input class="input" name="isbounce" type="checkbox" id="isbounce"/> </td>
+    <td><label class="width">Delay:</label></td>
+    <td colspan=2><input class="width" type="text" id="delay" /></td>
+    <td><button class="width button buttonOn" onclick="requestParameterWrite()">Write</button></td>
+  </tr>
+  <tr>
+    <td><label class="width">Brightness:</label></td>
+    <td colspan=2><input class="width" type="text" id="brightness"/></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><label class="width">Repeat:</label></td>
+    <td colspan=2><input class="width" type="text" id="repeat"/></td>
+    <td></td>
+  </tr>
+    <tr>
+    <td><label class="width">Option:</label></td>
+    <td><input name="isrepeat" type="checkbox" id="isrepeat" onclick="checkRepeat()"/> <label class="width" for="isrepeat">Repeat</label></td>
+    <td><input name="isbounce" type="checkbox" id="isbounce" onchange="checkBounce()"/> <label class="width" for="isbounce">Bounce</label></td>
+    <td></td>
   </tr>
   <tr> 
-    <td><label class="label" for="isinvert">Invert :</label></td>
-    <td><input class="input" name="isinvert" type="checkbox" id="isinvert"/> </td>
-    <td><label class="label" for="isendoff">Endoff :</label></td>
-    <td><input class="input" name="isendoff" type="checkbox" id="isendoff"/> </td>
+    <td></td>
+    <td><input name="isinvert" type="checkbox" id="isinvert"/><label class="width" for="isinvert">Invert</label></td>
+    <td><input name="isendoff" type="checkbox" id="isendoff"/><label class="width" for="isendoff">Endoff</label></td>
+    <td></td>
   </tr>
-  </table>
   
   <table class="tabcenter">
   <tr>
-    <td><button class="button buttonLight" onclick="requestLight()">Light</button></td>
-    <td><button class="button buttonOn" onclick="requestBitmapPlayPause()">Play</button></td>
-    <td><button class="button buttonOff" onclick="requestBitmapStop()">Stop</button></td>
+    <td><button class="width button buttonLight" onclick="requestLight()">Light</button></td>
+    <td><button class="width button buttonOn" onclick="requestBitmapPlayPause()">Play</button></td>
+    <td><button class="width button buttonOff" onclick="requestBitmapStop()">Stop</button></td>
   </tr>
   </table>
+  
 </div>
 </body>
 
@@ -230,11 +221,11 @@ function requestBitmapLoad()
       
       if (this.status == 200 || this.status == 0)
       {
-        document.getElementById("img").src = document.getElementById("fileList").value;
+        drawImage(document.getElementById("fileList").value);
       }
       else
       {
-        document.getElementById("img").src = "";
+        drawImage("error.bmp");
       }
     }
   };
@@ -243,6 +234,46 @@ function requestBitmapLoad()
   xhr.open("POST", "/bitmapLoad", true);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   xhr.send(params);
+}
+
+//--------------------------------------------------
+function drawImage(imageSrc) {
+  var canvas=document.getElementById("canvas");
+  var ctx=canvas.getContext("2d");
+  var image=document.createElement("img");
+  image.src=imageSrc;
+  
+  image.onload=function(){
+    canvas.width  = image.height;
+    canvas.height = image.width;
+    ctx.translate(canvas.width/2,canvas.height/2);
+    ctx.rotate(-90*Math.PI/180);
+    ctx.drawImage(image,-image.width/2,-image.height/2);
+  }
+}
+
+//--------------------------------------------------
+function checkRepeat() {
+  if(document.getElementById("isrepeat").checked)
+  {
+    document.getElementById("isbounce").disabled = true;
+  }
+  else
+  {
+    document.getElementById("isbounce").disabled = false;
+  }
+}
+
+//--------------------------------------------------
+function checkBounce() {
+  if(document.getElementById("isbounce").checked)
+  {
+    document.getElementById("isrepeat").disabled = true;
+  }
+  else
+  {
+    document.getElementById("isrepeat").disabled = false;
+  }
 }
 
 //--------------------------------------------------

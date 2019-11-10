@@ -3,16 +3,16 @@
 #include <ESP8266WebServer.h>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
-#include <SPI.h>
+//#include <SPI.h>
 #include <FS.h>
 
 // APA102 --------------
 const int NUMPIXELS = 60;
 uint8_t BRIGHTNESS = 40;
-const int DATA_PIN = D1;
-const int CLOCK_PIN = D2;
+const int DATA_PIN = D1; //GREEN
+const int CLOCK_PIN = D2; //Yellow
 NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang
-//NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI
+//NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
 // end APA102-----------
 
 // WIFI --------------
@@ -37,7 +37,7 @@ uint16_t ANIMATIONINDEXSTART; uint16_t ANIMATIONINDEX; uint16_t ANIMATIONINDEXST
 
 // RUNTIME --------------
 uint8_t DELAY = 100;
-uint8_t REPEAT = 0; uint8_t REPEATCOUNTER;
+uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
 bool ISREPEAT = false;
 bool ISENDOFF = false;
 bool ISINVERT = false;
@@ -316,14 +316,17 @@ void handleFileList()
     // Open the entry
     fs::File entry = dir.openFile("r");
 
+    // Get the name
+    String name = String(entry.name()).substring(1);
+
     // Hide system file
-    if (String(entry.name()).substring(1) != "index.html")
+    if ((name != "index.html") && (name != "error.bmp"))
     {
       // Separate by comma if there are multiple files
       if (fileList != "") fileList += ",";
 
       // Write the entry in the list
-      fileList += String(entry.name()).substring(1);
+      fileList += name;
     }
 
     // Close the entry
