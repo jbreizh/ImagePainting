@@ -10,7 +10,7 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 ### Hardware Prerequisites
 
-* **USB Battery bank:** I use sony CP-V3A for 60 Leds. Take care of the output amps and use regular USB.
+* **USB Battery bank :** I use sony CP-V3A for 60 Leds. Take care of the output amps and use regular USB.
 
 * **Board :** I use Wemos D1 mini clone, but i should work on other ESP8266 base board like NodeMCU.
 
@@ -22,23 +22,36 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 schematic
 
-### Software Prerequisites
+### Software Prerequisites and Installing
 
-Arduino IDE with the following board/tool/library installed :
+**Arduino IDE with the following board/tool/library installed :**
 * [ESP8266](https://github.com/esp8266/Arduino) - The ESP8266 core for Arduino
 * [arduino-esp8266fs-plugin](https://github.com/esp8266/arduino-esp8266fs-plugin) - The Arduino plugin for uploading files to ESP8266 file system
 * [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) - The Adafruit enhanced NeoPixel support library
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - The JSON library for Arduino
 
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
+**Tweet the code to fit your need :**
 ```
-Give the example
+// APA102 --------------
+const int NUMPIXELS = 60;
+uint8_t BRIGHTNESS = 40;
+const int DATA_PIN = D1; //GREEN
+const int CLOCK_PIN = D2; //Yellow
+NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang
+//NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
+// end APA102-----------
+
+// WIFI --------------
+ESP8266WebServer server;
+const char* ssid = "Moto C Plus 1105";
+const char* password = "12345678";
+// end WIFI-----------
 ```
+* **NUMPIXELS :** Number of pixel in your led strip
+* **ssid :** your router ssid
+* **password :** your router password
+
+**Flash the code and upload data to SPIFFS. The end....**
 
 ## Use
 
