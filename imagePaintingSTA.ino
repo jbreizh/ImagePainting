@@ -13,6 +13,7 @@ const int DATA_PIN = D1; //GREEN
 const int CLOCK_PIN = D2; //Yellow
 NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang
 //NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
+//NeoPixelBus<DotStarBgrFeature, DotStarSpi2MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
 // end APA102-----------
 
 // WIFI --------------
@@ -95,7 +96,6 @@ typedef BrightnessShader<DotStarBgrFeature::ColorObject> BrightShader;
 
 // create an instance of our shader object with the same feature as our buffer
 BrightShader SHADER;
-
 // end SHADER --------------
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -340,9 +340,14 @@ void handleFileList()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapLoad()
 {
+  // Check running animation
+  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused()) return server.send(500, "text/plain", "NOT AVAILABLE");
+  
   // Close the old bitmap
   BMPFILE.close();
 
+  //-------------------------> load error.bmp in case of error?????
+ 
   // Parse parameter from request
   String path = server.arg("file");
 
@@ -373,7 +378,7 @@ void handleBitmapLoad()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapPlayPause()
 {
-  //NEOBMPFILE exist ?????????
+  //--------------> NEOBMPFILE exist ?????????
 
   if (ANIMATIONS.IsPaused())
   {
@@ -429,7 +434,7 @@ void handleBitmapStop()
 void handleLight()
 {
   //turn on the strip
-  STRIP.ClearTo(RgbColor(255, 255, 255));
+  STRIP.ClearTo(SHADER.Apply(0, RgbColor(255, 255, 255)));
 
   // Strip is turn on
   server.send(200, "text/plain", "LIGHT");
@@ -448,7 +453,7 @@ void updateAnimation(const AnimationParam& param)
       ANIMATIONS.RestartAnimation(param.index);
 
       // Fil the strip
-      //NEOBMPFILE.Blt(STRIP, 0, 0, ANIMATIONINDEX, NEOBMPFILE.Width());
+      //------------------------->  crop the bitmap to fit the strip?????
       NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONINDEX, NEOBMPFILE.Width());
 
       // Index

@@ -25,10 +25,6 @@
   font-size:  4vw;
 }
 
-.status {
-  color: #f44336;
-}
-
 .tabcenter{
    width: 100%;
    margin-left:auto;
@@ -64,15 +60,15 @@
     <td colspan=4><h1 class="width center title">ImagePainting</h1></td>
   </tr>
   <tr>
-    <td colspan=4><h2 class="width center status" id="status"> Status </h1></td>
+    <td colspan=4><h2 class="width center" id="status"> Status </h1></td>
   </tr>
   <tr>
-    <td><label class="width">Select file :</label></td>
+    <td><label class="width" for="fileInput">File:</label></td>
     <td colspan=2><input class="width" id="fileInput" type="file" /></td>
     <td><button class="width button buttonOn" onclick="requestFileUpload()">Upload</button></td>
   </tr>
   <tr>
-    <td><label class="width">Image :</label></td>
+    <td><label class="width" for="fileList">Image:</label></td>
     <td colspan=2>
     <select  class="width" id="fileList" onchange="requestBitmapLoad()">
       <option value=""></option>
@@ -86,38 +82,38 @@
     <td></td>
   </tr>
   <tr>
-    <td><label class="width">Delay:</label></td>
+    <td><label class="width" for="delay">Delay:</label></td>
     <td colspan=2><input class="width" type="text" id="delay" /></td>
     <td><button class="width button buttonOn" onclick="requestParameterWrite()">Write</button></td>
   </tr>
   <tr>
-    <td><label class="width">Brightness:</label></td>
+    <td><label class="width" for="brightness">Brightness:</label></td>
     <td colspan=2><input class="width" type="text" id="brightness"/></td>
     <td></td>
   </tr>
   <tr>
-    <td><label class="width">Repeat:</label></td>
+    <td><label class="width" for="repeat">Repeat:</label></td>
     <td colspan=2><input class="width" type="text" id="repeat"/></td>
     <td></td>
   </tr>
     <tr>
     <td><label class="width">Option:</label></td>
-    <td><input name="isrepeat" type="checkbox" id="isrepeat" onclick="checkRepeat()"/> <label class="width" for="isrepeat">Repeat</label></td>
-    <td><input name="isbounce" type="checkbox" id="isbounce" onchange="checkBounce()"/> <label class="width" for="isbounce">Bounce</label></td>
+    <td><label class="width" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat" onclick="checkRepeat()"/>Repeat</label></td>
+    <td><label class="width" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce" onchange="checkBounce()"/>Bounce</label></td>
     <td></td>
   </tr>
   <tr> 
     <td></td>
-    <td><input name="isinvert" type="checkbox" id="isinvert"/><label class="width" for="isinvert">Invert</label></td>
-    <td><input name="isendoff" type="checkbox" id="isendoff"/><label class="width" for="isendoff">Endoff</label></td>
+    <td><label class="width" for="isinvert"><input name="isinvert" type="checkbox" id="isinvert"/>Invert</label></td>
+    <td><label class="width" for="isendoff"><input name="isendoff" type="checkbox" id="isendoff"/>Endoff</label></td>
     <td></td>
   </tr>
   
   <table class="tabcenter">
   <tr>
-    <td><button class="width button buttonLight" onclick="requestLight()">Light</button></td>
-    <td><button class="width button buttonOn" onclick="requestBitmapPlayPause()">Play</button></td>
-    <td><button class="width button buttonOff" onclick="requestBitmapStop()">Stop</button></td>
+    <td><button class="width button buttonLight" onclick="requestAction('/light')">Light</button></td>
+    <td><button class="width button buttonOn" onclick="requestAction('/bitmapPlayPause')">Play</button></td>
+    <td><button class="width button buttonOff" onclick="requestAction('/bitmapStop')">Stop</button></td>
   </tr>
   </table>
   
@@ -134,9 +130,9 @@ requestFileList();
 function requestFileList()
 {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onload = function()
   {
-    if (this.readyState == 4 && (this.status == 200 || this.status == 0))
+    if (this.status == 200)
     {
       var element = document.getElementById("fileList");
       var options = this.responseText.split(",");
@@ -148,7 +144,13 @@ function requestFileList()
         element.options[j].text= options[j]; 
       }
       requestBitmapLoad();
-    }
+    }      
+  };
+  
+  xhr.onerror = function()
+  {
+    document.getElementById("status").innerHTML = "LIST ERROR : CONNECTION LOST";
+    document.getElementById("status").style.color = "red";
   };
 
   xhr.open("GET", "/list", true);
@@ -159,13 +161,25 @@ function requestFileList()
 function requestFileDelete()
 {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onload = function()
   {
-    if (this.readyState == 4)
+    if (this.status == 200)
     {
       document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "green";
       requestFileList();
     }
+    else
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "red";
+    }
+  };
+  
+  xhr.onerror = function()
+  {
+    document.getElementById("status").innerHTML = "DELETE ERROR : CONNECTION LOST";
+    document.getElementById("status").style.color = "red";
   };
   
   var params = "file=/"+document.getElementById("fileList").value;
@@ -180,7 +194,8 @@ function requestFileUpload()
     var fileInput = document.getElementById("fileInput");
     if (fileInput.files.length == 0)
     {
-      document.getElementById("status").innerHTML = "ERROR : File not chosen";
+      document.getElementById("status").innerHTML = "UPLOAD ERROR : FILE NOT CHOSEN";
+      document.getElementById("status").style.color = "red";
       return;
     }
     
@@ -190,17 +205,20 @@ function requestFileUpload()
       if (this.status == 200)
       {
         document.getElementById("status").innerHTML = this.responseText;
+        document.getElementById("status").style.color = "green";
         requestFileList();
       }
       else
       {
-        document.getElementById("status").innerHTML = "ERROR : Upload failed";
+        document.getElementById("status").innerHTML = "UPLOAD ERROR : UPLOAD FAILED";
+        document.getElementById("status").style.color = "red";
       }
     };
     
     xhr.onerror = function()
     {
-      document.getElementById("status").innerHTML = "ERROR : Can not connect to server";
+      document.getElementById("status").innerHTML = "UPLOAD ERROR : CONNECTION LOST";
+      document.getElementById("status").style.color = "red";
     };
     
     xhr.open("POST", "/upload", true);
@@ -213,21 +231,26 @@ function requestFileUpload()
 function requestBitmapLoad()
 {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onload = function()
   {
-    if (this.readyState == 4)
+    if (this.status == 200)
     {
+      drawImage(document.getElementById("fileList").value);
       document.getElementById("status").innerHTML = this.responseText;
-      
-      if (this.status == 200 || this.status == 0)
-      {
-        drawImage(document.getElementById("fileList").value);
-      }
-      else
-      {
-        drawImage("error.bmp");
-      }
+      document.getElementById("status").style.color = "green";
     }
+    else
+    {
+      drawImage("error.bmp");
+      document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "red";
+    }
+  };
+  
+  xhr.onerror = function()
+  {
+    document.getElementById("status").innerHTML = "LOAD ERROR : CONNECTION LOST";
+    document.getElementById("status").style.color = "red";
   };
   
   var params = "file=/"+document.getElementById("fileList").value;
@@ -257,10 +280,12 @@ function checkRepeat() {
   if(document.getElementById("isrepeat").checked)
   {
     document.getElementById("isbounce").disabled = true;
+    document.getElementById("isbounce").parentNode.style.color = "grey";
   }
   else
   {
     document.getElementById("isbounce").disabled = false;
+    document.getElementById("isbounce").parentNode.style.color = "black";
   }
 }
 
@@ -269,58 +294,40 @@ function checkBounce() {
   if(document.getElementById("isbounce").checked)
   {
     document.getElementById("isrepeat").disabled = true;
+    document.getElementById("isrepeat").parentNode.style.color = "grey";
   }
   else
   {
     document.getElementById("isrepeat").disabled = false;
+    document.getElementById("isrepeat").parentNode.style.color = "black";
   }
 }
 
 //--------------------------------------------------
-function requestBitmapPlayPause()
+function requestAction(action)
 {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onload = function()
   {
-    if (this.readyState == 4)
+    if (this.status == 200)
     {
       document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "green";
+    }
+    else
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "red";
     }
   };
   
-  xhr.open("GET", "/bitmapPlayPause", true);
-  xhr.send(null);
-}
-
-//--------------------------------------------------
-function requestBitmapStop()
-{
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onerror = function()
   {
-    if (this.readyState == 4)
-    {
-      document.getElementById("status").innerHTML = this.responseText;
-    }
+    document.getElementById("status").innerHTML = "ACTION ERROR : CONNECTION LOST";
+    document.getElementById("status").style.color = "red";
   };
   
-  xhr.open("GET", "/bitmapStop", true);
-  xhr.send(null);
-}
-
-//--------------------------------------------------
-function requestLight()
-{
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
-  {
-    if (this.readyState == 4)
-    {
-      document.getElementById("status").innerHTML = this.responseText;
-    }
-  };
-  
-  xhr.open("GET", "/light", true);
+  xhr.open("GET", action, true);
   xhr.send(null);
 }
 
@@ -328,9 +335,9 @@ function requestLight()
 function requestParameterRead()
 {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onload = function()
   {
-    if ((this.readyState == 4) && (this.status == 200 || this.status == 0))
+    if (this.status == 200)
     {
       var json = JSON.parse(this.responseText);
       document.getElementById("delay").value = json["delay"];
@@ -343,7 +350,16 @@ function requestParameterRead()
       document.getElementById("isbounce").checked  = json["isbounce"];
       document.getElementById("isinvert").checked  = json["isinvert"];
       document.getElementById("isendoff").checked  = json["isendoff"];
+      
+      checkRepeat();
+      checkBounce();
     }
+  };
+  
+  xhr.onerror = function()
+  {
+    document.getElementById("status").innerHTML = "READ ERROR : CONNECTION LOST";
+    document.getElementById("status").style.color = "red";
   };
   
   xhr.overrideMimeType("application/json");
@@ -355,13 +371,25 @@ function requestParameterRead()
 function requestParameterWrite()
 {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function()
+  xhr.onload = function()
   {
-    if (this.readyState == 4)
+    if (this.status == 200)
     {
       document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "green";
       requestParameterRead();
     }
+    else
+    {
+      document.getElementById("status").innerHTML = this.responseText;
+      document.getElementById("status").style.color = "red";
+    }
+  };
+  
+  xhr.onerror = function()
+  {
+    document.getElementById("status").innerHTML = "WRITE ERROR : CONNECTION LOST";
+    document.getElementById("status").style.color = "red";
   };
   
   var json = new Object();
