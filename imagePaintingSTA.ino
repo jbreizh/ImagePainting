@@ -127,7 +127,7 @@ void setup()
 
   // handle file upload
   server.on("/upload", HTTP_POST, []() {
-    server.send(200, "text/plain", "SUCCESS");
+    server.send(200, "text/plain", "UPLOAD SUCCESS");
   }, handleFileUpload);
 
   // handle bitmap Load
@@ -239,17 +239,16 @@ void handleFileDelete()
   String path = server.arg("file");
 
   // make sure we get a file name as a URL argument and protect root path
-  if (path == "" || path == "/") return server.send(500, "text/plain", "BAD ARGS");
+  if (path == "" || path == "/") return server.send(500, "text/plain", "DELETE ERROR : BAD ARGS");
 
   // check if the file exists
-  if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "FILE NOT FOUND!");
+  if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND!");
 
   // Delete the file
   SPIFFS.remove(path);
 
   // File is delete
-  String msg = "DELETE FILE : " + path;
-  server.send(200, "text/plain", msg);
+  server.send(200, "text/plain", "DELETE SUCCESS");
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -278,24 +277,34 @@ void handleFileUpload()
   //
   HTTPUpload& upload = server.upload();
 
-  //
+  // Upload start
   if (upload.status == UPLOAD_FILE_START)
   {
     String filename = upload.filename;
-    if (!filename.startsWith("/"))
-      filename = "/" + filename;
+    if (!filename.startsWith("/")) filename = "/" + filename;
 
+  //-------------------------> test for upload?????
+
+    //check if the file already exist
+    //if (SPIFFS.exists(filename)) return server.send(415, "text/plain", "UPLOAD ERROR : FILE ALREADY EXIST");
+
+    //check if the file fit in SPIFFS
+    //FSInfo fs_info;
+    //SPIFFS.info(fs_info);
+    //if (upload.totalSize > ) return server.send(413, "text/plain", "UPLOAD ERROR : NOT ENOUGH SPACE");
+    
+    // Open the file for writing in SPIFFS (create if it doesn't exist)
     fsUploadFile = SPIFFS.open(filename, "w");
   }
 
-  //
+  // Upload in progress
   else if (upload.status == UPLOAD_FILE_WRITE)
   {
-    if (fsUploadFile)
-      fsUploadFile.write(upload.buf, upload.currentSize);
+    //Write the received bytes to the file
+    if (fsUploadFile) fsUploadFile.write(upload.buf, upload.currentSize);
   }
 
-  //
+  // Upload end
   else if (upload.status == UPLOAD_FILE_END)
   {
     if (fsUploadFile)
@@ -340,8 +349,8 @@ void handleFileList()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapLoad()
 {
-  // Check running animation
-  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused()) return server.send(500, "text/plain", "NOT AVAILABLE");
+  // Check for running or paused animation
+  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused()) return server.send(500, "text/plain", "LOAD ERROR : NOT AVAILABLE");
   
   // Close the old bitmap
   BMPFILE.close();
@@ -352,26 +361,26 @@ void handleBitmapLoad()
   String path = server.arg("file");
 
   // Make sure we get a file name as a URL argument
-  if (path == "") return server.send(500, "text/plain", "BAD ARGS");
-
+  if (path == "") return server.send(500, "text/plain", "LOAD ERROR : BAD ARGS");
+  
   // Check if the file exists
-  if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "FILE NOT FOUND");
-
+  if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "LOAD ERROR : FILE NOT FOUND");
+  
   // Check if the file is a bitmap
-  if (getContentType(path) != "image/bmp") return server.send(500, "text/plain", "WRONG FILE TYPE");
+  if (getContentType(path) != "image/bmp") return server.send(500, "text/plain", "LOAD ERROR : WRONG FILE TYPE");
 
   // Open requested file on SD card
   BMPFILE = SPIFFS.open(path, "r");
 
   // Check and initialize bitmap from the file
-  if (!NEOBMPFILE.Begin(BMPFILE)) return server.send(500, "text/plain", "NOT SUPPORTED BITMAP");
+  if (!NEOBMPFILE.Begin(BMPFILE)) return server.send(500, "text/plain", "LOAD ERROR : NOT SUPPORTED BITMAP");
 
   // Update the index
   ANIMATIONINDEXSTART = 0;
   ANIMATIONINDEXSTOP = NEOBMPFILE.Height() - 1;
 
   //Bitmap is load
-  String msg = "BITMAP LOAD : Width=" + String(NEOBMPFILE.Width()) + "px Height=" + String(NEOBMPFILE.Height()) + "px";
+  String msg = "LOAD SUCCESS : Width=" + String(NEOBMPFILE.Width()) + "px Height=" + String(NEOBMPFILE.Height()) + "px";
   server.send(200, "text/plain", msg);
 }
 
@@ -379,16 +388,17 @@ void handleBitmapLoad()
 void handleBitmapPlayPause()
 {
   //--------------> NEOBMPFILE exist ?????????
-
+  // Animation is paused
   if (ANIMATIONS.IsPaused())
   {
     // Resume animation
     ANIMATIONS.Resume();
 
-    // Paused animation is relaunch
-    server.send(200, "text/plain", "PLAY");
+    // Paused animation is resume
+    server.send(200, "text/plain", "RESUME");
 
   }
+  // Animation is active
   else if (ANIMATIONS.IsAnimationActive(0))
   {
     // Pause animation
@@ -400,6 +410,7 @@ void handleBitmapPlayPause()
     // Animation is paused
     server.send(200, "text/plain", "PAUSE");
   }
+  // No animation
   else
   {
     // Index
@@ -452,8 +463,7 @@ void updateAnimation(const AnimationParam& param)
       // Restart the animation
       ANIMATIONS.RestartAnimation(param.index);
 
-      // Fil the strip
-      //------------------------->  crop the bitmap to fit the strip?????
+      // Fil the strip : bitmap is crop to fit the strip !!!
       NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONINDEX, NEOBMPFILE.Width());
 
       // Index

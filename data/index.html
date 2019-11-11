@@ -215,6 +215,13 @@ function requestFileUpload()
       }
     };
     
+    xhr.upload.onprogress = function(evt)
+    {
+      var percentComplete = Math.floor(evt.loaded / evt.total * 100);
+      document.getElementById("status").innerHTML = "UPLOAD PROGRESS :"+percentComplete+"%";
+      document.getElementById("status").style.color = "orange";
+    };
+    
     xhr.onerror = function()
     {
       document.getElementById("status").innerHTML = "UPLOAD ERROR : CONNECTION LOST";
