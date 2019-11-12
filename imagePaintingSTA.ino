@@ -354,6 +354,7 @@ void handleBitmapLoad()
   
   // Close the old bitmap
   BMPFILE.close();
+  NEOBMPFILE.Begin(BMPFILE);
 
   //-------------------------> load error.bmp in case of error?????
  
