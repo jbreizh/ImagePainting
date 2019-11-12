@@ -33,7 +33,11 @@ NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 
 // ANIMATION --------------
 NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
-uint16_t ANIMATIONINDEXSTART; uint16_t ANIMATIONINDEX; uint16_t ANIMATIONINDEXSTOP;
+uint16_t ANIMATIONINDEXMIN; //Min index possible
+uint16_t ANIMATIONINDEXSTART; //Min index chosen
+uint16_t ANIMATIONINDEX; // Current index
+uint16_t ANIMATIONINDEXSTOP; //Max index chosen
+uint16_t ANIMATIONINDEXMAX; //Max index possible
 // end ANIMATION --------------
 
 // RUNTIME --------------
@@ -353,42 +357,104 @@ void handleFileList()
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapLoad()
-{
+{ 
   // Check for running or paused animation
   if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused()) return server.send(500, "text/plain", "LOAD ERROR : NOT AVAILABLE");
 
-  // Close the old bitmap
-  BMPFILE.close();
-  NEOBMPFILE.Begin(BMPFILE);
+  // Handle the status to be send
+  String msg = "";
 
-  //-------------------------> load error.bmp in case of error?????
+  // Handle the html code to be send
+  uint16_t htmlCode = 200;
 
   // Parse parameter from request
   String path = server.arg("file");
 
-  // Make sure we get a file name as a URL argument
-  if (path == "") return server.send(500, "text/plain", "LOAD ERROR : BAD ARGS");
 
-  // Check if the file exists
-  if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "LOAD ERROR : FILE NOT FOUND");
+  // Check for running or paused animation
+  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
+  {
+    htmlCode = 500;
+    msg = "LOAD ERROR : NOT AVAILABLE";
+  }
+  // Then path exist ?
+  else if (path == "")
+  {
+    htmlCode = 404;
+    msg = "LOAD ERROR : BAD ARGS";
+  }
+  // Then file exist ?
+  else if (!SPIFFS.exists(path))
+  {
+    htmlCode = 404; // Not found
+    msg = "LOAD ERROR : FILE NOT FOUND";
+  }
+  // Then file is a bitmap ?
+  else if (getContentType(path) != "image/bmp")
+  {
+    htmlCode = 404; // Internal Error
+    msg = "LOAD ERROR : WRONG FILE TYPE";
+  }
+  // Then bitmap load ?
+  else if (!bitmapLoad(path))
+  {
+    htmlCode = 404; // OK
+    msg = "LOAD ERROR : WRONG BITMAP";
+  }
+  // No problem
+  else  
+  {
+    htmlCode = 200;
+    msg = "LOAD SUCCESS";
+  }
 
-  // Check if the file is a bitmap
-  if (getContentType(path) != "image/bmp") return server.send(500, "text/plain", "LOAD ERROR : WRONG FILE TYPE");
+  // Load error.bmp when 404
+  if (htmlCode == 404)
+  {
+    bitmapLoad("/error.bmp");
+  }
+  
+  // New json document
+  StaticJsonDocument<300> jsonDoc;
+  
+  // Store parameter in json document
+  jsonDoc["status"] = msg;
+  jsonDoc["indexMin"] = ANIMATIONINDEXMIN;
+  jsonDoc["indexMax"] = ANIMATIONINDEXMAX;
 
-  // Open requested file on SD card
+  // convert json document to String
+  String jsonString = "";
+  serializeJson(jsonDoc, jsonString);
+
+  // Bitmap is loaded
+  server.send(htmlCode, "application/json", jsonString);
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+bool bitmapLoad(String path)
+{ 
+  // Close the old bitmap
+  BMPFILE.close();
+  NEOBMPFILE.Begin(BMPFILE);
+  
+  // Open requested file on SPIFFS
   BMPFILE = SPIFFS.open(path, "r");
 
-  // Check and initialize bitmap from the file
-  if (!NEOBMPFILE.Begin(BMPFILE)) return server.send(500, "text/plain", "LOAD ERROR : NOT SUPPORTED BITMAP");
+  // Check and initialize NEOBMPFILE from the BMPFILE
+  bool success = NEOBMPFILE.Begin(BMPFILE);
 
-  // Update the index
-  ANIMATIONINDEXSTART = 0;
-  ANIMATIONINDEXSTOP = NEOBMPFILE.Height() - 1;
+  // Update the index possible
+  ANIMATIONINDEXMIN = 0;
+  ANIMATIONINDEXMAX = NEOBMPFILE.Height() - 1;
 
-  //Bitmap is load
-  String msg = "LOAD SUCCESS : Width=" + String(NEOBMPFILE.Width()) + "px Height=" + String(NEOBMPFILE.Height()) + "px";
-  server.send(200, "text/plain", msg);
+  // Update the index chosen
+  ANIMATIONINDEXSTART = ANIMATIONINDEXMIN;
+  ANIMATIONINDEXSTOP = ANIMATIONINDEXMAX;
+  
+  // Bitmap is loaded
+  return success;
 }
+
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapPlayPause()

@@ -310,8 +310,15 @@ function requestBitmapLoad()
     }
     else
     {
-      drawImage("error.bmp");
-      updateStatus(this.responseText, "red");
+      if (this.status == 500)
+      {
+        updateStatus(this.responseText, "orange");
+      }
+      else
+      {
+        drawImage("error.bmp");
+        updateStatus(this.responseText, "red");
+      }
     }
   };
   
