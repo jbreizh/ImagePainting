@@ -127,145 +127,38 @@ requestParameterRead();
 requestFileList();
 
 //--------------------------------------------------
-function requestFileList()
+function updateFileList(message)
 {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function()
-  {
-    if (this.status == 200)
-    {
-      var element = document.getElementById("fileList");
-      var json = JSON.parse(this.responseText);
-      element.options.length = json.fileList.length;
+  var json = JSON.parse(message);
+  document.getElementById("fileList").options.length = json.fileList.length;
     
-      for (i = 0; i < json.fileList.length; i++)
-      {
-        element.options[i].value= json.fileList[i]; 
-        element.options[i].text= json.fileList[i]; 
-      }
-      
-      requestBitmapLoad();
-    }      
-  };
-  
-  xhr.onerror = function()
+  for (i = 0; i < json.fileList.length; i++)
   {
-    document.getElementById("status").innerHTML = "LIST ERROR : CONNECTION LOST";
-    document.getElementById("status").style.color = "red";
-  };
-
-  xhr.overrideMimeType("application/json");
-  xhr.open("GET", "/list", true);
-  xhr.send(null);
+    document.getElementById("fileList").options[i].value = json.fileList[i]; 
+    document.getElementById("fileList").options[i].text = json.fileList[i]; 
+  }
+}
+  
+function updateParameter(message)
+{
+  var json = JSON.parse(message);
+  document.getElementById("delay").value = json["delay"];
+  document.getElementById("delay").text = json["delay"];
+  document.getElementById("brightness").value = json["brightness"];
+  document.getElementById("brightness").text = json["brightness"];
+  document.getElementById("repeat").value = json["repeat"];
+  document.getElementById("repeat").text = json["repeat"];
+  document.getElementById("isrepeat").checked  = json["isrepeat"];
+  document.getElementById("isbounce").checked  = json["isbounce"];
+  document.getElementById("isinvert").checked  = json["isinvert"];
+  document.getElementById("isendoff").checked  = json["isendoff"];
 }
 
 //--------------------------------------------------
-function requestFileDelete()
+function updateStatus(message, color)
 {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function()
-  {
-    if (this.status == 200)
-    {
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "green";
-      requestFileList();
-    }
-    else
-    {
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "red";
-    }
-  };
-  
-  xhr.onerror = function()
-  {
-    document.getElementById("status").innerHTML = "DELETE ERROR : CONNECTION LOST";
-    document.getElementById("status").style.color = "red";
-  };
-  
-  var params = "file=/"+document.getElementById("fileList").value;
-  xhr.open("DELETE", "/delete", true);
-  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send(params);
-}
-
-//--------------------------------------------------
-function requestFileUpload()
-{
-    var fileInput = document.getElementById("fileInput");
-    if (fileInput.files.length == 0)
-    {
-      document.getElementById("status").innerHTML = "UPLOAD ERROR : FILE NOT CHOSEN";
-      document.getElementById("status").style.color = "red";
-      return;
-    }
-    
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function()
-    {
-      if (this.status == 200)
-      {
-        document.getElementById("status").innerHTML = this.responseText;
-        document.getElementById("status").style.color = "green";
-        requestFileList();
-      }
-      else
-      {
-        document.getElementById("status").innerHTML = "UPLOAD ERROR : UPLOAD FAILED";
-        document.getElementById("status").style.color = "red";
-      }
-    };
-    
-    xhr.upload.onprogress = function(evt)
-    {
-      var percentComplete = Math.floor(evt.loaded / evt.total * 100);
-      document.getElementById("status").innerHTML = "UPLOAD PROGRESS :"+percentComplete+"%";
-      document.getElementById("status").style.color = "orange";
-    };
-    
-    xhr.onerror = function()
-    {
-      document.getElementById("status").innerHTML = "UPLOAD ERROR : CONNECTION LOST";
-      document.getElementById("status").style.color = "red";
-    };
-    
-    xhr.open("POST", "/upload", true);
-    var form = new FormData();
-    form.append('file', fileInput.files[0]);
-    xhr.send(form);
-}
-
-//--------------------------------------------------
-function requestBitmapLoad()
-{
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function()
-  {
-    if (this.status == 200)
-    {
-      drawImage(document.getElementById("fileList").value);
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "green";
-    }
-    else
-    {
-      drawImage("error.bmp");
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "red";
-    }
-  };
-  
-  xhr.onerror = function()
-  {
-    document.getElementById("status").innerHTML = "LOAD ERROR : CONNECTION LOST";
-    document.getElementById("status").style.color = "red";
-  };
-  
-  var params = "file=/"+document.getElementById("fileList").value;
-  xhr.open("POST", "/bitmapLoad", true);
-  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send(params);
+  document.getElementById("status").innerHTML = message;
+  document.getElementById("status").style.color = color;
 }
 
 //--------------------------------------------------
@@ -313,6 +206,127 @@ function checkBounce() {
 }
 
 //--------------------------------------------------
+function requestFileList()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function()
+  {
+    if (this.status == 200)
+    {
+      updateFileList(this.responseText);
+      requestBitmapLoad();
+    }      
+  };
+  
+  xhr.onerror = function()
+  {
+    updateStatus("LIST ERROR : CONNECTION LOST", "red");
+  };
+
+  xhr.overrideMimeType("application/json");
+  xhr.open("GET", "/list", true);
+  xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestFileDelete()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function()
+  {
+    if (this.status == 200)
+    {
+      updateStatus(this.responseText, "green");
+      requestFileList();
+    }
+    else
+    {
+      updateStatus(this.responseText, "red");
+    }
+  };
+  
+  xhr.onerror = function()
+  {
+    updateStatus("DELETE ERROR : CONNECTION LOST", "red");
+  };
+  
+  var params = "file=/"+document.getElementById("fileList").value;
+  xhr.open("DELETE", "/delete", true);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  xhr.send(params);
+}
+
+//--------------------------------------------------
+function requestFileUpload()
+{
+    var fileInput = document.getElementById("fileInput");
+    if (fileInput.files.length == 0)
+    {
+      updateStatus("UPLOAD ERROR : FILE NOT CHOSEN", "red");
+      return;
+    }
+    
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function()
+    {
+      if (this.status == 200)
+      {
+        updateStatus(this.responseText, "green");
+        requestFileList();
+      }
+      else
+      {
+        updateStatus("UPLOAD ERROR : UPLOAD FAILED", "red");
+      }
+    };
+    
+    xhr.upload.onprogress = function(evt)
+    {
+      var percentComplete = Math.floor(evt.loaded / evt.total * 100);
+      updateStatus("UPLOAD PROGRESS :"+percentComplete+"%", "orange");
+    };
+    
+    xhr.onerror = function()
+    {
+      updateStatus("UPLOAD ERROR : CONNECTION LOST", "red");
+    };
+    
+    xhr.open("POST", "/upload", true);
+    var form = new FormData();
+    form.append('file', fileInput.files[0]);
+    xhr.send(form);
+}
+
+//--------------------------------------------------
+function requestBitmapLoad()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function()
+  {
+    if (this.status == 200)
+    {
+      drawImage(document.getElementById("fileList").value);
+      updateStatus(this.responseText, "green");
+    }
+    else
+    {
+      drawImage("error.bmp");
+      updateStatus(this.responseText, "red");
+    }
+  };
+  
+  xhr.onerror = function()
+  {
+    updateStatus("LOAD ERROR : CONNECTION LOST", "red");
+  };
+  
+  var params = "file=/"+document.getElementById("fileList").value;
+  xhr.open("POST", "/bitmapLoad", true);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  xhr.send(params);
+}
+
+//--------------------------------------------------
 function requestAction(action)
 {
   var xhr = new XMLHttpRequest();
@@ -320,20 +334,17 @@ function requestAction(action)
   {
     if (this.status == 200)
     {
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "green";
+      updateStatus(this.responseText, "green");
     }
     else
     {
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "red";
+      updateStatus(this.responseText, "red");
     }
   };
   
   xhr.onerror = function()
   {
-    document.getElementById("status").innerHTML = "ACTION ERROR : CONNECTION LOST";
-    document.getElementById("status").style.color = "red";
+    updateStatus("ACTION ERROR : CONNECTION LOST", "red");
   };
   
   xhr.open("GET", action, true);
@@ -348,18 +359,7 @@ function requestParameterRead()
   {
     if (this.status == 200)
     {
-      var json = JSON.parse(this.responseText);
-      document.getElementById("delay").value = json["delay"];
-      document.getElementById("delay").text = json["delay"];
-      document.getElementById("brightness").value = json["brightness"];
-      document.getElementById("brightness").text = json["brightness"];
-      document.getElementById("repeat").value = json["repeat"];
-      document.getElementById("repeat").text = json["repeat"];
-      document.getElementById("isrepeat").checked  = json["isrepeat"];
-      document.getElementById("isbounce").checked  = json["isbounce"];
-      document.getElementById("isinvert").checked  = json["isinvert"];
-      document.getElementById("isendoff").checked  = json["isendoff"];
-      
+      updateParameter(this.responseText);
       checkRepeat();
       checkBounce();
     }
@@ -367,8 +367,7 @@ function requestParameterRead()
   
   xhr.onerror = function()
   {
-    document.getElementById("status").innerHTML = "READ ERROR : CONNECTION LOST";
-    document.getElementById("status").style.color = "red";
+    updateStatus("READ ERROR : CONNECTION LOST", "red");
   };
   
   xhr.overrideMimeType("application/json");
@@ -384,21 +383,18 @@ function requestParameterWrite()
   {
     if (this.status == 200)
     {
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "green";
+      updateStatus(this.responseText, "green");
       requestParameterRead();
     }
     else
     {
-      document.getElementById("status").innerHTML = this.responseText;
-      document.getElementById("status").style.color = "red";
+      updateStatus(this.responseText, "red");
     }
   };
   
   xhr.onerror = function()
   {
-    document.getElementById("status").innerHTML = "WRITE ERROR : CONNECTION LOST";
-    document.getElementById("status").style.color = "red";
+    updateStatus("WRITE ERROR : CONNECTION LOST", "red");
   };
   
   var json = new Object();

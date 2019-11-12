@@ -198,7 +198,7 @@ void handleParameterRead()
   serializeJson(jsonDoc, msg);
 
   // Parameter are read
-  server.send(200, "text/html", msg);
+  server.send(200, "application/json", msg);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -348,7 +348,7 @@ void handleFileList()
   serializeJson(jsonDoc, msg);
   
   // Parameter are read
-  server.send(200, "text/html", msg);
+  server.send(200, "application/json", msg);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
