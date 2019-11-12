@@ -135,14 +135,15 @@ function requestFileList()
     if (this.status == 200)
     {
       var element = document.getElementById("fileList");
-      var options = this.responseText.split(",");
-      element.options.length = options.length;
-        
-      for (var j = 0; j < options.length; j++)
+      var json = JSON.parse(this.responseText);
+      element.options.length = json.fileList.length;
+    
+      for (i = 0; i < json.fileList.length; i++)
       {
-        element.options[j].value= options[j]; 
-        element.options[j].text= options[j]; 
+        element.options[i].value= json.fileList[i]; 
+        element.options[i].text= json.fileList[i]; 
       }
+      
       requestBitmapLoad();
     }      
   };
@@ -153,6 +154,7 @@ function requestFileList()
     document.getElementById("status").style.color = "red";
   };
 
+  xhr.overrideMimeType("application/json");
   xhr.open("GET", "/list", true);
   xhr.send(null);
 }

@@ -283,7 +283,7 @@ void handleFileUpload()
     String filename = upload.filename;
     if (!filename.startsWith("/")) filename = "/" + filename;
 
-  //-------------------------> test for upload?????
+    //-------------------------> test for upload?????
 
     //check if the file already exist
     //if (SPIFFS.exists(filename)) return server.send(415, "text/plain", "UPLOAD ERROR : FILE ALREADY EXIST");
@@ -292,7 +292,7 @@ void handleFileUpload()
     //FSInfo fs_info;
     //SPIFFS.info(fs_info);
     //if (upload.totalSize > ) return server.send(413, "text/plain", "UPLOAD ERROR : NOT ENOUGH SPACE");
-    
+
     // Open the file for writing in SPIFFS (create if it doesn't exist)
     fsUploadFile = SPIFFS.open(filename, "w");
   }
@@ -318,8 +318,13 @@ void handleFileList()
   // Assuming there are no subdirectories
   fs::Dir dir = SPIFFS.openDir("/");
 
+  // New json document
+  StaticJsonDocument<1000> jsonDoc;
+
+  // Store parameter in json document
+  JsonArray fileList = jsonDoc.createNestedArray("fileList");
+
   // Scan the files
-  String fileList = "";
   while (dir.next())
   {
     // Open the entry
@@ -331,19 +336,19 @@ void handleFileList()
     // Hide system file
     if ((name != "index.html") && (name != "error.bmp"))
     {
-      // Separate by comma if there are multiple files
-      if (fileList != "") fileList += ",";
-
       // Write the entry in the list
-      fileList += name;
+      fileList.add(name);
     }
-
     // Close the entry
     entry.close();
   }
 
-  // FileList is done
-  server.send(200, "text/plain", fileList);
+  // convert json document to String
+  String msg = "";
+  serializeJson(jsonDoc, msg);
+  
+  // Parameter are read
+  server.send(200, "text/html", msg);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -351,22 +356,22 @@ void handleBitmapLoad()
 {
   // Check for running or paused animation
   if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused()) return server.send(500, "text/plain", "LOAD ERROR : NOT AVAILABLE");
-  
+
   // Close the old bitmap
   BMPFILE.close();
   NEOBMPFILE.Begin(BMPFILE);
 
   //-------------------------> load error.bmp in case of error?????
- 
+
   // Parse parameter from request
   String path = server.arg("file");
 
   // Make sure we get a file name as a URL argument
   if (path == "") return server.send(500, "text/plain", "LOAD ERROR : BAD ARGS");
-  
+
   // Check if the file exists
   if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "LOAD ERROR : FILE NOT FOUND");
-  
+
   // Check if the file is a bitmap
   if (getContentType(path) != "image/bmp") return server.send(500, "text/plain", "LOAD ERROR : WRONG FILE TYPE");
 

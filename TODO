@@ -1,0 +1,7 @@
+(done) return fileList in json
+
+ improve javascript : create a function to handle interface actualisation
+ 
+ return bitmapLoad in json with STATUS  ANIMATIONINDEXSTART ANIMATIONINDEXSTOP
+ 
+ slider in user interface to tweet ANIMATIONINDEXSTART ANIMATIONINDEXSTOP
