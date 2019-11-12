@@ -358,9 +358,6 @@ void handleFileList()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapLoad()
 { 
-  // Check for running or paused animation
-  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused()) return server.send(500, "text/plain", "LOAD ERROR : NOT AVAILABLE");
-
   // Handle the status to be send
   String msg = "";
 
@@ -374,13 +371,13 @@ void handleBitmapLoad()
   // Check for running or paused animation
   if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
   {
-    htmlCode = 500;
+    htmlCode = 403;
     msg = "LOAD ERROR : NOT AVAILABLE";
   }
   // Then path exist ?
   else if (path == "")
   {
-    htmlCode = 404;
+    htmlCode = 500;
     msg = "LOAD ERROR : BAD ARGS";
   }
   // Then file exist ?
@@ -392,13 +389,13 @@ void handleBitmapLoad()
   // Then file is a bitmap ?
   else if (getContentType(path) != "image/bmp")
   {
-    htmlCode = 404; // Internal Error
+    htmlCode = 500; // Internal Error
     msg = "LOAD ERROR : WRONG FILE TYPE";
   }
   // Then bitmap load ?
   else if (!bitmapLoad(path))
   {
-    htmlCode = 404; // OK
+    htmlCode = 500; // OK
     msg = "LOAD ERROR : WRONG BITMAP";
   }
   // No problem
@@ -408,8 +405,8 @@ void handleBitmapLoad()
     msg = "LOAD SUCCESS";
   }
 
-  // Load error.bmp when 404
-  if (htmlCode == 404)
+  // Load error.bmp when 404 and 500 but not when 200 and 403
+  if ((htmlCode == 404) && (htmlCode == 500))
   {
     bitmapLoad("/error.bmp");
   }
