@@ -6,6 +6,6 @@
  
 (done) slider in user interface to tweet ANIMATIONINDEXSTART ANIMATIONINDEXSTOP
 
-() send ANIMATIONINDEXSTART ANIMATIONINDEXSTOP for animation
+(done) send ANIMATIONINDEXSTART ANIMATIONINDEXSTOP for animation
 
 () zoom canvas to fit the space

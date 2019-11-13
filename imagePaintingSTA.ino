@@ -124,7 +124,7 @@ void setup()
 
   // Webserver setup
   // list available files
-  server.on("/list", HTTP_GET, handleFileList);
+  server.on("/list", HTTP_POST, handleFileList);
 
   // delete file
   server.on("/delete", HTTP_DELETE, handleFileDelete);
@@ -138,16 +138,16 @@ void setup()
   server.on("/bitmapLoad", HTTP_POST, handleBitmapLoad);
 
   // handle bitmap Play
-  server.on("/bitmapPlayPause", HTTP_GET, handleBitmapPlayPause);
+  server.on("/bitmapPlayPause", HTTP_POST, handleBitmapPlayPause);
 
   // handle bitmap Stop
-  server.on("/bitmapStop", HTTP_GET, handleBitmapStop);
+  server.on("/bitmapStop", HTTP_POST, handleBitmapStop);
 
   // handle light
-  server.on("/light", HTTP_GET, handleLight);
+  server.on("/light", HTTP_POST, handleLight);
 
   // handle parameter Read
-  server.on("/parameterRead", HTTP_GET, handleParameterRead);
+  server.on("/parameterRead", HTTP_POST, handleParameterRead);
 
   // handle parameter Write
   server.on("/parameterWrite", HTTP_POST, handleParameterWrite);
@@ -485,6 +485,24 @@ void handleBitmapPlayPause()
   // No animation
   else
   {
+    // New json document
+    StaticJsonDocument<300> jsonDoc;
+
+    // Convert json String to json object
+    DeserializationError error = deserializeJson(jsonDoc, server.arg("plain"));
+
+    // Check if the json is right
+    if (error)
+    {
+      String msg = "PLAY ERROR : ";
+      msg += error.c_str();
+      return server.send(500, "text/plain", msg);
+    }
+
+    // Write parameters in ESP8266
+    ANIMATIONINDEXSTART = jsonDoc["indexStart"];
+    ANIMATIONINDEXSTOP = jsonDoc["indexStop"];
+
     // Index
     if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
     else ANIMATIONINDEX = ANIMATIONINDEXSTART;

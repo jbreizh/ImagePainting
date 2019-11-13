@@ -122,7 +122,7 @@
   <table class="tabcenter">
   <tr>
     <td><button class="width button buttonLight" onclick="requestAction('/light')">Light</button></td>
-    <td><button class="width button buttonOn" onclick="requestAction('/bitmapPlayPause')">Play</button></td>
+    <td><button class="width button buttonOn" onclick="requestPlayPause()">Play</button></td>
     <td><button class="width button buttonOff" onclick="requestAction('/bitmapStop')">Stop</button></td>
   </tr>
   </table>
@@ -253,7 +253,7 @@ function requestFileList()
   };
 
   xhr.overrideMimeType("application/json");
-  xhr.open("GET", "/list", true);
+  xhr.open("POST", "/list", true);
   xhr.send(null);
 }
 
@@ -375,8 +375,40 @@ function requestAction(action)
     updateStatus("ACTION ERROR : CONNECTION LOST", "red");
   };
   
-  xhr.open("GET", action, true);
+  xhr.open("POST", action, true);
   xhr.send(null);
+}
+
+//--------------------------------------------------
+function requestPlayPause()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function()
+  {
+    if (this.status == 200)
+    {
+      updateStatus(this.responseText, "green");
+    }
+    else
+    {
+      updateStatus(this.responseText, "red");
+    }
+  };
+  
+  xhr.onerror = function()
+  {
+    updateStatus("ACTION ERROR : CONNECTION LOST", "red");
+  };
+  
+  var json = new Object();
+  json.indexStart = document.getElementById("sliderStart").value;
+  json.indexStop = document.getElementById("sliderStop").value;
+
+  var jsonString = JSON.stringify(json);
+  
+  xhr.open("POST", "/bitmapPlayPause", true);
+  xhr.setRequestHeader('Content-type', 'application/json');
+  xhr.send(jsonString);
 }
 
 //--------------------------------------------------
@@ -397,7 +429,7 @@ function requestParameterRead()
   };
   
   xhr.overrideMimeType("application/json");
-  xhr.open("GET", "/parameterRead", true);
+  xhr.open("POST", "/parameterRead", true);
   xhr.send(null);
 }
 
