@@ -3,7 +3,6 @@
 #include <ESP8266WebServer.h>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
-//#include <SPI.h>
 #include <FS.h>
 
 // APA102 --------------
@@ -23,21 +22,22 @@ const char* password = "12345678";
 // end WIFI-----------
 
 // FS --------------
-fs::File fsUploadFile; // hold uploaded file
+fs::File UPLOADFILE; // hold uploaded file
 // end FS -----------
 
 // BITMAP --------------
+String BMPPATH;
 fs::File BMPFILE; // hold bitmap file
 NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 // end BITMAP -----------
 
 // ANIMATION --------------
 NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
-uint16_t ANIMATIONINDEXMIN; //Min index possible
-uint16_t ANIMATIONINDEXSTART; //Min index chosen
-uint16_t ANIMATIONINDEX; // Current index
-uint16_t ANIMATIONINDEXSTOP; //Max index chosen
-uint16_t ANIMATIONINDEXMAX; //Max index possible
+uint16_t INDEXMIN; //Min index possible
+uint16_t INDEXSTART; //Min index chosen
+uint16_t INDEX; // Current index
+uint16_t INDEXSTOP; //Max index chosen
+uint16_t INDEXMAX; //Max index possible
 // end ANIMATION --------------
 
 // RUNTIME --------------
@@ -138,13 +138,13 @@ void setup()
   server.on("/bitmapLoad", HTTP_POST, handleBitmapLoad);
 
   // handle bitmap Play
-  server.on("/bitmapPlayPause", HTTP_POST, handleBitmapPlayPause);
+  server.on("/play", HTTP_GET, handlePlay);
 
   // handle bitmap Stop
-  server.on("/bitmapStop", HTTP_POST, handleBitmapStop);
+  server.on("/stop", HTTP_GET, handleStop);
 
   // handle light
-  server.on("/light", HTTP_POST, handleLight);
+  server.on("/light", HTTP_GET, handleLight);
 
   // handle parameter Read
   server.on("/parameterRead", HTTP_POST, handleParameterRead);
@@ -196,6 +196,11 @@ void handleParameterRead()
   jsonDoc["isbounce"] = ISBOUNCE;
   jsonDoc["isinvert"] = ISINVERT;
   jsonDoc["isendoff"] = ISENDOFF;
+  //jsonDoc["indexMin"] = INDEXMIN;
+  jsonDoc["indexStart"] = INDEXSTART;
+  jsonDoc["indexStop"] = INDEXSTOP;
+  //jsonDoc["indexMax"] = INDEXMAX;
+  //jsonDoc["bmpPath"] = BMPPATH;
 
   // convert json document to String
   String msg = "";
@@ -231,6 +236,11 @@ void handleParameterWrite()
   ISBOUNCE = jsonDoc["isbounce"];
   ISINVERT = jsonDoc["isinvert"];
   ISENDOFF = jsonDoc["isendoff"];
+  //INDEXMIN = jsonDoc["indexMin"];
+  INDEXSTART = jsonDoc["indexStart"];
+  INDEXSTOP = jsonDoc["indexStop"];
+  //INDEXMAX = jsonDoc["indexMax"];
+  //BMPPATH = jsonDoc["bmpPath"].as<String>();;
 
   // Parameter are write
   server.send(200, "text/html", "WRITE SUCCESS");
@@ -298,21 +308,21 @@ void handleFileUpload()
     //if (upload.totalSize > ) return server.send(413, "text/plain", "UPLOAD ERROR : NOT ENOUGH SPACE");
 
     // Open the file for writing in SPIFFS (create if it doesn't exist)
-    fsUploadFile = SPIFFS.open(filename, "w");
+    UPLOADFILE = SPIFFS.open(filename, "w");
   }
 
   // Upload in progress
   else if (upload.status == UPLOAD_FILE_WRITE)
   {
     //Write the received bytes to the file
-    if (fsUploadFile) fsUploadFile.write(upload.buf, upload.currentSize);
+    if (UPLOADFILE) UPLOADFILE.write(upload.buf, upload.currentSize);
   }
 
   // Upload end
   else if (upload.status == UPLOAD_FILE_END)
   {
-    if (fsUploadFile)
-      fsUploadFile.close();
+    if (UPLOADFILE)
+      UPLOADFILE.close();
   }
 }
 
@@ -420,8 +430,8 @@ void handleBitmapLoad()
   // Store parameter in json document
   jsonDoc["status"] = msg;
   jsonDoc["path"] = path;
-  jsonDoc["indexMin"] = ANIMATIONINDEXMIN;
-  jsonDoc["indexMax"] = ANIMATIONINDEXMAX;
+  jsonDoc["indexMin"] = INDEXMIN;
+  jsonDoc["indexMax"] = INDEXMAX;
 
   // convert json document to String
   String jsonString = "";
@@ -445,19 +455,19 @@ bool bitmapLoad(String path)
   bool success = NEOBMPFILE.Begin(BMPFILE);
 
   // Update the index possible
-  ANIMATIONINDEXMIN = 0;
-  ANIMATIONINDEXMAX = NEOBMPFILE.Height() - 1;
+  INDEXMIN = 0;
+  INDEXMAX = NEOBMPFILE.Height() - 1;
 
   // Update the index chosen
-  ANIMATIONINDEXSTART = ANIMATIONINDEXMIN;
-  ANIMATIONINDEXSTOP = ANIMATIONINDEXMAX;
+  INDEXSTART = INDEXMIN;
+  INDEXSTOP = INDEXMAX;
   
   // Bitmap is loaded
   return success;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-void handleBitmapPlayPause()
+void handlePlay()
 {
   //--------------> NEOBMPFILE exist ?????????
   // Animation is paused
@@ -485,27 +495,9 @@ void handleBitmapPlayPause()
   // No animation
   else
   {
-    // New json document
-    StaticJsonDocument<300> jsonDoc;
-
-    // Convert json String to json object
-    DeserializationError error = deserializeJson(jsonDoc, server.arg("plain"));
-
-    // Check if the json is right
-    if (error)
-    {
-      String msg = "PLAY ERROR : ";
-      msg += error.c_str();
-      return server.send(500, "text/plain", msg);
-    }
-
-    // Write parameters in ESP8266
-    ANIMATIONINDEXSTART = jsonDoc["indexStart"];
-    ANIMATIONINDEXSTOP = jsonDoc["indexStop"];
-
     // Index
-    if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
-    else ANIMATIONINDEX = ANIMATIONINDEXSTART;
+    if (ISINVERT) INDEX = INDEXSTOP;
+    else INDEX = INDEXSTART;
 
     // Repeat
     REPEATCOUNTER = REPEAT;
@@ -519,7 +511,7 @@ void handleBitmapPlayPause()
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-void handleBitmapStop()
+void handleStop()
 {
   // Stop animation
   ANIMATIONS.StopAnimation(0);
@@ -547,20 +539,20 @@ void updateAnimation(const AnimationParam& param)
   // Wait for this animation to complete,
   if (param.state == AnimationState_Completed)
   {
-    // ANIMATIONINDEX is in the limit
-    if ((ANIMATIONINDEXSTART <= ANIMATIONINDEX) && (ANIMATIONINDEX <= ANIMATIONINDEXSTOP))
+    // INDEX is in the limit
+    if ((INDEXSTART <= INDEX) && (INDEX <= INDEXSTOP))
     {
       // Restart the animation
       ANIMATIONS.RestartAnimation(param.index);
 
       // Fil the strip : bitmap is crop to fit the strip !!!
-      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, ANIMATIONINDEX, NEOBMPFILE.Width());
+      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, INDEX, NEOBMPFILE.Width());
 
       // Index
-      if (ISINVERT) ANIMATIONINDEX -= 1;
-      else ANIMATIONINDEX = ANIMATIONINDEX += 1;
+      if (ISINVERT) INDEX -= 1;
+      else INDEX += 1;
     }
-    // ANIMATIONINDEX is out of the limit
+    // INDEX is out of the limit
     else
     {
       // Repeat to do?
@@ -573,8 +565,8 @@ void updateAnimation(const AnimationParam& param)
         REPEATCOUNTER -= 1;
 
         // Index
-        if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
-        else ANIMATIONINDEX = ANIMATIONINDEXSTART;
+        if (ISINVERT) INDEX = INDEXSTOP;
+        else INDEX = INDEXSTART;
       }
       // Bounce to do?
       else if (ISBOUNCE && (REPEATCOUNTER > 0))
@@ -587,8 +579,8 @@ void updateAnimation(const AnimationParam& param)
         ISINVERT = !ISINVERT; //invert the invert (following ??)
 
         // Index
-        if (ISINVERT) ANIMATIONINDEX = ANIMATIONINDEXSTOP;
-        else ANIMATIONINDEX = ANIMATIONINDEXSTART;
+        if (ISINVERT) INDEX = INDEXSTOP;
+        else INDEX = INDEXSTART;
       }
       // Nothing more to do
       else

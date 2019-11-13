@@ -4,11 +4,9 @@
   <title>ESP8266 Web Server</title>
   <meta charset="utf-8" />
   <style>
-.container
+.body
 {
   background-color: #A9A9A9;
-  max-width: 90% ;
-  margin: 0 auto ;
 }
 
 .center {
@@ -27,14 +25,12 @@
 
 .tabcenter{
    width: 100%;
-   margin-left:auto;
-   margin-right:auto;
+
    text-align: left ;
 }
 
 .button { 
   border-radius: 4px;
-  margin: 2px;
   cursor: pointer;
 }
 
@@ -52,9 +48,7 @@
   </style>
 </head>
 
-<body class="center">
-<div class="container"> 
-
+<body class="center body">
   <table class="tabcenter">
   <tr>
     <td colspan=4><h1 class="width center title">ImagePainting</h1></td>
@@ -94,7 +88,7 @@
   <tr>
     <td><label class="width" for="delay">Delay:</label></td>
     <td colspan=2><input class="width" type="text" id="delay" /></td>
-    <td><button class="width button buttonOn" onclick="requestParameterWrite()">Write</button></td>
+    <td></td>
   </tr>
   <tr>
     <td><label class="width" for="brightness">Brightness:</label></td>
@@ -121,13 +115,14 @@
   
   <table class="tabcenter">
   <tr>
+    <td><button class="width button buttonOn" onclick="requestParameterWrite()">Write</button></td>
     <td><button class="width button buttonLight" onclick="requestAction('/light')">Light</button></td>
-    <td><button class="width button buttonOn" onclick="requestPlayPause()">Play</button></td>
-    <td><button class="width button buttonOff" onclick="requestAction('/bitmapStop')">Stop</button></td>
+    <td><button class="width button buttonOn" onclick="requestAction('/play')">Play</button></td>
+    <td><button class="width button buttonOff" onclick="requestAction('/stop')">Stop</button></td>
   </tr>
   </table>
   
-</div>
+
 </body>
 
 
@@ -160,6 +155,9 @@ function updateParameter(jsonString)
   document.getElementById("brightness").text = json["brightness"];
   document.getElementById("repeat").value = json["repeat"];
   document.getElementById("repeat").text = json["repeat"];
+  //uddate slider
+  document.getElementById("sliderStart").value = json["indexStart"];
+  document.getElementById("sliderStop").value = json["indexStop"];
   // update checkbox parameters
   document.getElementById("isrepeat").checked  = json["isrepeat"];
   updateCheckbox('isrepeat','isbounce')
@@ -167,6 +165,20 @@ function updateParameter(jsonString)
   updateCheckbox('isbounce','isrepeat');
   document.getElementById("isinvert").checked  = json["isinvert"];
   document.getElementById("isendoff").checked  = json["isendoff"];
+  /*
+  //update sliderStart and textSliderStart
+  document.getElementById("sliderStart").setAttribute("min", json["indexMin"]);
+  document.getElementById("sliderStart").setAttribute("max", json["indexMax"]);
+  document.getElementById("sliderStart").value = json["indexStart"];
+  document.getElementById("textSliderStart").value = json["indexStart"];
+  //update sliderStop and textSliderStop
+  document.getElementById("sliderStop").setAttribute("min", json["indexMin"]);
+  document.getElementById("sliderStop").setAttribute("max", json["indexMax"]);
+  document.getElementById("sliderStop").value = json["indexStop"];
+  document.getElementById("textSliderStop").value = json["indexStop"];
+  //draw the bitmap
+  drawBitmap(json["path"]);
+  */
 }
 
 //--------------------------------------------------
@@ -208,7 +220,7 @@ function updateBitmap(jsonString)
   document.getElementById("sliderStop").value = json["indexMax"];
   updateTextSlider("sliderStop", "textSliderStop");
   //draw the bitmap
-  drawImage(json["path"]);
+  drawBitmap(json["path"]);
 }
 
 //--------------------------------------------------
@@ -217,20 +229,26 @@ function updateTextSlider(sliderString, textSliderString)
   document.getElementById(textSliderString).value =document.getElementById(sliderString).value;
 }
 
-//--------------------------------------------------
-function drawImage(imageSrc)
+//-------------------------------------------------- The horrible function !!!!
+function drawBitmap(imageSrc)
 {
   var canvas=document.getElementById("canvas");
   var ctx=canvas.getContext("2d");
   var image=document.createElement("img");
   image.src=imageSrc;
-  
   image.onload=function(){
-    canvas.width  = image.height;
-    canvas.height = image.width;
+    // aspect ratio of the original bitmap
+    var ratio = image.width/image.height;
+    // shitty corrector base on test
+    var corrector = 0.65;
+    // resize the canvas dimension to be same ratio than bitmap but scale to fit in place
+    canvas.width  = corrector*window.innerWidth;
+    canvas.height = corrector*ratio*window.innerWidth;
+    // translate and rotate
     ctx.translate(canvas.width/2,canvas.height/2);
     ctx.rotate(-90*Math.PI/180);
-    ctx.drawImage(image,-image.width/2,-image.height/2);
+    // draw bitmap strech to fit canvas
+    ctx.drawImage(image,-canvas.height/2,-canvas.width/2,canvas.height,canvas.width);
   }
 }
 
@@ -251,7 +269,7 @@ function requestFileList()
   {
     updateStatus("LIST ERROR : CONNECTION LOST", "red");
   };
-
+  // send the request
   xhr.overrideMimeType("application/json");
   xhr.open("POST", "/list", true);
   xhr.send(null);
@@ -375,40 +393,8 @@ function requestAction(action)
     updateStatus("ACTION ERROR : CONNECTION LOST", "red");
   };
   
-  xhr.open("POST", action, true);
+  xhr.open("GET", action, true);
   xhr.send(null);
-}
-
-//--------------------------------------------------
-function requestPlayPause()
-{
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function()
-  {
-    if (this.status == 200)
-    {
-      updateStatus(this.responseText, "green");
-    }
-    else
-    {
-      updateStatus(this.responseText, "red");
-    }
-  };
-  
-  xhr.onerror = function()
-  {
-    updateStatus("ACTION ERROR : CONNECTION LOST", "red");
-  };
-  
-  var json = new Object();
-  json.indexStart = document.getElementById("sliderStart").value;
-  json.indexStop = document.getElementById("sliderStop").value;
-
-  var jsonString = JSON.stringify(json);
-  
-  xhr.open("POST", "/bitmapPlayPause", true);
-  xhr.setRequestHeader('Content-type', 'application/json');
-  xhr.send(jsonString);
 }
 
 //--------------------------------------------------
@@ -456,16 +442,21 @@ function requestParameterWrite()
   };
   
   var json = new Object();
+  // load text parameters
   json.delay = document.getElementById("delay").value;
   json.brightness = document.getElementById("brightness").value;
   json.repeat = document.getElementById("repeat").value;
+  // load slider parameters
+  json.indexStart = document.getElementById("sliderStart").value;
+  json.indexStop = document.getElementById("sliderStop").value;
+  // load checkbox parameters
   json.isrepeat = document.getElementById("isrepeat").checked;
   json.isbounce = document.getElementById("isbounce").checked;
   json.isinvert = document.getElementById("isinvert").checked;
   json.isendoff = document.getElementById("isendoff").checked;
-  
+  // convert json to string
   var jsonString = JSON.stringify(json);
-  
+  // send the request
   xhr.open("POST", "/parameterWrite", true);
   xhr.setRequestHeader('Content-type', 'application/json');
   xhr.send(jsonString);
