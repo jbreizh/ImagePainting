@@ -4,4 +4,8 @@
  
 (done) return bitmapLoad in json with STATUS  ANIMATIONINDEXSTART ANIMATIONINDEXSTOP
  
- slider in user interface to tweet ANIMATIONINDEXSTART ANIMATIONINDEXSTOP
+(done) slider in user interface to tweet ANIMATIONINDEXSTART ANIMATIONINDEXSTOP
+
+() send ANIMATIONINDEXSTART ANIMATIONINDEXSTOP for animation
+
+() zoom canvas to fit the space

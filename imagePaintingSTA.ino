@@ -367,55 +367,59 @@ void handleBitmapLoad()
   // Parse parameter from request
   String path = server.arg("file");
 
-
   // Check for running or paused animation
   if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
   {
-    htmlCode = 403;
+    htmlCode = 403; // Forbidden
+    path = "error.bmp";
     msg = "LOAD ERROR : NOT AVAILABLE";
+    //don't load error.bmp to not interfere with running animation
   }
   // Then path exist ?
   else if (path == "")
   {
-    htmlCode = 500;
+    htmlCode = 500; // Internal Error
+    path = "error.bmp";
     msg = "LOAD ERROR : BAD ARGS";
+    bitmapLoad("/error.bmp");
   }
   // Then file exist ?
   else if (!SPIFFS.exists(path))
   {
     htmlCode = 404; // Not found
+    path = "error.bmp";
     msg = "LOAD ERROR : FILE NOT FOUND";
+    bitmapLoad("/error.bmp");
   }
   // Then file is a bitmap ?
   else if (getContentType(path) != "image/bmp")
   {
     htmlCode = 500; // Internal Error
+    path = "error.bmp";
     msg = "LOAD ERROR : WRONG FILE TYPE";
+    bitmapLoad("/error.bmp");
   }
   // Then bitmap load ?
   else if (!bitmapLoad(path))
   {
-    htmlCode = 500; // OK
+    htmlCode = 500; // Internal Error
+    path = "error.bmp";
     msg = "LOAD ERROR : WRONG BITMAP";
+    bitmapLoad("/error.bmp");
   }
   // No problem
   else  
   {
-    htmlCode = 200;
+    htmlCode = 200; // OK
     msg = "LOAD SUCCESS";
   }
 
-  // Load error.bmp when 404 and 500 but not when 200 and 403
-  if ((htmlCode == 404) && (htmlCode == 500))
-  {
-    bitmapLoad("/error.bmp");
-  }
-  
   // New json document
   StaticJsonDocument<300> jsonDoc;
   
   // Store parameter in json document
   jsonDoc["status"] = msg;
+  jsonDoc["path"] = path;
   jsonDoc["indexMin"] = ANIMATIONINDEXMIN;
   jsonDoc["indexMax"] = ANIMATIONINDEXMAX;
 
@@ -451,7 +455,6 @@ bool bitmapLoad(String path)
   // Bitmap is loaded
   return success;
 }
-
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleBitmapPlayPause()

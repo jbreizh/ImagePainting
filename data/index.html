@@ -76,10 +76,20 @@
     </td>
     <td><button class="width button buttonOff" onclick="requestFileDelete()">Delete</button></td>
   </tr>
+  <tr>
+    <td><label class="width" for="sliderStart">Start:</label></td>
+    <td colspan=2><input class="width" type="range" id="sliderStart" oninput="updateTextSlider('sliderStart', 'textSliderStart')"></td>
+    <td><input class="width" type="text" id="textSliderStart" readonly/></td>
+  </tr>
    <tr>
     <td></td>
     <td colspan=2><canvas id="canvas" width="300px" height="150"></canvas></td>
     <td></td>
+  </tr>
+  <tr>
+    <td><label class="width" for="sliderStop">Stop:</label></td>
+    <td colspan=2><input class="width" type="range" id="sliderStop" oninput="updateTextSlider('sliderStop', 'textSliderStop')"></td>
+    <td><input class="width" type="text" id="textSliderStop" readonly/></td>
   </tr>
   <tr>
     <td><label class="width" for="delay">Delay:</label></td>
@@ -98,8 +108,8 @@
   </tr>
     <tr>
     <td><label class="width">Option:</label></td>
-    <td><label class="width" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat" onclick="checkRepeat()"/>Repeat</label></td>
-    <td><label class="width" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce" onchange="checkBounce()"/>Bounce</label></td>
+    <td><label class="width" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat" onclick="updateCheckbox('isrepeat','isbounce')"/>Repeat</label></td>
+    <td><label class="width" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce" onclick="updateCheckbox('isbounce','isrepeat')"/>Bounce</label></td>
     <td></td>
   </tr>
   <tr> 
@@ -127,9 +137,9 @@ requestParameterRead();
 requestFileList();
 
 //--------------------------------------------------
-function updateFileList(message)
+function updateFileList(jsonString)
 {
-  var json = JSON.parse(message);
+  var json = JSON.parse(jsonString);
   document.getElementById("fileList").options.length = json.fileList.length;
     
   for (i = 0; i < json.fileList.length; i++)
@@ -138,31 +148,78 @@ function updateFileList(message)
     document.getElementById("fileList").options[i].text = json.fileList[i]; 
   }
 }
-  
-function updateParameter(message)
+
+//--------------------------------------------------
+function updateParameter(jsonString)
 {
-  var json = JSON.parse(message);
+  var json = JSON.parse(jsonString);
+  // update text parameters
   document.getElementById("delay").value = json["delay"];
   document.getElementById("delay").text = json["delay"];
   document.getElementById("brightness").value = json["brightness"];
   document.getElementById("brightness").text = json["brightness"];
   document.getElementById("repeat").value = json["repeat"];
   document.getElementById("repeat").text = json["repeat"];
+  // update checkbox parameters
   document.getElementById("isrepeat").checked  = json["isrepeat"];
+  updateCheckbox('isrepeat','isbounce')
   document.getElementById("isbounce").checked  = json["isbounce"];
+  updateCheckbox('isbounce','isrepeat');
   document.getElementById("isinvert").checked  = json["isinvert"];
   document.getElementById("isendoff").checked  = json["isendoff"];
 }
 
 //--------------------------------------------------
-function updateStatus(message, color)
+function updateCheckbox(checkboxFrom, checkboxTo)
 {
-  document.getElementById("status").innerHTML = message;
-  document.getElementById("status").style.color = color;
+  if(document.getElementById(checkboxFrom).checked)
+  {
+    document.getElementById(checkboxTo).disabled = true;
+    document.getElementById(checkboxTo).parentNode.style.color = "grey";
+  }
+  else
+  {
+    document.getElementById(checkboxTo).disabled = false;
+    document.getElementById(checkboxTo).parentNode.style.color = "black";
+  }
 }
 
 //--------------------------------------------------
-function drawImage(imageSrc) {
+function updateStatus(message, color)
+{
+  // update status content and color
+  document.getElementById("status").innerHTML = message;
+  document.getElementById("status").style.color = color;
+}
+//--------------------------------------------------
+function updateBitmap(jsonString)
+{
+  var json = JSON.parse(jsonString);
+  // update status content
+  document.getElementById("status").innerHTML = json["status"];
+  //update sliderStart and textSliderStart
+  document.getElementById("sliderStart").setAttribute("min", json["indexMin"]);
+  document.getElementById("sliderStart").setAttribute("max", json["indexMax"]);
+  document.getElementById("sliderStart").value = json["indexMin"];
+  updateTextSlider("sliderStart", "textSliderStart");
+  //update sliderStop and textSliderStop
+  document.getElementById("sliderStop").setAttribute("min", json["indexMin"]);
+  document.getElementById("sliderStop").setAttribute("max", json["indexMax"]);
+  document.getElementById("sliderStop").value = json["indexMax"];
+  updateTextSlider("sliderStop", "textSliderStop");
+  //draw the bitmap
+  drawImage(json["path"]);
+}
+
+//--------------------------------------------------
+function updateTextSlider(sliderString, textSliderString)
+{
+  document.getElementById(textSliderString).value =document.getElementById(sliderString).value;
+}
+
+//--------------------------------------------------
+function drawImage(imageSrc)
+{
   var canvas=document.getElementById("canvas");
   var ctx=canvas.getContext("2d");
   var image=document.createElement("img");
@@ -174,34 +231,6 @@ function drawImage(imageSrc) {
     ctx.translate(canvas.width/2,canvas.height/2);
     ctx.rotate(-90*Math.PI/180);
     ctx.drawImage(image,-image.width/2,-image.height/2);
-  }
-}
-
-//--------------------------------------------------
-function checkRepeat() {
-  if(document.getElementById("isrepeat").checked)
-  {
-    document.getElementById("isbounce").disabled = true;
-    document.getElementById("isbounce").parentNode.style.color = "grey";
-  }
-  else
-  {
-    document.getElementById("isbounce").disabled = false;
-    document.getElementById("isbounce").parentNode.style.color = "black";
-  }
-}
-
-//--------------------------------------------------
-function checkBounce() {
-  if(document.getElementById("isbounce").checked)
-  {
-    document.getElementById("isrepeat").disabled = true;
-    document.getElementById("isrepeat").parentNode.style.color = "grey";
-  }
-  else
-  {
-    document.getElementById("isrepeat").disabled = false;
-    document.getElementById("isrepeat").parentNode.style.color = "black";
   }
 }
 
@@ -303,22 +332,14 @@ function requestBitmapLoad()
   var xhr = new XMLHttpRequest();
   xhr.onload = function()
   {
+    updateBitmap(this.responseText);
     if (this.status == 200)
     {
-      drawImage(document.getElementById("fileList").value);
-      updateStatus(this.responseText, "green");
+      document.getElementById("status").style.color = "green";
     }
     else
     {
-      if (this.status == 403)
-      {
-        updateStatus(this.responseText, "orange");
-      }
-      else
-      {
-        drawImage("error.bmp");
-        updateStatus(this.responseText, "red");
-      }
+      document.getElementById("status").style.color = "red";
     }
   };
   
@@ -367,8 +388,6 @@ function requestParameterRead()
     if (this.status == 200)
     {
       updateParameter(this.responseText);
-      checkRepeat();
-      checkBounce();
     }
   };
   
