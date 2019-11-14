@@ -54,7 +54,7 @@
     <td colspan=4><h1 class="width center title">ImagePainting</h1></td>
   </tr>
   <tr>
-    <td colspan=4><h2 class="width center" id="status"> Status </h1></td>
+    <td colspan=4><h2 class="width center" id="status"> Welcome </h1></td>
   </tr>
   <tr>
     <td><label class="width" for="fileInput">File:</label></td>
@@ -64,7 +64,7 @@
   <tr>
     <td><label class="width" for="fileList">Image:</label></td>
     <td colspan=2>
-    <select  class="width" id="fileList" onchange="requestBitmapLoad()">
+    <select  class="width" id="fileList" onchange="requestParameterWrite()">
       <option value=""></option>
     </select>
     </td>
@@ -128,7 +128,6 @@
 
 <script>
 //--------------------------------------------------
-requestParameterRead();
 requestFileList();
 
 //--------------------------------------------------
@@ -155,78 +154,26 @@ function updateParameter(jsonString)
   document.getElementById("brightness").text = json["brightness"];
   document.getElementById("repeat").value = json["repeat"];
   document.getElementById("repeat").text = json["repeat"];
-  //uddate slider
-  document.getElementById("sliderStart").value = json["indexStart"];
-  document.getElementById("sliderStop").value = json["indexStop"];
   // update checkbox parameters
   document.getElementById("isrepeat").checked  = json["isrepeat"];
-  updateCheckbox('isrepeat','isbounce')
+  updateCheckbox('isrepeat','isbounce');
   document.getElementById("isbounce").checked  = json["isbounce"];
   updateCheckbox('isbounce','isrepeat');
   document.getElementById("isinvert").checked  = json["isinvert"];
   document.getElementById("isendoff").checked  = json["isendoff"];
-  /*
   //update sliderStart and textSliderStart
   document.getElementById("sliderStart").setAttribute("min", json["indexMin"]);
   document.getElementById("sliderStart").setAttribute("max", json["indexMax"]);
   document.getElementById("sliderStart").value = json["indexStart"];
-  document.getElementById("textSliderStart").value = json["indexStart"];
-  //update sliderStop and textSliderStop
-  document.getElementById("sliderStop").setAttribute("min", json["indexMin"]);
-  document.getElementById("sliderStop").setAttribute("max", json["indexMax"]);
-  document.getElementById("sliderStop").value = json["indexStop"];
-  document.getElementById("textSliderStop").value = json["indexStop"];
-  //draw the bitmap
-  drawBitmap(json["path"]);
-  */
-}
-
-//--------------------------------------------------
-function updateCheckbox(checkboxFrom, checkboxTo)
-{
-  if(document.getElementById(checkboxFrom).checked)
-  {
-    document.getElementById(checkboxTo).disabled = true;
-    document.getElementById(checkboxTo).parentNode.style.color = "grey";
-  }
-  else
-  {
-    document.getElementById(checkboxTo).disabled = false;
-    document.getElementById(checkboxTo).parentNode.style.color = "black";
-  }
-}
-
-//--------------------------------------------------
-function updateStatus(message, color)
-{
-  // update status content and color
-  document.getElementById("status").innerHTML = message;
-  document.getElementById("status").style.color = color;
-}
-//--------------------------------------------------
-function updateBitmap(jsonString)
-{
-  var json = JSON.parse(jsonString);
-  // update status content
-  document.getElementById("status").innerHTML = json["status"];
-  //update sliderStart and textSliderStart
-  document.getElementById("sliderStart").setAttribute("min", json["indexMin"]);
-  document.getElementById("sliderStart").setAttribute("max", json["indexMax"]);
-  document.getElementById("sliderStart").value = json["indexMin"];
   updateTextSlider("sliderStart", "textSliderStart");
   //update sliderStop and textSliderStop
   document.getElementById("sliderStop").setAttribute("min", json["indexMin"]);
   document.getElementById("sliderStop").setAttribute("max", json["indexMax"]);
-  document.getElementById("sliderStop").value = json["indexMax"];
+  document.getElementById("sliderStop").value = json["indexStop"];
   updateTextSlider("sliderStop", "textSliderStop");
   //draw the bitmap
-  drawBitmap(json["path"]);
-}
-
-//--------------------------------------------------
-function updateTextSlider(sliderString, textSliderString)
-{
-  document.getElementById(textSliderString).value =document.getElementById(sliderString).value;
+  document.getElementById("fileList").value = json["bmpPath"];
+  drawBitmap(json["bmpPath"]);
 }
 
 //-------------------------------------------------- The horrible function !!!!
@@ -253,6 +200,35 @@ function drawBitmap(imageSrc)
 }
 
 //--------------------------------------------------
+function updateCheckbox(checkboxFrom, checkboxTo)
+{
+  if(document.getElementById(checkboxFrom).checked)
+  {
+    document.getElementById(checkboxTo).disabled = true;
+    document.getElementById(checkboxTo).parentNode.style.color = "grey";
+  }
+  else
+  {
+    document.getElementById(checkboxTo).disabled = false;
+    document.getElementById(checkboxTo).parentNode.style.color = "black";
+  }
+}
+
+//--------------------------------------------------
+function updateTextSlider(sliderString, textSliderString)
+{
+  document.getElementById(textSliderString).value =document.getElementById(sliderString).value;
+}
+
+//--------------------------------------------------
+function updateStatus(message, color)
+{
+  // update status content and color
+  document.getElementById("status").innerHTML = message;
+  document.getElementById("status").style.color = color;
+}
+
+//--------------------------------------------------
 function requestFileList()
 {
   var xhr = new XMLHttpRequest();
@@ -261,7 +237,7 @@ function requestFileList()
     if (this.status == 200)
     {
       updateFileList(this.responseText);
-      requestBitmapLoad();
+      requestParameterRead();
     }      
   };
   
@@ -271,7 +247,7 @@ function requestFileList()
   };
   // send the request
   xhr.overrideMimeType("application/json");
-  xhr.open("POST", "/list", true);
+  xhr.open("GET", "/list", true);
   xhr.send(null);
 }
 
@@ -297,7 +273,7 @@ function requestFileDelete()
     updateStatus("DELETE ERROR : CONNECTION LOST", "red");
   };
   
-  var params = "file=/"+document.getElementById("fileList").value;
+  var params = "file="+document.getElementById("fileList").value;
   xhr.open("DELETE", "/delete", true);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   xhr.send(params);
@@ -338,38 +314,10 @@ function requestFileUpload()
       updateStatus("UPLOAD ERROR : CONNECTION LOST", "red");
     };
     
-    xhr.open("POST", "/upload", true);
     var form = new FormData();
     form.append('file', fileInput.files[0]);
+    xhr.open("POST", "/upload", true);
     xhr.send(form);
-}
-
-//--------------------------------------------------
-function requestBitmapLoad()
-{
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function()
-  {
-    updateBitmap(this.responseText);
-    if (this.status == 200)
-    {
-      document.getElementById("status").style.color = "green";
-    }
-    else
-    {
-      document.getElementById("status").style.color = "red";
-    }
-  };
-  
-  xhr.onerror = function()
-  {
-    updateStatus("LOAD ERROR : CONNECTION LOST", "red");
-  };
-  
-  var params = "file=/"+document.getElementById("fileList").value;
-  xhr.open("POST", "/bitmapLoad", true);
-  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send(params);
 }
 
 //--------------------------------------------------
@@ -415,7 +363,7 @@ function requestParameterRead()
   };
   
   xhr.overrideMimeType("application/json");
-  xhr.open("POST", "/parameterRead", true);
+  xhr.open("GET", "/parameterRead", true);
   xhr.send(null);
 }
 
@@ -428,12 +376,12 @@ function requestParameterWrite()
     if (this.status == 200)
     {
       updateStatus(this.responseText, "green");
-      requestParameterRead();
     }
     else
     {
       updateStatus(this.responseText, "red");
     }
+    requestParameterRead();
   };
   
   xhr.onerror = function()
@@ -446,14 +394,16 @@ function requestParameterWrite()
   json.delay = document.getElementById("delay").value;
   json.brightness = document.getElementById("brightness").value;
   json.repeat = document.getElementById("repeat").value;
-  // load slider parameters
-  json.indexStart = document.getElementById("sliderStart").value;
-  json.indexStop = document.getElementById("sliderStop").value;
   // load checkbox parameters
   json.isrepeat = document.getElementById("isrepeat").checked;
   json.isbounce = document.getElementById("isbounce").checked;
   json.isinvert = document.getElementById("isinvert").checked;
   json.isendoff = document.getElementById("isendoff").checked;
+  // load index parameters
+  json.indexStart = document.getElementById("sliderStart").value;
+  json.indexStop = document.getElementById("sliderStop").value;
+  // load file parameters
+  json.bmpPath = document.getElementById("fileList").value;
   // convert json to string
   var jsonString = JSON.stringify(json);
   // send the request

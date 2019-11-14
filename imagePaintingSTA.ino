@@ -26,7 +26,7 @@ fs::File UPLOADFILE; // hold uploaded file
 // end FS -----------
 
 // BITMAP --------------
-String BMPPATH;
+String BMPPATH = "/welcome.bmp";
 fs::File BMPFILE; // hold bitmap file
 NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 // end BITMAP -----------
@@ -41,7 +41,7 @@ uint16_t INDEXMAX; //Max index possible
 // end ANIMATION --------------
 
 // RUNTIME --------------
-uint8_t DELAY = 100;
+uint8_t DELAY = 30;
 uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
 bool ISREPEAT = false;
 bool ISENDOFF = false;
@@ -124,7 +124,7 @@ void setup()
 
   // Webserver setup
   // list available files
-  server.on("/list", HTTP_POST, handleFileList);
+  server.on("/list", HTTP_GET, handleFileList);
 
   // delete file
   server.on("/delete", HTTP_DELETE, handleFileDelete);
@@ -133,9 +133,6 @@ void setup()
   server.on("/upload", HTTP_POST, []() {
     server.send(200, "text/plain", "UPLOAD SUCCESS");
   }, handleFileUpload);
-
-  // handle bitmap Load
-  server.on("/bitmapLoad", HTTP_POST, handleBitmapLoad);
 
   // handle bitmap Play
   server.on("/play", HTTP_GET, handlePlay);
@@ -147,7 +144,7 @@ void setup()
   server.on("/light", HTTP_GET, handleLight);
 
   // handle parameter Read
-  server.on("/parameterRead", HTTP_POST, handleParameterRead);
+  server.on("/parameterRead", HTTP_GET, handleParameterRead);
 
   // handle parameter Write
   server.on("/parameterWrite", HTTP_POST, handleParameterWrite);
@@ -164,6 +161,7 @@ void setup()
 
   // LED setup
   SHADER.setBrightness(BRIGHTNESS);
+  bitmapLoad(BMPPATH);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -196,11 +194,11 @@ void handleParameterRead()
   jsonDoc["isbounce"] = ISBOUNCE;
   jsonDoc["isinvert"] = ISINVERT;
   jsonDoc["isendoff"] = ISENDOFF;
-  //jsonDoc["indexMin"] = INDEXMIN;
+  jsonDoc["indexMin"] = INDEXMIN;
   jsonDoc["indexStart"] = INDEXSTART;
   jsonDoc["indexStop"] = INDEXSTOP;
-  //jsonDoc["indexMax"] = INDEXMAX;
-  //jsonDoc["bmpPath"] = BMPPATH;
+  jsonDoc["indexMax"] = INDEXMAX;
+  jsonDoc["bmpPath"] = BMPPATH;
 
   // convert json document to String
   String msg = "";
@@ -213,37 +211,103 @@ void handleParameterRead()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleParameterWrite()
 {
+  // Html code and msg
+  uint16_t htmlCode;
+  String htmlMsg = "";
+
   // New json document
   StaticJsonDocument<300> jsonDoc;
 
   // Convert json String to json object
   DeserializationError error = deserializeJson(jsonDoc, server.arg("plain"));
 
-  // Check if the json is right
+  // Json not right ?
   if (error)
   {
-    String msg = "WRITE ERROR : ";
-    msg += error.c_str();
-    return server.send(500, "text/plain", msg);
+    // Html code and msg AKA do nothing
+    htmlCode = 500; // Internal Error
+    htmlMsg = "WRITE ERROR : WRONG JSON -> ";
+    htmlMsg += error.c_str();
+  }
+  // Running or paused animation ?
+  else if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
+  {
+    // Html code and msg AKA do nothing
+    htmlCode = 403; // Forbidden
+    htmlMsg = "WRITE ERROR : NOT AVAILABLE";
+  }
+  // Changing bitmap ?
+  else if (jsonDoc["bmpPath"].as<String>() != BMPPATH)
+  {
+    //  Args ; path ; type ; bitmap not right ?
+    if ((jsonDoc["bmpPath"].as<String>() == "") || (!SPIFFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
+    {
+      // Load /error.bmp
+      BMPPATH = "/error.bmp";
+      bitmapLoad(BMPPATH);
+
+      // Html code and msg
+      htmlCode = 500; // Internal Error
+      htmlMsg = "WRITE ERROR : BAD ARGS OR FILE OR BITMAP";
+    }
+    // No problem ?
+    else
+    {
+      // Load the new bitmap
+      BMPPATH = jsonDoc["bmpPath"].as<String>();
+
+      // Html code and msg
+      htmlCode = 200; // OK
+      htmlMsg = "WRITE SUCCESS : BITMAP LOAD";
+    }
+  }
+  // No problem ?
+  else
+  {
+    // Write parameters in the ESP8266
+    DELAY = jsonDoc["delay"];
+    BRIGHTNESS = jsonDoc["brightness"];
+    SHADER.setBrightness(BRIGHTNESS);
+    REPEAT = jsonDoc["repeat"];
+    ISREPEAT = jsonDoc["isrepeat"];
+    ISBOUNCE = jsonDoc["isbounce"];
+    ISINVERT = jsonDoc["isinvert"];
+    ISENDOFF = jsonDoc["isendoff"];
+    INDEXSTART = jsonDoc["indexStart"];
+    INDEXSTOP = jsonDoc["indexStop"];
+    
+    // Html code and msg
+    htmlCode = 200; // OK
+    htmlMsg = "WRITE SUCCESS : PARAMETERS SET";
   }
 
-  // Write parameters in ESP8266
-  DELAY = jsonDoc["delay"];
-  BRIGHTNESS = jsonDoc["brightness"];
-  SHADER.setBrightness(BRIGHTNESS);
-  REPEAT = jsonDoc["repeat"];
-  ISREPEAT = jsonDoc["isrepeat"];
-  ISBOUNCE = jsonDoc["isbounce"];
-  ISINVERT = jsonDoc["isinvert"];
-  ISENDOFF = jsonDoc["isendoff"];
-  //INDEXMIN = jsonDoc["indexMin"];
-  INDEXSTART = jsonDoc["indexStart"];
-  INDEXSTOP = jsonDoc["indexStop"];
-  //INDEXMAX = jsonDoc["indexMax"];
-  //BMPPATH = jsonDoc["bmpPath"].as<String>();;
-
   // Parameter are write
-  server.send(200, "text/html", "WRITE SUCCESS");
+  server.send(htmlCode, "text/html", htmlMsg);
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+bool bitmapLoad(String path)
+{
+  // Close the old bitmap
+  BMPFILE.close();
+  NEOBMPFILE.Begin(BMPFILE);
+
+  // Open requested file on SPIFFS
+  BMPFILE = SPIFFS.open(path, "r");
+
+  // Check and initialize NEOBMPFILE from the BMPFILE
+  bool success = NEOBMPFILE.Begin(BMPFILE);
+
+  // Update the index possible
+  INDEXMIN = 0;
+  INDEXMAX = NEOBMPFILE.Height() - 1;
+
+  // Update the index chosen
+  INDEXSTART = INDEXMIN;
+  INDEXSTOP = INDEXMAX;
+
+  // Bitmap is loaded
+  return success;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -255,8 +319,18 @@ void handleFileDelete()
   // make sure we get a file name as a URL argument and protect root path
   if (path == "" || path == "/") return server.send(500, "text/plain", "DELETE ERROR : BAD ARGS");
 
+  // protect system files
+  if (path == "/error.bmp" || path == "/welcome.bmp") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
+
   // check if the file exists
   if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND!");
+
+  // if delete current bitmap reload defaut bitmap
+  if (path == BMPPATH)
+  {
+    BMPPATH = "/welcome.bmp";
+    bitmapLoad(BMPPATH);
+  }
 
   // Delete the file
   SPIFFS.remove(path);
@@ -345,14 +419,11 @@ void handleFileList()
     fs::File entry = dir.openFile("r");
 
     // Get the name
-    String name = String(entry.name()).substring(1);
+    String name = String(entry.name());//.substring(1);
 
-    // Hide system file
-    if ((name != "index.html") && (name != "error.bmp"))
-    {
-      // Write the entry in the list
-      fileList.add(name);
-    }
+    // Write the entry in the list (Hide system file)
+    if (name != "/index.html")  fileList.add(name);
+
     // Close the entry
     entry.close();
   }
@@ -360,116 +431,14 @@ void handleFileList()
   // convert json document to String
   String msg = "";
   serializeJson(jsonDoc, msg);
-  
+
   // Parameter are read
   server.send(200, "application/json", msg);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-void handleBitmapLoad()
-{ 
-  // Handle the status to be send
-  String msg = "";
-
-  // Handle the html code to be send
-  uint16_t htmlCode = 200;
-
-  // Parse parameter from request
-  String path = server.arg("file");
-
-  // Check for running or paused animation
-  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
-  {
-    htmlCode = 403; // Forbidden
-    path = "error.bmp";
-    msg = "LOAD ERROR : NOT AVAILABLE";
-    //don't load error.bmp to not interfere with running animation
-  }
-  // Then path exist ?
-  else if (path == "")
-  {
-    htmlCode = 500; // Internal Error
-    path = "error.bmp";
-    msg = "LOAD ERROR : BAD ARGS";
-    bitmapLoad("/error.bmp");
-  }
-  // Then file exist ?
-  else if (!SPIFFS.exists(path))
-  {
-    htmlCode = 404; // Not found
-    path = "error.bmp";
-    msg = "LOAD ERROR : FILE NOT FOUND";
-    bitmapLoad("/error.bmp");
-  }
-  // Then file is a bitmap ?
-  else if (getContentType(path) != "image/bmp")
-  {
-    htmlCode = 500; // Internal Error
-    path = "error.bmp";
-    msg = "LOAD ERROR : WRONG FILE TYPE";
-    bitmapLoad("/error.bmp");
-  }
-  // Then bitmap load ?
-  else if (!bitmapLoad(path))
-  {
-    htmlCode = 500; // Internal Error
-    path = "error.bmp";
-    msg = "LOAD ERROR : WRONG BITMAP";
-    bitmapLoad("/error.bmp");
-  }
-  // No problem
-  else  
-  {
-    htmlCode = 200; // OK
-    msg = "LOAD SUCCESS";
-  }
-
-  // New json document
-  StaticJsonDocument<300> jsonDoc;
-  
-  // Store parameter in json document
-  jsonDoc["status"] = msg;
-  jsonDoc["path"] = path;
-  jsonDoc["indexMin"] = INDEXMIN;
-  jsonDoc["indexMax"] = INDEXMAX;
-
-  // convert json document to String
-  String jsonString = "";
-  serializeJson(jsonDoc, jsonString);
-
-  // Bitmap is loaded
-  server.send(htmlCode, "application/json", jsonString);
-}
-
-//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-bool bitmapLoad(String path)
-{ 
-  // Close the old bitmap
-  BMPFILE.close();
-  NEOBMPFILE.Begin(BMPFILE);
-  
-  // Open requested file on SPIFFS
-  BMPFILE = SPIFFS.open(path, "r");
-
-  // Check and initialize NEOBMPFILE from the BMPFILE
-  bool success = NEOBMPFILE.Begin(BMPFILE);
-
-  // Update the index possible
-  INDEXMIN = 0;
-  INDEXMAX = NEOBMPFILE.Height() - 1;
-
-  // Update the index chosen
-  INDEXSTART = INDEXMIN;
-  INDEXSTOP = INDEXMAX;
-  
-  // Bitmap is loaded
-  return success;
-}
-
-//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handlePlay()
 {
-  //--------------> NEOBMPFILE exist ?????????
   // Animation is paused
   if (ANIMATIONS.IsPaused())
   {
@@ -515,6 +484,7 @@ void handleStop()
 {
   // Stop animation
   ANIMATIONS.StopAnimation(0);
+  ANIMATIONS.Resume();
 
   // Blank the strip
   STRIP.ClearTo(RgbColor(0, 0, 0));
