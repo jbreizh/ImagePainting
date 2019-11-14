@@ -65,7 +65,7 @@ const char* password = "12345678";
 
 This is the webpage that your ESP8266 serve you :
 
-![controleScreen](https://user-images.githubusercontent.com/2498942/68551545-3eed1700-040e-11ea-8ee4-be0f984f540b.jpg)
+![imagepainting](https://user-images.githubusercontent.com/2498942/68904503-63aefa80-073e-11ea-9a3e-954526e01dc8.png)
 
 * **File :** Select a picture and upload it on the ESP8266 flash memory (see the **About Picture**)
 * **Image :** Select a picture on the ESP8266 flash memory to animate it or to delete it
