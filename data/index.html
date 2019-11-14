@@ -1,79 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ESP8266 Web Server</title>
+  <title>IMAGEPAINTING</title>
   <meta charset="utf-8" />
   <style>
-.body
-{
-  background-color: #A9A9A9;
-}
-
-.center {
-  text-align: center ;
-}
-
-.width {
-  width: 100%;
-  font-size:  3vw;
-  vertical-align:middle;
+.body {
+   background-color: black;
 }
 
 .title {
-  font-size:  4vw;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
 }
 
-.tabcenter{
-   width: 100%;
+.status {
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+  text-align: center;
+  color: green;
+}
 
-   text-align: left ;
+.table{
+   width: 100%;
+   border-collapse:collapse;
+   border: 5px solid white;
+}
+
+.top{
+  border-top:5px solid white;
+}
+
+.label{
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+  text-align: left ;
+  color: white;
+}
+
+.white{
+  color: white;
+}
+
+.input{
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+  text-align: center;
 }
 
 .button { 
-  border-radius: 4px;
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+  border-radius: 2vw;
   cursor: pointer;
 }
 
 .buttonOn {
-  background-color: #008CBA;
+  background-color: green;
 }
 
 .buttonLight {
-  background-color: #FFA500;
+  background-color: orange;
 }
 
 .buttonOff {
-  background-color: #f44336;;
+  background-color: red;;
 }
   </style>
 </head>
 
-<body class="center body">
-  <table class="tabcenter">
+<body class="body">
+  <table class="table">
   <tr>
-    <td colspan=4><h1 class="width center title">ImagePainting</h1></td>
+    <td colspan=4><img class="title" src="title.png"></td>
   </tr>
   <tr>
-    <td colspan=4><h2 class="width center" id="status"> Welcome </h1></td>
+    <td colspan=4><h2 class="status" id="status"> WELCOME </h1></td>
+  </tr>
+  <tr class="top">
+    <td><label class="label" for="fileInput">File:</label></td>
+    <td colspan=2><input class="input white" id="fileInput" type="file" /></td>
+    <td><button class="button buttonOn" onclick="requestFileUpload()">Upload</button></td>
   </tr>
   <tr>
-    <td><label class="width" for="fileInput">File:</label></td>
-    <td colspan=2><input class="width" id="fileInput" type="file" /></td>
-    <td><button class="width button buttonOn" onclick="requestFileUpload()">Upload</button></td>
-  </tr>
-  <tr>
-    <td><label class="width" for="fileList">Image:</label></td>
+    <td><label class="label" for="deleteList">Delete:</label></td>
     <td colspan=2>
-    <select  class="width" id="fileList" onchange="requestParameterWrite()">
+    <select  class="input" id="deleteList">
       <option value=""></option>
     </select>
     </td>
-    <td><button class="width button buttonOff" onclick="requestFileDelete()">Delete</button></td>
+    <td><button class="button buttonOff" onclick="requestFileDelete()">Delete</button></td>
+  </tr>
+  <tr class="top">
+    <td><label class="label" for="imageList">Image:</label></td>
+    <td colspan=2>
+    <select  class="input" id="imageList" onchange="requestParameterWrite()">
+      <option value=""></option>
+    </select>
+    </td>
+    <td></td>
   </tr>
   <tr>
-    <td><label class="width" for="sliderStart">Start:</label></td>
-    <td colspan=2><input class="width" type="range" id="sliderStart" oninput="updateTextSlider('sliderStart', 'textSliderStart')"></td>
-    <td><input class="width" type="text" id="textSliderStart" readonly/></td>
+    <td><label class="label" for="sliderStart">Start:</label></td>
+    <td colspan=2><input class="input" type="range" id="sliderStart" oninput="updateTextSlider('sliderStart', 'textSliderStart')"></td>
+    <td><input class="input" type="text" id="textSliderStart" readonly/></td>
   </tr>
    <tr>
     <td></td>
@@ -81,65 +116,78 @@
     <td></td>
   </tr>
   <tr>
-    <td><label class="width" for="sliderStop">Stop:</label></td>
-    <td colspan=2><input class="width" type="range" id="sliderStop" oninput="updateTextSlider('sliderStop', 'textSliderStop')"></td>
-    <td><input class="width" type="text" id="textSliderStop" readonly/></td>
+    <td><label class="label" for="sliderStop">Stop:</label></td>
+    <td colspan=2><input class="input" type="range" id="sliderStop" oninput="updateTextSlider('sliderStop', 'textSliderStop')"></td>
+    <td><input class="input" type="text" id="textSliderStop" readonly/></td>
   </tr>
-  <tr>
-    <td><label class="width" for="delay">Delay:</label></td>
-    <td colspan=2><input class="width" type="text" id="delay" /></td>
+  <tr class="top">
+    <td><label class="label" for="delay">Delay:</label></td>
+    <td colspan=2><input class="input" type="text" id="delay" /></td>
     <td></td>
   </tr>
   <tr>
-    <td><label class="width" for="brightness">Brightness:</label></td>
-    <td colspan=2><input class="width" type="text" id="brightness"/></td>
+    <td><label class="label" for="brightness">Brightness:</label></td>
+    <td colspan=2><input class="input" type="text" id="brightness"/></td>
     <td></td>
   </tr>
   <tr>
-    <td><label class="width" for="repeat">Repeat:</label></td>
-    <td colspan=2><input class="width" type="text" id="repeat"/></td>
+    <td><label class="label" for="repeat">Repeat:</label></td>
+    <td colspan=2><input class="input" type="text" id="repeat"/></td>
     <td></td>
   </tr>
     <tr>
-    <td><label class="width">Option:</label></td>
-    <td><label class="width" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat" onclick="updateCheckbox('isrepeat','isbounce')"/>Repeat</label></td>
-    <td><label class="width" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce" onclick="updateCheckbox('isbounce','isrepeat')"/>Bounce</label></td>
+    <td><label class="label">Option:</label></td>
+    <td><label class="label" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat" onclick="updateCheckbox('isrepeat','isbounce')"/>Repeat</label></td>
+    <td><label class="label" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce" onclick="updateCheckbox('isbounce','isrepeat')"/>Bounce</label></td>
     <td></td>
   </tr>
   <tr> 
     <td></td>
-    <td><label class="width" for="isinvert"><input name="isinvert" type="checkbox" id="isinvert"/>Invert</label></td>
-    <td><label class="width" for="isendoff"><input name="isendoff" type="checkbox" id="isendoff"/>Endoff</label></td>
+    <td><label class="label" for="isinvert"><input name="isinvert" type="checkbox" id="isinvert"/>Invert</label></td>
+    <td><label class="label" for="isendoff"><input name="isendoff" type="checkbox" id="isendoff"/>Endoff</label></td>
     <td></td>
-  </tr>
-  
-  <table class="tabcenter">
-  <tr>
-    <td><button class="width button buttonOn" onclick="requestParameterWrite()">Write</button></td>
-    <td><button class="width button buttonLight" onclick="requestAction('/light')">Light</button></td>
-    <td><button class="width button buttonOn" onclick="requestAction('/play')">Play</button></td>
-    <td><button class="width button buttonOff" onclick="requestAction('/stop')">Stop</button></td>
   </tr>
   </table>
   
-
+  <table class="table">
+  <tr>
+    <td><button class="button buttonOn" onclick="requestParameterWrite()">Write</button></td>
+    <td><button class="button buttonLight" onclick="requestAction('/light')">Light</button></td>
+    <td><button class="button buttonOn" onclick="requestAction('/play')">Play</button></td>
+    <td><button class="button buttonOff" onclick="requestAction('/stop')">Stop</button></td>
+  </tr>
+  </table>
 </body>
-
 
 <script>
 //--------------------------------------------------
 requestFileList();
+drawBitmap("welcome.bmp");
 
 //--------------------------------------------------
-function updateFileList(jsonString)
+var addEvent = function(object, type, callback) {
+    if (object == null || typeof(object) == 'undefined') return;
+    if (object.addEventListener) {
+        object.addEventListener(type, callback, false);
+    } else if (object.attachEvent) {
+        object.attachEvent("on" + type, callback);
+    } else {
+        object["on"+type] = callback;
+    }
+};
+
+addEvent(window, "resize", function() {drawBitmap(document.getElementById("imageList").value)});
+
+//--------------------------------------------------
+function setFileList(jsonString, listString)
 {
   var json = JSON.parse(jsonString);
-  document.getElementById("fileList").options.length = json.fileList.length;
+  document.getElementById(listString).options.length = json.fileList.length;
     
   for (i = 0; i < json.fileList.length; i++)
   {
-    document.getElementById("fileList").options[i].value = json.fileList[i]; 
-    document.getElementById("fileList").options[i].text = json.fileList[i]; 
+    document.getElementById(listString).options[i].value = json.fileList[i]; 
+    document.getElementById(listString).options[i].text = json.fileList[i]; 
   }
 }
 
@@ -172,7 +220,7 @@ function updateParameter(jsonString)
   document.getElementById("sliderStop").value = json["indexStop"];
   updateTextSlider("sliderStop", "textSliderStop");
   //draw the bitmap
-  document.getElementById("fileList").value = json["bmpPath"];
+  document.getElementById("imageList").value = json["bmpPath"];
   drawBitmap(json["bmpPath"]);
 }
 
@@ -210,7 +258,7 @@ function updateCheckbox(checkboxFrom, checkboxTo)
   else
   {
     document.getElementById(checkboxTo).disabled = false;
-    document.getElementById(checkboxTo).parentNode.style.color = "black";
+    document.getElementById(checkboxTo).parentNode.style.color = "white";
   }
 }
 
@@ -236,7 +284,8 @@ function requestFileList()
   {
     if (this.status == 200)
     {
-      updateFileList(this.responseText);
+      setFileList(this.responseText,"deleteList");
+      setFileList(this.responseText,"imageList");
       requestParameterRead();
     }      
   };
@@ -273,7 +322,7 @@ function requestFileDelete()
     updateStatus("DELETE ERROR : CONNECTION LOST", "red");
   };
   
-  var params = "file="+document.getElementById("fileList").value;
+  var params = "file="+document.getElementById("deleteList").value;
   xhr.open("DELETE", "/delete", true);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   xhr.send(params);
@@ -403,7 +452,7 @@ function requestParameterWrite()
   json.indexStart = document.getElementById("sliderStart").value;
   json.indexStop = document.getElementById("sliderStop").value;
   // load file parameters
-  json.bmpPath = document.getElementById("fileList").value;
+  json.bmpPath = document.getElementById("imageList").value;
   // convert json to string
   var jsonString = JSON.stringify(json);
   // send the request

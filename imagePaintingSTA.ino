@@ -27,7 +27,7 @@ fs::File UPLOADFILE; // hold uploaded file
 
 // BITMAP --------------
 String BMPPATH = "/welcome.bmp";
-fs::File BMPFILE; // hold bitmap file
+//fs::File BMPFILE; // hold bitmap file
 NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 // end BITMAP -----------
 
@@ -288,16 +288,23 @@ void handleParameterWrite()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 bool bitmapLoad(String path)
 {
-  // Close the old bitmap
-  BMPFILE.close();
-  NEOBMPFILE.Begin(BMPFILE);
-
+//  // Close the old bitmap
+//  BMPFILE.close();
+//  NEOBMPFILE.Begin(BMPFILE);
+//  
+//  // Open requested file on SPIFFS
+//  BMPFILE = SPIFFS.open(path, "r");
+//
+//  // Check and initialize NEOBMPFILE from the BMPFILE
+//  bool success = NEOBMPFILE.Begin(BMPFILE);
+  
   // Open requested file on SPIFFS
-  BMPFILE = SPIFFS.open(path, "r");
+  fs::File bmpFile = SPIFFS.open(path, "r");
 
   // Check and initialize NEOBMPFILE from the BMPFILE
-  bool success = NEOBMPFILE.Begin(BMPFILE);
-
+  //bool success = NEOBMPFILE.Begin(BMPFILE);
+  bool success = NEOBMPFILE.Begin(bmpFile);
+  
   // Update the index possible
   INDEXMIN = 0;
   INDEXMAX = NEOBMPFILE.Height() - 1;
@@ -316,11 +323,8 @@ void handleFileDelete()
   // parse parameter from request
   String path = server.arg("file");
 
-  // make sure we get a file name as a URL argument and protect root path
-  if (path == "" || path == "/") return server.send(500, "text/plain", "DELETE ERROR : BAD ARGS");
-
   // protect system files
-  if (path == "/error.bmp" || path == "/welcome.bmp") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
+  if ( path == "" || path == "/" || path == "/index.html" || path == "/error.bmp" || path == "/welcome.bmp" || path == "/title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
 
   // check if the file exists
   if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND!");
@@ -422,7 +426,7 @@ void handleFileList()
     String name = String(entry.name());//.substring(1);
 
     // Write the entry in the list (Hide system file)
-    if (name != "/index.html")  fileList.add(name);
+    if (!(name == "/index.html" || name == "/title.png"))  fileList.add(name);
 
     // Close the entry
     entry.close();
