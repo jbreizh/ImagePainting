@@ -5,14 +5,20 @@
 #include <NeoPixelAnimator.h>
 #include <FS.h>
 
+// BUTTON --------------
+unsigned long DEBOUNCINGTIME = 500; //Debouncing Time in Milliseconds
+const int PLAY_PIN = D3;
+volatile unsigned long LASTPLAYMS;
+// end BUTTON-----------
+
 // APA102 --------------
 const int NUMPIXELS = 60;
 uint8_t BRIGHTNESS = 40;
-const int DATA_PIN = D1; //GREEN
-const int CLOCK_PIN = D2; //Yellow
-NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang
+const int DATA_PIN = D1;
+const int CLOCK_PIN = D2;
+NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang: CLOCK_PIN : D2 Yellow / DATA_PIN : D1 GREEN
 //NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
-//NeoPixelBus<DotStarBgrFeature, DotStarSpi2MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
+//NeoPixelBus<DotStarBgrFeature, DotStarSpi20MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
 // end APA102-----------
 
 // WIFI --------------
@@ -47,7 +53,6 @@ bool ISREPEAT = false;
 bool ISENDOFF = false;
 bool ISINVERT = false;
 bool ISBOUNCE = false;
-
 // end RUNTIME --------------
 
 //SHADER --------------
@@ -162,14 +167,27 @@ void setup()
   // LED setup
   SHADER.setBrightness(BRIGHTNESS);
   bitmapLoad(BMPPATH);
+
+  // Button setup
+  pinMode(PLAY_PIN, INPUT_PULLUP);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void loop()
 {
+  // To handle the webserver
   server.handleClient();
+
+  // To handle the LED animation
   ANIMATIONS.UpdateAnimations();
   STRIP.Show();
+
+  // To handle the play button
+  if ((digitalRead(PLAY_PIN) == LOW) && ((millis() - LASTPLAYMS) >= DEBOUNCINGTIME ))
+  {
+    String htmlMsg = play();
+    LASTPLAYMS = millis();
+  }
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -275,7 +293,7 @@ void handleParameterWrite()
     ISENDOFF = jsonDoc["isendoff"];
     INDEXSTART = jsonDoc["indexStart"];
     INDEXSTOP = jsonDoc["indexStop"];
-    
+
     // Html code and msg
     htmlCode = 200; // OK
     htmlMsg = "WRITE SUCCESS : PARAMETERS SET";
@@ -288,23 +306,23 @@ void handleParameterWrite()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 bool bitmapLoad(String path)
 {
-//  // Close the old bitmap
-//  BMPFILE.close();
-//  NEOBMPFILE.Begin(BMPFILE);
-//  
-//  // Open requested file on SPIFFS
-//  BMPFILE = SPIFFS.open(path, "r");
-//
-//  // Check and initialize NEOBMPFILE from the BMPFILE
-//  bool success = NEOBMPFILE.Begin(BMPFILE);
-  
+  //  // Close the old bitmap
+  //  BMPFILE.close();
+  //  NEOBMPFILE.Begin(BMPFILE);
+  //
+  //  // Open requested file on SPIFFS
+  //  BMPFILE = SPIFFS.open(path, "r");
+  //
+  //  // Check and initialize NEOBMPFILE from the BMPFILE
+  //  bool success = NEOBMPFILE.Begin(BMPFILE);
+
   // Open requested file on SPIFFS
   fs::File bmpFile = SPIFFS.open(path, "r");
 
   // Check and initialize NEOBMPFILE from the BMPFILE
   //bool success = NEOBMPFILE.Begin(BMPFILE);
   bool success = NEOBMPFILE.Begin(bmpFile);
-  
+
   // Update the index possible
   INDEXMIN = 0;
   INDEXMAX = NEOBMPFILE.Height() - 1;
@@ -443,6 +461,16 @@ void handleFileList()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handlePlay()
 {
+  String htmlMsg = play();
+  server.send(200, "text/plain", htmlMsg);
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+String play()
+{
+  // Html msg
+  String htmlMsg = "";
+
   // Animation is paused
   if (ANIMATIONS.IsPaused())
   {
@@ -450,8 +478,7 @@ void handlePlay()
     ANIMATIONS.Resume();
 
     // Paused animation is resume
-    server.send(200, "text/plain", "RESUME");
-
+    htmlMsg = "RESUME";
   }
   // Animation is active
   else if (ANIMATIONS.IsAnimationActive(0))
@@ -463,7 +490,7 @@ void handlePlay()
     if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
 
     // Animation is paused
-    server.send(200, "text/plain", "PAUSE");
+    htmlMsg = "PAUSE";
   }
   // No animation
   else
@@ -479,32 +506,41 @@ void handlePlay()
     ANIMATIONS.StartAnimation(0, DELAY, updateAnimation);
 
     // New animation is launch
-    server.send(200, "text/plain", "PLAY");
+    htmlMsg = "PLAY";
   }
+  return htmlMsg;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleStop()
 {
+  stopB();
+  server.send(200, "text/plain", "STOP");
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void stopB()
+{
   // Stop animation
   ANIMATIONS.StopAnimation(0);
-  ANIMATIONS.Resume();
+  ANIMATIONS.Resume(); // remove the pause flag to stop paused animation
 
-  // Blank the strip
+  // Turn off the strip
   STRIP.ClearTo(RgbColor(0, 0, 0));
-
-  // Animation is stop
-  server.send(200, "text/plain", "STOP");
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleLight()
 {
+  light();
+  server.send(200, "text/plain", "LIGHT");
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void light()
+{
   //turn on the strip
   STRIP.ClearTo(SHADER.Apply(0, RgbColor(255, 255, 255)));
-
-  // Strip is turn on
-  server.send(200, "text/plain", "LIGHT");
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
