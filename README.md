@@ -24,10 +24,6 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 ![software](https://user-images.githubusercontent.com/2498942/68550264-a05ab900-0401-11ea-81c8-7a4c1f4a8635.png "Hardware assembly for software bit bang")
 
-* **For hardware SPI :** On WEMOS D1, you must use pin D7 for DATA and pin D5 for CLOCK.
-
-![hardware](https://user-images.githubusercontent.com/2498942/68550268-af416b80-0401-11ea-9a1b-4eb83e9c52c5.png "Hardware assembly for hardware SPI")
-
 ### Software Prerequisites And Installing
 
 **Arduino IDE with the following board/tool/library installed :**
@@ -67,8 +63,19 @@ This is the webpage that your ESP8266 serve you :
 
 ![imagepainting](https://user-images.githubusercontent.com/2498942/68904503-63aefa80-073e-11ea-9a3e-954526e01dc8.png)
 
-* **File :** Select a picture and upload it on the ESP8266 flash memory (see the **About Picture**)
-* **Image :** Select a picture on the ESP8266 flash memory to animate it or to delete it
+### Manage your file
+
+* **File :** Select a picture and upload it on the ESP8266 flash memory. Keep in mind that SPIFFS is just 1 or 2 MB, so it's not for 4K streaming ;-) 
+* **Delete :** Select a file on the ESP8266 flash memory to delete it. "error.bmp" and "welcome.bmp" can't be erase as they are system file.
+
+### Manage your picture
+
+* **Image :** Select a picture on the ESP8266 flash memory to animate it. In case of problem with the file (see the **About Picture**), you will be send to "error.bmp"
+* **Start :** Select the beginning of your animation (it will be keep when repeat or bounce)
+* **Stop :** Select the end of your animation (it will be keep when repeat or bounce)
+
+### Manage your option
+
 * **Delay :** Time between two frames in ms. Value possible 0ms to 255ms, but no garantee under 10ms
 * **Brightness :** Brightness of the LED. Value possible 0 (black) to 255 (full)
 * **Repeat :** Number of times the picture is animate. Value possible 0 (0 repetition so 1 animation) to 255 (255 repetitions so 256 animations)
@@ -77,16 +84,20 @@ This is the webpage that your ESP8266 serve you :
 - [x] Bounce : Activate the bounce repetition according the number of times set in **Repeat :**
 - [x] Invert : The animation start with the end of the picture
 - [x] Endoff : Turn off the LED when the animation is pause/stop or end. Usefull when the picture doesn't end with a black line
+
+### Manage your action
+
+* **Write :** A cryptic but yet very important button. It set all your option in the ESP8266. So each time you modify something, hit "Write". It never hurt. You can't write when there is a running or pause animation.
 * **Light :** Turn on your LED in white to use it as a flashlight. Usefull in dark situation ;-)
 * **Play :** Play or pause your animation
 * **Stop :** Turn off your LED. Stop your animation.
 
 ## About Picture
 
-Due to hardware limitation of the ESP8266, imagePainting only animate Bitmap 24 bits/pixel rotate by 90°.
-
 ![bitmapExplanation](https://user-images.githubusercontent.com/2498942/68552286-a3f83b00-0415-11ea-8ec8-e8d4f2450843.jpg)
 
-## License
+ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation :
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+* Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
+* The pictures must be rotate by 90°. Imagepainting will display the picture line by line from the left to the right. Also don't be fool by render in the control webpage, Imagepainting rotate the pictures back.
+* The width of your pictures has to be the same than the length of your LED strip or your pictures will be crop.
