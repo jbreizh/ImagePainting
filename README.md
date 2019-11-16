@@ -65,37 +65,37 @@ This is the webpage that your ESP8266 serve you :
 
 ### Manage your file
 
-* **Delete :** Select a file on the ESP8266 flash memory to delete it. "error.bmp" and "welcome.bmp" can't be erase as they are system file.
-* **File :** Select a picture and upload it on the ESP8266 flash memory. Keep in mind that SPIFFS is just 1 or 2 MB, so it's not for 4K streaming ;-)
+* **Delete :** Select a file on the ESP8266 flash memory to delete it. "error.bmp" and "welcome.bmp" can't be erase as they are system files.
+* **File :** Select a Bitmap and upload it on the ESP8266 flash memory. Keep in mind that SPIFFS is just 1 or 2 MB, so it's not for 4K streaming ;-)
 
 ### Manage your picture
 
-* **Image :** Select a picture on the ESP8266 flash memory to animate it. In case of problem with the file (see the **About Picture**), you will be send to "error.bmp"
+* **Image :** Select a Bitmap on the ESP8266 flash memory to animate it. In case of problem with the file (see the **About Picture**), you will be send to "error.bmp"
 * **Write :** A cryptic but yet very important button. It set all your option in the ESP8266. So each time you modify something, hit "Write". It never hurt, but you can't write when there is a running or pause animation.
 * **Start :** Select the beginning of your animation (it will be keep when repeat or bounce)
 * **Stop :** Select the end of your animation (it will be keep when repeat or bounce)
-- [x] Invert : The animation start with the end of the picture
+- [x] Invert : The animation start with the end of the Bitmap
 
 ### Manage your option
 
 * **Delay :** Time between two frames in ms. Value possible 0ms to 255ms, but no garantee under 10ms
 * **Brightness :** Brightness of the LED. Value possible 0 (black) to 255 (full)
 
-* **Repeat :** Number of times the picture is animate. Value possible 0 x (0 time so 1 animation) to 255 x (255 times so 256 animations). This value is use by this two chexboxes :
+* **Repeat :** Number of times the Bitmap is animate. Value possible 0 x (0 time so 1 animation) to 255 x (255 times so 256 animations). This value is use by this two chexboxes :
 - [x] Repeat? : Activate the repetition according to **Repeat**
 - [x] Bounce?: Activate the bounce (normal-invert-normal...etc) repetition according to **Repeat**
 
-* **Pause :** Number of pixels between to pause during the animation. Value possible 0 px (0 px between pause so no pause) to 255 (255 px between pause so 255 lines animate the 255 line pause ...etc). This value is use by this two chexboxes :
+* **Pause :** Number of pixels between two pause during the animation. Value possible 0 px (0 px between pause so no pause) to 255 (255 px between pause so 255 lines animate the 255 line pause ...etc). This value is use by this two chexboxes :
 - [x] Pause? : 
 - [x] Cut? : 
 
 * **Color :** Color use by **Light** and **[x] Endcolor?**
-- [x] Endoff? : Turn off the LED when the animation is pause/stop or end. Usefull when the picture doesn't end with a black line
+- [x] Endoff? : Turn off the LED when the animation is pause/stop or end. Usefull when the Bitmap doesn't end with a black line
 - [x] Endcolor? : Set all the LED to **Color** when the animation is pause/stop or end. Usefull for special effect.
 ### Manage your action
 
 * **Light :** Set all the LED to **Color** to use it as a flashlight or for special effect. Stop your animation.
-* **Burn :** Set all the LED to the first line of the image for special effect. Stop your animation.
+* **Burn :** Set all the LED to the first line of the Bitmap for special effect. Stop your animation.
 * **Play :** Play or pause your animation
 * **Stop :** Turn off your LED. Stop your animation.
 
@@ -113,5 +113,5 @@ I try my best to show you some possibility of Imagepainting.
 ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation :
 
 * Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
-* The pictures must be rotate by 90°. Imagepainting will display the picture line by line from the left to the right. Also don't be fool by render in the control webpage, Imagepainting rotate the pictures back.
-* The width of your pictures has to be the same than the length of your LED strip or your pictures will be crop.
+* The Bitmap must be rotate by 90°. Imagepainting will display the Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, Imagepainting rotate your Bitmap back.
+* The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
