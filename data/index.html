@@ -173,7 +173,7 @@
   <tr> 
     <td></td>
     <td><label class="label" for="isendoff"><input name="isendoff" type="checkbox" id="isendoff"/>Endoff?</label></td>
-    <td><label class="label" for="isendcolor"><input name="isendcolor" type="checkbox" id="isendcolor"/>EndColor?</label></td>
+    <td><label class="label" for="isendcolor"><input name="isendcolor" type="checkbox" id="isendcolor"/>Endcolor?</label></td>
     <td></td>
   </tr>
   </table>
@@ -191,7 +191,7 @@
 <script>
 //--------------------------------------------------
 requestFileList();
-drawBitmap("welcome.bmp")
+
 //--------------------------------------------------
 var addEvent = function(object, type, callback) {
     if (object == null || typeof(object) == 'undefined') return;
@@ -317,7 +317,7 @@ function drawBitmap(imageSrc)
     // aspect ratio of the original bitmap
     var ratio = image.width/image.height;
     // shitty corrector base on test
-    var corrector = 0.67;
+    var corrector = 0.6;
     // resize the canvas dimension to be same ratio than bitmap but scale to fit in place
     canvas.width  = corrector*window.innerWidth;
     canvas.height = corrector*ratio*window.innerWidth;

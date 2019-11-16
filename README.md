@@ -61,38 +61,50 @@ const char* password = "12345678";
 
 This is the webpage that your ESP8266 serve you :
 
-![imagepainting](https://user-images.githubusercontent.com/2498942/68904503-63aefa80-073e-11ea-9a3e-954526e01dc8.png)
+![help3](https://user-images.githubusercontent.com/2498942/68999792-13fb3b00-08c6-11ea-9304-21183b95ae0f.png)
 
 ### Manage your file
 
-* **File :** Select a picture and upload it on the ESP8266 flash memory. Keep in mind that SPIFFS is just 1 or 2 MB, so it's not for 4K streaming ;-) 
 * **Delete :** Select a file on the ESP8266 flash memory to delete it. "error.bmp" and "welcome.bmp" can't be erase as they are system file.
+* **File :** Select a picture and upload it on the ESP8266 flash memory. Keep in mind that SPIFFS is just 1 or 2 MB, so it's not for 4K streaming ;-)
 
 ### Manage your picture
 
 * **Image :** Select a picture on the ESP8266 flash memory to animate it. In case of problem with the file (see the **About Picture**), you will be send to "error.bmp"
+* **Write :** A cryptic but yet very important button. It set all your option in the ESP8266. So each time you modify something, hit "Write". It never hurt, but you can't write when there is a running or pause animation.
 * **Start :** Select the beginning of your animation (it will be keep when repeat or bounce)
 * **Stop :** Select the end of your animation (it will be keep when repeat or bounce)
+- [x] Invert : The animation start with the end of the picture
 
 ### Manage your option
 
-![option](https://user-images.githubusercontent.com/2498942/68990158-030fe280-0850-11ea-96d6-ce09b1854134.jpeg)
-
 * **Delay :** Time between two frames in ms. Value possible 0ms to 255ms, but no garantee under 10ms
 * **Brightness :** Brightness of the LED. Value possible 0 (black) to 255 (full)
-* **Repeat :** Number of times the picture is animate. Value possible 0 (0 repetition so 1 animation) to 255 (255 repetitions so 256 animations)
-* **Option :**
-- [x] Repeat : Activate the repetition according the number of times set in **Repeat :**
-- [x] Bounce : Activate the bounce repetition according the number of times set in **Repeat :**
-- [x] Invert : The animation start with the end of the picture
-- [x] Endoff : Turn off the LED when the animation is pause/stop or end. Usefull when the picture doesn't end with a black line
 
+* **Repeat :** Number of times the picture is animate. Value possible 0 x (0 time so 1 animation) to 255 x (255 times so 256 animations). This value is use by this two chexboxes :
+- [x] Repeat? : Activate the repetition according to **Repeat**
+- [x] Bounce?: Activate the bounce (normal-invert-normal...etc) repetition according to **Repeat**
+
+* **Pause :** Number of pixels between to pause during the animation. Value possible 0 px (0 px between pause so no pause) to 255 (255 px between pause so 255 lines animate the 255 line pause ...etc). This value is use by this two chexboxes :
+- [x] Pause? : 
+- [x] Cut? : 
+
+* **Color :** Color use by **Light** and **[x] Endcolor?**
+- [x] Endoff? : Turn off the LED when the animation is pause/stop or end. Usefull when the picture doesn't end with a black line
+- [x] Endcolor? : Set all the LED to **Color** when the animation is pause/stop or end. Usefull for special effect.
 ### Manage your action
 
-* **Write :** A cryptic but yet very important button. It set all your option in the ESP8266. So each time you modify something, hit "Write". It never hurt. You can't write when there is a running or pause animation.
-* **Light :** Turn on your LED in white to use it as a flashlight. Usefull in dark situation ;-)
+* **Light :** Set all the LED to **Color** to use it as a flashlight or for special effect. Stop your animation.
+* **Burn :** Set all the LED to the first line of the image for special effect. Stop your animation.
 * **Play :** Play or pause your animation
 * **Stop :** Turn off your LED. Stop your animation.
+
+## Graphic explanation
+
+I try my best to show you some possibility of Imagepainting.
+
+![help1](https://user-images.githubusercontent.com/2498942/68999790-1362a480-08c6-11ea-976c-e6bd6f43f333.png)
+![help2](https://user-images.githubusercontent.com/2498942/68999791-1362a480-08c6-11ea-9d93-aec3192cc787.png)
 
 ## About Picture
 
