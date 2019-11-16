@@ -34,6 +34,20 @@
 }
 
 .label{
+  font-size:  3vw;
+  vertical-align:middle;
+  color: white;
+}
+
+.divRight{
+  width: 100%;
+  font-size:  3vw;
+  vertical-align:middle;
+  text-align: right ;
+  color: white;
+}
+
+.divLeft{
   width: 100%;
   font-size:  3vw;
   vertical-align:middle;
@@ -83,32 +97,25 @@
     <td colspan=4><h2 class="status" id="status"> WELCOME </h1></td>
   </tr>
   <tr class="top">
-    <td><label class="label" for="fileInput">File:</label></td>
+    <td><div class="divLeft" >Delete:</div></td>
+    <td colspan=2>
+    <select  class="input" id="deleteList"><option value=""></option></select></td>
+    <td><button class="button buttonOff" onclick="requestFileDelete()">Delete</button></td>
+  </tr>
+  <tr>
+    <td><div class="divLeft" >Upload:</div></td>
     <td colspan=2><input class="input white" id="fileInput" type="file" /></td>
     <td><button class="button buttonOn" onclick="requestFileUpload()">Upload</button></td>
   </tr>
-  <tr>
-    <td><label class="label" for="deleteList">Delete:</label></td>
-    <td colspan=2>
-    <select  class="input" id="deleteList">
-      <option value=""></option>
-    </select>
-    </td>
-    <td><button class="button buttonOff" onclick="requestFileDelete()">Delete</button></td>
-  </tr>
   <tr class="top">
-    <td><label class="label" for="imageList">Image:</label></td>
-    <td colspan=2>
-    <select  class="input" id="imageList" onchange="requestParameterWrite()">
-      <option value=""></option>
-    </select>
-    </td>
-    <td></td>
+    <td><div class="divLeft" >Image:</div></td>
+    <td colspan=2><select  class="input" id="imageList" onchange="requestParameterWrite()"><option value=""></option></select></td>
+    <td><button class="button buttonOn" onclick="requestParameterWrite()">Write</button></td>
   </tr>
   <tr>
-    <td><label class="label" for="sliderStart">Start:</label></td>
-    <td colspan=2><input class="input" type="range" id="sliderStart" oninput="updateTextSlider('sliderStart', 'textSliderStart')"></td>
-    <td><input class="input" type="text" id="textSliderStart" readonly/></td>
+    <td><div class="divLeft" >Start:</div></td>
+    <td colspan=2><input class="input" type="range" id="start"></td>
+    <td><div class="divRight" id="textStart"></div></td>
   </tr>
    <tr>
     <td></td>
@@ -116,45 +123,67 @@
     <td></td>
   </tr>
   <tr>
-    <td><label class="label" for="sliderStop">Stop:</label></td>
-    <td colspan=2><input class="input" type="range" id="sliderStop" oninput="updateTextSlider('sliderStop', 'textSliderStop')"></td>
-    <td><input class="input" type="text" id="textSliderStop" readonly/></td>
-  </tr>
-  <tr class="top">
-    <td><label class="label" for="delay">Delay:</label></td>
-    <td colspan=2><input class="input" type="text" id="delay" /></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td><label class="label" for="brightness">Brightness:</label></td>
-    <td colspan=2><input class="input" type="text" id="brightness"/></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td><label class="label" for="repeat">Repeat:</label></td>
-    <td colspan=2><input class="input" type="text" id="repeat"/></td>
-    <td></td>
-  </tr>
-    <tr>
-    <td><label class="label">Option:</label></td>
-    <td><label class="label" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat" onclick="updateCheckbox('isrepeat','isbounce')"/>Repeat</label></td>
-    <td><label class="label" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce" onclick="updateCheckbox('isbounce','isrepeat')"/>Bounce</label></td>
-    <td></td>
+    <td><div class="divLeft">Stop:</div></td>
+    <td colspan=2><input class="input" type="range" id="stop"></td>
+    <td><div class="divRight" id="textStop"></div></td>
   </tr>
   <tr> 
     <td></td>
-    <td><label class="label" for="isinvert"><input name="isinvert" type="checkbox" id="isinvert"/>Invert</label></td>
-    <td><label class="label" for="isendoff"><input name="isendoff" type="checkbox" id="isendoff"/>Endoff</label></td>
+    <td><label class="label" for="isinvert"><input name="isinvert" type="checkbox" id="isinvert"/>Invert?</label></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><div class="divLeft">Delay:</div></td>
+    <td colspan=2><input class="input" type="range" min="0" max="255" id="delay"/></td>
+    <td><div class="divRight" id="textDelay"></div></td>
+  </tr>
+  <tr>
+    <td><div class="divLeft">Brightness:</div></td>
+    <td colspan=2><input class="input" type="range" min="0" max="255" id="brightness"/></td>
+    <td><div class="divRight" id="textBrightness"></div></td>
+  </tr>
+  <tr>
+    <td><div class="divLeft">Repeat:</div></td>
+    <td colspan=2><input class="input" type="range" min="0" max="255" id="repeat"/></td>
+    <td><div class="divRight" id="textRepeat"></div></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><label class="label" for="isrepeat"><input name="isrepeat" type="checkbox" id="isrepeat"/>Repeat?</label></td>
+    <td><label class="label" for="isbounce"><input name="isbounce" type="checkbox" id="isbounce"/>Bounce?</label></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><div class="divLeft">Pause:</div></td>
+    <td colspan=2><input class="input" type="range" min="0" max="255" id="pause"/></td>
+  <td><div class="divRight" id="textPause"></div></td>
+  </tr>
+  <tr> 
+    <td></td>
+    <td><label class="label" for="ispause"><input name="ispause" type="checkbox" id="ispause"/>Pause?</label></td>
+    <td><label class="label" for="iscut"><input name="iscut" type="checkbox" id="iscut"/>Cut?</label></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><div class="divLeft">Color:</div></td>
+    <td colspan=2><input class="input" type="color" id="color"/></td>
+    <td><div class="divRight"></div></td>
+  </tr>
+  <tr> 
+    <td></td>
+    <td><label class="label" for="isendoff"><input name="isendoff" type="checkbox" id="isendoff"/>Endoff?</label></td>
+    <td><label class="label" for="isendcolor"><input name="isendcolor" type="checkbox" id="isendcolor"/>EndColor?</label></td>
     <td></td>
   </tr>
   </table>
   
   <table class="table">
   <tr>
-    <td><button class="button buttonOn" onclick="requestParameterWrite()">Write</button></td>
     <td><button class="button buttonLight" onclick="requestAction('/light')">Light</button></td>
-    <td><button class="button buttonOn" onclick="requestAction('/play')">Play</button></td>
+    <td><button class="button buttonOff" onclick="requestAction('/burn')">Burn</button></td>
     <td><button class="button buttonOff" onclick="requestAction('/stop')">Stop</button></td>
+    <td><button class="button buttonOn" onclick="requestAction('/play')">Play</button></td>
   </tr>
   </table>
 </body>
@@ -162,8 +191,7 @@
 <script>
 //--------------------------------------------------
 requestFileList();
-drawBitmap("welcome.bmp");
-
+drawBitmap("welcome.bmp")
 //--------------------------------------------------
 var addEvent = function(object, type, callback) {
     if (object == null || typeof(object) == 'undefined') return;
@@ -175,8 +203,23 @@ var addEvent = function(object, type, callback) {
         object["on"+type] = callback;
     }
 };
-
+//canvas
 addEvent(window, "resize", function() {drawBitmap(document.getElementById("imageList").value)});
+//slider
+addEvent(document.getElementById("start"), "input", function() {document.getElementById("textStart").innerHTML =document.getElementById("start").value + " px";});
+addEvent(document.getElementById("stop"), "input", function() {document.getElementById("textStop").innerHTML =document.getElementById("stop").value + " px";});
+addEvent(document.getElementById("delay"), "input", function() {document.getElementById("textDelay").innerHTML =document.getElementById("delay").value + " ms";});
+addEvent(document.getElementById("brightness"), "input", function() {document.getElementById("textBrightness").innerHTML =document.getElementById("brightness").value + " %";});
+addEvent(document.getElementById("repeat"), "input", function() {document.getElementById("textRepeat").innerHTML =document.getElementById("repeat").value + " x";});
+addEvent(document.getElementById("pause"), "input", function() {document.getElementById("textPause").innerHTML =document.getElementById("pause").value + " x";});
+//checkbox
+addEvent(document.getElementById("isrepeat"), "click", function() {updateCheckbox('isrepeat','isbounce')});
+addEvent(document.getElementById("isbounce"), "click", function() {updateCheckbox('isbounce','isrepeat')});
+addEvent(document.getElementById("ispause"), "click", function() {updateCheckbox('ispause','iscut')});
+addEvent(document.getElementById("iscut"), "click", function() {updateCheckbox('iscut','ispause')});
+addEvent(document.getElementById("isendoff"), "click", function() {updateCheckbox('isendoff','isendcolor')});
+addEvent(document.getElementById("isendcolor"), "click", function() {updateCheckbox('isendcolor','isendoff')});
+
 
 //--------------------------------------------------
 function setFileList(jsonString, listString)
@@ -192,36 +235,75 @@ function setFileList(jsonString, listString)
 }
 
 //--------------------------------------------------
-function updateParameter(jsonString)
+function setParameter(jsonString)
 {
   var json = JSON.parse(jsonString);
-  // update text parameters
+  //update start and textStart
+  document.getElementById("start").setAttribute("min", json["indexMin"]);
+  document.getElementById("start").setAttribute("max", json["indexMax"]);
+  document.getElementById("start").value = json["indexStart"];
+  document.getElementById("textStart").innerHTML = json["indexStart"] + " px";
+  //draw the bitmap
+  document.getElementById("imageList").value = json["bmpPath"];
+  drawBitmap(json["bmpPath"]);
+  //update stop and textStop
+  document.getElementById("stop").setAttribute("min", json["indexMin"]);
+  document.getElementById("stop").setAttribute("max", json["indexMax"]);
+  document.getElementById("stop").value = json["indexStop"];
+  document.getElementById("textStop").innerHTML = json["indexStop"] + " px";
+  // update delay, brightness, repeat, pause
   document.getElementById("delay").value = json["delay"];
-  document.getElementById("delay").text = json["delay"];
+  document.getElementById("textDelay").innerHTML = json["delay"] + " ms";
   document.getElementById("brightness").value = json["brightness"];
-  document.getElementById("brightness").text = json["brightness"];
+  document.getElementById("textBrightness").innerHTML = json["brightness"] + " %";
   document.getElementById("repeat").value = json["repeat"];
-  document.getElementById("repeat").text = json["repeat"];
+  document.getElementById("textRepeat").innerHTML = json["repeat"] + " x";
+  document.getElementById("pause").value = json["pause"];
+  document.getElementById("textPause").innerHTML = json["pause"] + " px";
+  // update color
+  document.getElementById("color").value = json["color"];
   // update checkbox parameters
+  document.getElementById("isinvert").checked  = json["isinvert"];
   document.getElementById("isrepeat").checked  = json["isrepeat"];
   updateCheckbox('isrepeat','isbounce');
   document.getElementById("isbounce").checked  = json["isbounce"];
   updateCheckbox('isbounce','isrepeat');
-  document.getElementById("isinvert").checked  = json["isinvert"];
+  document.getElementById("ispause").checked  = json["ispause"];
+  updateCheckbox('ispause','iscut');
+  document.getElementById("iscut").checked  = json["iscut"];
+  updateCheckbox('iscut','ispause');
   document.getElementById("isendoff").checked  = json["isendoff"];
-  //update sliderStart and textSliderStart
-  document.getElementById("sliderStart").setAttribute("min", json["indexMin"]);
-  document.getElementById("sliderStart").setAttribute("max", json["indexMax"]);
-  document.getElementById("sliderStart").value = json["indexStart"];
-  updateTextSlider("sliderStart", "textSliderStart");
-  //update sliderStop and textSliderStop
-  document.getElementById("sliderStop").setAttribute("min", json["indexMin"]);
-  document.getElementById("sliderStop").setAttribute("max", json["indexMax"]);
-  document.getElementById("sliderStop").value = json["indexStop"];
-  updateTextSlider("sliderStop", "textSliderStop");
-  //draw the bitmap
-  document.getElementById("imageList").value = json["bmpPath"];
-  drawBitmap(json["bmpPath"]);
+  updateCheckbox('isendoff','isendcolor');
+  document.getElementById("isendcolor").checked  = json["isendcolor"];
+  updateCheckbox('isendcolor','isendoff');
+}
+
+//--------------------------------------------------
+function getParameter()
+{
+  var json = new Object();
+  // load text parameters
+  json.delay = document.getElementById("delay").value;
+  json.brightness = document.getElementById("brightness").value;
+  json.repeat = document.getElementById("repeat").value;
+  json.pause = document.getElementById("pause").value;
+  // load text parameters
+  json.color = document.getElementById("color").value;
+  // load checkbox parameters
+  json.isrepeat = document.getElementById("isrepeat").checked;
+  json.isbounce = document.getElementById("isbounce").checked;
+  json.ispause = document.getElementById("ispause").checked;
+  json.iscut = document.getElementById("iscut").checked;
+  json.isinvert = document.getElementById("isinvert").checked;
+  json.isendoff = document.getElementById("isendoff").checked;
+  json.isendcolor = document.getElementById("isendcolor").checked;
+  // load index parameters
+  json.indexStart = document.getElementById("start").value;
+  json.indexStop = document.getElementById("stop").value;
+  // load file parameters
+  json.bmpPath = document.getElementById("imageList").value;
+  // convert json to string
+  return JSON.stringify(json);
 }
 
 //-------------------------------------------------- The horrible function !!!!
@@ -235,7 +317,7 @@ function drawBitmap(imageSrc)
     // aspect ratio of the original bitmap
     var ratio = image.width/image.height;
     // shitty corrector base on test
-    var corrector = 0.65;
+    var corrector = 0.67;
     // resize the canvas dimension to be same ratio than bitmap but scale to fit in place
     canvas.width  = corrector*window.innerWidth;
     canvas.height = corrector*ratio*window.innerWidth;
@@ -263,9 +345,9 @@ function updateCheckbox(checkboxFrom, checkboxTo)
 }
 
 //--------------------------------------------------
-function updateTextSlider(sliderString, textSliderString)
+function updateTextSlider(sliderString, textSliderString, unit)
 {
-  document.getElementById(textSliderString).value =document.getElementById(sliderString).value;
+  document.getElementById(textSliderString).innerHTML =document.getElementById(sliderString).value + unit;
 }
 
 //--------------------------------------------------
@@ -402,7 +484,7 @@ function requestParameterRead()
   {
     if (this.status == 200)
     {
-      updateParameter(this.responseText);
+      setParameter(this.responseText);
     }
   };
   
@@ -438,27 +520,10 @@ function requestParameterWrite()
     updateStatus("WRITE ERROR : CONNECTION LOST", "red");
   };
   
-  var json = new Object();
-  // load text parameters
-  json.delay = document.getElementById("delay").value;
-  json.brightness = document.getElementById("brightness").value;
-  json.repeat = document.getElementById("repeat").value;
-  // load checkbox parameters
-  json.isrepeat = document.getElementById("isrepeat").checked;
-  json.isbounce = document.getElementById("isbounce").checked;
-  json.isinvert = document.getElementById("isinvert").checked;
-  json.isendoff = document.getElementById("isendoff").checked;
-  // load index parameters
-  json.indexStart = document.getElementById("sliderStart").value;
-  json.indexStop = document.getElementById("sliderStop").value;
-  // load file parameters
-  json.bmpPath = document.getElementById("imageList").value;
-  // convert json to string
-  var jsonString = JSON.stringify(json);
   // send the request
   xhr.open("POST", "/parameterWrite", true);
   xhr.setRequestHeader('Content-type', 'application/json');
-  xhr.send(jsonString);
+  xhr.send(getParameter());
 }
 
 </script>

@@ -18,7 +18,7 @@ const int DATA_PIN = D1;
 const int CLOCK_PIN = D2;
 NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang: CLOCK_PIN : D2 Yellow / DATA_PIN : D1 GREEN
 //NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
-//NeoPixelBus<DotStarBgrFeature, DotStarSpi20MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
+//NeoPixelBus<DotStarBgrFeature, DotStarSpi2MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
 // end APA102-----------
 
 // WIFI --------------
@@ -33,7 +33,6 @@ fs::File UPLOADFILE; // hold uploaded file
 
 // BITMAP --------------
 String BMPPATH = "/welcome.bmp";
-//fs::File BMPFILE; // hold bitmap file
 NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 // end BITMAP -----------
 
@@ -44,15 +43,20 @@ uint16_t INDEXSTART; //Min index chosen
 uint16_t INDEX; // Current index
 uint16_t INDEXSTOP; //Max index chosen
 uint16_t INDEXMAX; //Max index possible
+HtmlColor COLOR = HtmlColor(0xffffff);
 // end ANIMATION --------------
 
 // RUNTIME --------------
 uint8_t DELAY = 30;
 uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
+uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
 bool ISREPEAT = false;
 bool ISENDOFF = false;
+bool ISENDCOLOR = false;
 bool ISINVERT = false;
 bool ISBOUNCE = false;
+bool ISPAUSE = false;
+bool ISCUT = false;
 // end RUNTIME --------------
 
 //SHADER --------------
@@ -139,14 +143,17 @@ void setup()
     server.send(200, "text/plain", "UPLOAD SUCCESS");
   }, handleFileUpload);
 
-  // handle bitmap Play
+  // handle Play
   server.on("/play", HTTP_GET, handlePlay);
 
-  // handle bitmap Stop
+  // handle Stop
   server.on("/stop", HTTP_GET, handleStop);
 
   // handle light
   server.on("/light", HTTP_GET, handleLight);
+
+  // handle burn
+  server.on("/burn", HTTP_GET, handleBurn);
 
   // handle parameter Read
   server.on("/parameterRead", HTTP_GET, handleParameterRead);
@@ -202,16 +209,23 @@ String getContentType(String filename)
 void handleParameterRead()
 {
   // New json document
-  StaticJsonDocument<300> jsonDoc;
+  StaticJsonDocument<500> jsonDoc;
 
   // Store parameter in json document
   jsonDoc["delay"] = DELAY;
   jsonDoc["brightness"] = BRIGHTNESS;
   jsonDoc["repeat"] = REPEAT;
+  jsonDoc["pause"] = PAUSE;
+  char color[9];
+  COLOR.ToNumericalString(color, 9);
+  jsonDoc["color"] = color;
   jsonDoc["isrepeat"] = ISREPEAT;
   jsonDoc["isbounce"] = ISBOUNCE;
+  jsonDoc["ispause"] = ISPAUSE;
+  jsonDoc["iscut"] = ISCUT;
   jsonDoc["isinvert"] = ISINVERT;
   jsonDoc["isendoff"] = ISENDOFF;
+  jsonDoc["isendcolor"] = ISENDCOLOR;
   jsonDoc["indexMin"] = INDEXMIN;
   jsonDoc["indexStart"] = INDEXSTART;
   jsonDoc["indexStop"] = INDEXSTOP;
@@ -234,7 +248,7 @@ void handleParameterWrite()
   String htmlMsg = "";
 
   // New json document
-  StaticJsonDocument<300> jsonDoc;
+  StaticJsonDocument<500> jsonDoc;
 
   // Convert json String to json object
   DeserializationError error = deserializeJson(jsonDoc, server.arg("plain"));
@@ -287,10 +301,15 @@ void handleParameterWrite()
     BRIGHTNESS = jsonDoc["brightness"];
     SHADER.setBrightness(BRIGHTNESS);
     REPEAT = jsonDoc["repeat"];
+    PAUSE = jsonDoc["pause"];
+    COLOR.Parse<HtmlShortColorNames>(jsonDoc["color"].as<String>());
     ISREPEAT = jsonDoc["isrepeat"];
     ISBOUNCE = jsonDoc["isbounce"];
+    ISPAUSE = jsonDoc["ispause"];
+    ISCUT = jsonDoc["iscut"];
     ISINVERT = jsonDoc["isinvert"];
     ISENDOFF = jsonDoc["isendoff"];
+    ISENDCOLOR = jsonDoc["isendcolor"];
     INDEXSTART = jsonDoc["indexStart"];
     INDEXSTOP = jsonDoc["indexStop"];
 
@@ -306,21 +325,10 @@ void handleParameterWrite()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 bool bitmapLoad(String path)
 {
-  //  // Close the old bitmap
-  //  BMPFILE.close();
-  //  NEOBMPFILE.Begin(BMPFILE);
-  //
-  //  // Open requested file on SPIFFS
-  //  BMPFILE = SPIFFS.open(path, "r");
-  //
-  //  // Check and initialize NEOBMPFILE from the BMPFILE
-  //  bool success = NEOBMPFILE.Begin(BMPFILE);
-
   // Open requested file on SPIFFS
   fs::File bmpFile = SPIFFS.open(path, "r");
 
   // Check and initialize NEOBMPFILE from the BMPFILE
-  //bool success = NEOBMPFILE.Begin(BMPFILE);
   bool success = NEOBMPFILE.Begin(bmpFile);
 
   // Update the index possible
@@ -471,16 +479,16 @@ String play()
   // Html msg
   String htmlMsg = "";
 
-  // Animation is paused
+  // Animation is paused?
   if (ANIMATIONS.IsPaused())
   {
     // Resume animation
     ANIMATIONS.Resume();
 
-    // Paused animation is resume
+    // Animation is resume
     htmlMsg = "RESUME";
   }
-  // Animation is active
+  // Animation is active?
   else if (ANIMATIONS.IsAnimationActive(0))
   {
     // Pause animation
@@ -488,11 +496,12 @@ String play()
 
     // Blank the strip if needed
     if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+    if (ISENDCOLOR) STRIP.ClearTo(SHADER.Apply(0, COLOR));
 
     // Animation is paused
     htmlMsg = "PAUSE";
   }
-  // No animation
+  // No animation !!! let s start a new one
   else
   {
     // Index
@@ -501,6 +510,9 @@ String play()
 
     // Repeat
     REPEATCOUNTER = REPEAT;
+
+    // Pause
+    PAUSECOUNTER = 2 * PAUSE;
 
     // Launch a new animation
     ANIMATIONS.StartAnimation(0, DELAY, updateAnimation);
@@ -539,8 +551,30 @@ void handleLight()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void light()
 {
+  // Stop animation
+  ANIMATIONS.StopAnimation(0);
+  ANIMATIONS.Resume(); // remove the pause flag to stop paused animation
+
   //turn on the strip
-  STRIP.ClearTo(SHADER.Apply(0, RgbColor(255, 255, 255)));
+  STRIP.ClearTo(SHADER.Apply(0, COLOR));
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void handleBurn()
+{
+  burn();
+  server.send(200, "text/plain", "BURN");
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void burn()
+{
+  // Stop animation
+  ANIMATIONS.StopAnimation(0);
+  ANIMATIONS.Resume(); // remove the pause flag to stop paused animation
+
+  //turn on the strip
+  NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, INDEXSTART, NEOBMPFILE.Width());
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -555,12 +589,54 @@ void updateAnimation(const AnimationParam& param)
       // Restart the animation
       ANIMATIONS.RestartAnimation(param.index);
 
-      // Fil the strip : bitmap is crop to fit the strip !!!
-      NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, INDEX, NEOBMPFILE.Width());
+      // Pause to do?
+      if (ISPAUSE || ISCUT)
+      {
+        // Is it time to play?
+        if ((PAUSECOUNTER > PAUSE))
+        {
+          // Initialisation
+          PAUSECOUNTER -= 1;
 
-      // Index
-      if (ISINVERT) INDEX -= 1;
-      else INDEX += 1;
+          // Fil the strip : bitmap is crop to fit the strip !!!
+          NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, INDEX, NEOBMPFILE.Width());
+
+          // Index
+          if (ISINVERT) INDEX -= 1;
+          else INDEX += 1;
+        }
+        // Is it time to wait?
+        else
+        {
+          //Initialisation
+          PAUSECOUNTER -= 1;
+
+          // Blank or color the strip if needed
+          if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+          if (ISENDCOLOR) STRIP.ClearTo(SHADER.Apply(0, COLOR));
+
+          // Cut the bitmap is needed
+          if (ISCUT)
+          {
+            // Index
+            if (ISINVERT) INDEX -= 1;
+            else INDEX += 1;
+          }
+
+          // Have waited long enough?
+          if (PAUSECOUNTER == 0) PAUSECOUNTER = 2 * PAUSE;
+        }
+      }
+      // No pause to do !!! so let's play
+      else
+      {
+        // Fil the strip : bitmap is crop to fit the strip !!!
+        NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, INDEX, NEOBMPFILE.Width());
+
+        // Index
+        if (ISINVERT) INDEX -= 1;
+        else INDEX += 1;
+      }
     }
     // INDEX is out of the limit
     else
@@ -598,8 +674,9 @@ void updateAnimation(const AnimationParam& param)
         // Stop the animation
         ANIMATIONS.StopAnimation(param.index);
 
-        // Blank the strip if needed
+        // Blank or color the strip if needed
         if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+        if (ISENDCOLOR) STRIP.ClearTo(SHADER.Apply(0, COLOR));
       }
     }
   }

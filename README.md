@@ -76,6 +76,8 @@ This is the webpage that your ESP8266 serve you :
 
 ### Manage your option
 
+![option](https://user-images.githubusercontent.com/2498942/68990158-030fe280-0850-11ea-96d6-ce09b1854134.jpeg)
+
 * **Delay :** Time between two frames in ms. Value possible 0ms to 255ms, but no garantee under 10ms
 * **Brightness :** Brightness of the LED. Value possible 0 (black) to 255 (full)
 * **Repeat :** Number of times the picture is animate. Value possible 0 (0 repetition so 1 animation) to 255 (255 repetitions so 256 animations)
