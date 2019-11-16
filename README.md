@@ -22,7 +22,7 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 * **For software bit bang :** My sketch use pin D1 for DATA and pin D2 for CLOCK, but you can change it.
 
-![software](https://user-images.githubusercontent.com/2498942/68550264-a05ab900-0401-11ea-81c8-7a4c1f4a8635.png "Hardware assembly for software bit bang")
+![help4](https://user-images.githubusercontent.com/2498942/69000175-d00b3480-08cb-11ea-8f84-812b48917d14.png "Hardware assembly for software bit bang")
 
 ### Software Prerequisites And Installing
 
