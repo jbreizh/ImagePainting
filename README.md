@@ -54,7 +54,7 @@ For the ESP8266, there is 2 way to produce the signal for DATA and CLOCK :
 
 ### Push button connection
 
-The push button is optional, Imagepainting always work from the webpage. It's just a more convenient way to play/pause animation on the field (than clicking on a smartphone touch screen). This section of the code define the push button :
+The push button is optional, ImagePainting always work from the webpage. It's just a more convenient way to play/pause animation on the field (than clicking on a smartphone touch screen). This section of the code define the push button :
 
 ```
 // BUTTON --------------
@@ -142,7 +142,7 @@ This is the webpage that your ESP8266 serve you :
 
 ## Case scenario
 
-I try my best to show you some possibility of Imagepainting.
+I try my best to show you some possibility of ImagePainting.
 
 ![help1](https://user-images.githubusercontent.com/2498942/68999790-1362a480-08c6-11ea-976c-e6bd6f43f333.png)
 ![help2](https://user-images.githubusercontent.com/2498942/68999791-1362a480-08c6-11ea-9d93-aec3192cc787.png)
@@ -154,5 +154,5 @@ I try my best to show you some possibility of Imagepainting.
 ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation :
 
 * Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
-* The Bitmap must be rotate by 90°. Imagepainting will display the Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, Imagepainting rotate your Bitmap back.
+* The Bitmap must be rotate by 90°. ImagePainting will display the Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
