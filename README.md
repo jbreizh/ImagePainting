@@ -137,7 +137,7 @@ This is the webpage that your ESP8266 serve you :
 
 * **Light :** Set the LED Strip to **Color** to use it as a flashlight or for special effect. Stop your runnig animation.
 * **Burn :** Set the LED Strip to the first line of the Bitmap for special effect. Stop your animation.
-* **Play :** Play or pause your running animation
+* **Play :** Play from **Start** or pause your running animation
 * **Stop :** Turn off your LED Strip. Stop your running animation.
 
 ## Case scenario
@@ -154,5 +154,5 @@ I try my best to show you some possibility of ImagePainting.
 ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation :
 
 * Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
-* The Bitmap must be rotate by 90°. ImagePainting will display the Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
+* Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.

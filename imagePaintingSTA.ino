@@ -6,9 +6,16 @@
 #include <FS.h>
 
 // BUTTON --------------
-unsigned long DEBOUNCINGTIME = 500; //Debouncing Time in Milliseconds
-const int PLAY_PIN = D3;
-volatile unsigned long LASTPLAYMS;
+long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
+long HOLDTIME = 500; // Hold Time in Milliseconds
+const int BTNA_PIN = D3;
+long BTNATIMER = 0;
+boolean ISBTNA = false;
+boolean ISBTNAHOLD = false;
+const int BTNB_PIN = D4;
+long BTNBTIMER = 0;
+boolean ISBTNB = false;
+boolean ISBTNBHOLD = false;
 // end BUTTON-----------
 
 // APA102 --------------
@@ -73,10 +80,8 @@ template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
       T_COLOR_OBJECT result;
 
       // below is a fast way to apply brightness to all elements of the color
-      // it does assume each element is only 8bits, but this currently is the
-      // case
-      // This could be replaced with a LinearBlend for safty but is less
-      // optimized
+      // it does assume each element is only 8bits, but this currently is the case
+      // This could be replaced with a LinearBlend for safty but is less optimized
       const uint8_t* pSrc = reinterpret_cast<const uint8_t*>(&src);
       uint8_t* pDest = reinterpret_cast<uint8_t*>(&result);
       const uint8_t* pSrcEnd = pSrc + sizeof(T_COLOR_OBJECT);
@@ -177,7 +182,8 @@ void setup()
   bitmapLoad(BMPPATH);
 
   // Button setup
-  pinMode(PLAY_PIN, INPUT_PULLUP);
+  pinMode(BTNA_PIN, INPUT_PULLUP);
+  pinMode(BTNB_PIN, INPUT_PULLUP);
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -190,11 +196,52 @@ void loop()
   ANIMATIONS.UpdateAnimations();
   STRIP.Show();
 
-  // To handle the play button
-  if ((digitalRead(PLAY_PIN) == LOW) && ((millis() - LASTPLAYMS) >= DEBOUNCINGTIME ))
+  // To handle the button A
+  if (digitalRead(BTNA_PIN) == LOW)
   {
-    String htmlMsg = play();
-    LASTPLAYMS = millis();
+    if (!ISBTNA)
+    {
+      ISBTNA = true;
+      BTNATIMER = millis();
+    }
+    if ((millis() - BTNATIMER > HOLDTIME) && (!ISBTNAHOLD))
+    {
+      ISBTNAHOLD = true;
+      burn();
+    }
+  }
+  else if (ISBTNA)
+  {
+    if ((millis() - BTNATIMER > DEBOUNCETIME) && (!ISBTNAHOLD))
+    {
+      play();
+    }
+    ISBTNA = false;
+    ISBTNAHOLD = false;
+  }
+
+  // To handle the button B
+  if (digitalRead(BTNB_PIN) == LOW)
+  {
+    if (!ISBTNB)
+    {
+      ISBTNB = true;
+      BTNBTIMER = millis();
+    }
+    if ((millis() - BTNBTIMER > HOLDTIME) && (!ISBTNBHOLD))
+    {
+      ISBTNBHOLD = true;
+      light();
+    }
+  }
+  else if (ISBTNB)
+  {
+    if ((millis() - BTNBTIMER > DEBOUNCETIME) && (!ISBTNBHOLD))
+    {
+      stopB();
+    }
+    ISBTNB = false;
+    ISBTNBHOLD = false;
   }
 }
 
@@ -203,6 +250,7 @@ String getContentType(String filename)
 {
   if (filename.endsWith(".html")) return "text/html";
   else if (filename.endsWith(".bmp")) return "image/bmp";
+  else if (filename.endsWith(".png")) return "image/png";
   return "text/plain";
 }
 
