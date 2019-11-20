@@ -24,9 +24,11 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 ## Hardware Assembly
 
-This is my hardware assembly for the Wemos D1 mini :
+This is my hardware assembly for the Wemos D1 mini for software SPI:
 
-![help4](https://user-images.githubusercontent.com/2498942/69000175-d00b3480-08cb-11ea-8f84-812b48917d14.png "Hardware assembly for software bit bang")
+![help4](https://user-images.githubusercontent.com/2498942/69257223-ffb38880-0bba-11ea-9134-2ce36ff309a4.png" Hardware assembly for software bit bang")
+
+This hardware is 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to a 5v for the led. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller#assembly-instructions) from Evil Genius.
 
 ### LED Strip connection
 
@@ -48,31 +50,46 @@ For the ESP8266, there is 2 way to produce the signal for DATA and CLOCK :
 
 * **Software SPI :** I use pin D1 for DATA and pin D2 for CLOCK, but you can change it.
 
-* **Hardware SPI :** You must use the hardware SPI pin from your board (DATA = MOSI and CLOCK = SCLK). For the Wemos D1 mini MOSI is D7 and SCLK is D5.
-
-**Warning :** The Hardware SPI is faster than the Software method, but it doesn't work for me... So test with the Software method first and then the Hardware SPI. I don't know if it's a software bug (a lot of library) or an hardware problem (level schifter between ESP8266 3.3V logic to the APA102 5V logic).
+* **Hardware SPI :** You must use the hardware SPI pin from your board (DATA = MOSI and CLOCK = SCLK). For the Wemos D1 mini MOSI is D7 and SCLK is D5. The Hardware SPI is faster than the Software method and will allow a faster refresh time.
 
 ### Push button connection
 
-The push button is optional, ImagePainting always work from the webpage. It's just a more convenient way to play/pause animation on the field (than clicking on a smartphone touch screen). This section of the code define the push button :
+The 2 push buttons are optionals. ImagePainting always work from the webpage and you still need your smartphone to upload Bitmap or tweak parameters. However, it's more convenient to launch your animation with a button than clicking on a touch screen.
+
+By defaut, ImagePainting handle the 2 push buttons (BTNA and BTNB) like this :
+
+* **BTNA :** "short click" --> Play/Pause and "long click" --> Burn
+
+* **BTNB :** "short click" --> Stop and "long click" --> Light
+
+This section of the code define the push button :
 
 ```
 // BUTTON --------------
-unsigned long DEBOUNCINGTIME = 500; //Debouncing Time in Milliseconds
-const int PLAY_PIN = D3;
-volatile unsigned long LASTPLAYMS;
+long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
+long HOLDTIME = 500; // Hold Time in Milliseconds
+const int BTNA_PIN = D3;
+long BTNATIMER = 0;
+boolean ISBTNA = false;
+boolean ISBTNAHOLD = false;
+const int BTNB_PIN = D4;
+long BTNBTIMER = 0;
+boolean ISBTNB = false;
+boolean ISBTNBHOLD = false;
 // end BUTTON-----------
 ```
 
-* **Change the PIN :** I use D3 on purpose for my Wemos D1. This is an internal Pull-Up Pin (with D4), so check the specification of your board before changing this PIN.
+* **Change the PIN :** I use D3 and D4 on purpose for my Wemos D1. This is internal Pull-Up Pin, so check the specification of your board before changing those PIN.
 
-* **Debouncing :** DEBOUNCINGTIME can be tweak to have a good button response without false detection.
+* **HOLDTIME :** HOLDTIME can be tweak to have a shorter/longer "long click".
+
+* **DEBOUNCETIME :** DEBOUNCETIME can be tweak to have a good button response without false detection.
 
 ## Software Prerequisites And Installing
 
 ### Arduino IDE
 
-You need to install the following board/tool/library :**
+You need to install the following board/tool/library :
 
 * [ESP8266](https://github.com/esp8266/Arduino) - The ESP8266 core for Arduino
 
@@ -83,7 +100,7 @@ You need to install the following board/tool/library :**
 
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - The JSON library for Arduino
 
-### Tweak the code
+### Wifi
 
 ```
 // WIFI --------------
@@ -95,8 +112,6 @@ const char* password = "12345678";
 
 * **ssid :** your router ssid
 * **password :** your router password
-
-**Flash the code and upload data to SPIFFS. The end....**
 
 ## Use ImagePainting
 
@@ -156,3 +171,8 @@ ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So
 * Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
 * Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
+
+## Picture Pack
+
+I have put you resize version of the original Bitmap pack from [pixelstick](http://www.thepixelstick.com/index.html). This Bitmap pack come originaly at 200px wide and i resize it at 60px and 144px to fit standard LED strip.
+Thanks [pixelstick](http://www.thepixelstick.com/index.html) for this nice Bitmap pack.
