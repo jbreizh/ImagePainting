@@ -28,7 +28,7 @@ This is my hardware assembly for the Wemos D1 mini for software SPI:
 
 ![help4](https://user-images.githubusercontent.com/2498942/69257223-ffb38880-0bba-11ea-9134-2ce36ff309a4.png)
 
-This hardware is 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to a 5v for the led. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius.
+This hardware is 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to 5v for the LED. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius.
 
 ### LED Strip connection
 
