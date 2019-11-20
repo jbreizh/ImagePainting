@@ -159,7 +159,8 @@ This is the webpage that your ESP8266 serve you :
 
 I try my best to show you some possibility of ImagePainting.
 
-![help1](https://user-images.githubusercontent.com/2498942/68999790-1362a480-08c6-11ea-976c-e6bd6f43f333.png)
+![help1](https://user-images.githubusercontent.com/2498942/69259671-e57ba980-0bbe-11ea-8891-45a0cb5b84b9.png)
+
 ![help2](https://user-images.githubusercontent.com/2498942/68999791-1362a480-08c6-11ea-9d93-aec3192cc787.png)
 
 ## About Picture
