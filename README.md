@@ -26,9 +26,9 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 This is my hardware assembly for the Wemos D1 mini for software SPI:
 
-![help4](https://user-images.githubusercontent.com/2498942/69257223-ffb38880-0bba-11ea-9134-2ce36ff309a4.png" Hardware assembly for software bit bang")
+![help4](https://user-images.githubusercontent.com/2498942/69257223-ffb38880-0bba-11ea-9134-2ce36ff309a4.png)
 
-This hardware is 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to a 5v for the led. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller#assembly-instructions) from Evil Genius.
+This hardware is 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to a 5v for the led. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius.
 
 ### LED Strip connection
 
@@ -172,7 +172,7 @@ ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So
 * Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
 
-## Picture Pack
+## Bitmap Pack
 
 I have put you resize version of the original Bitmap pack from [pixelstick](http://www.thepixelstick.com/index.html). This Bitmap pack come originaly at 200px wide and i resize it at 60px and 144px to fit standard LED strip.
 Thanks [pixelstick](http://www.thepixelstick.com/index.html) for this nice Bitmap pack.
