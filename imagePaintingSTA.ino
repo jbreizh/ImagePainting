@@ -1,70 +1,17 @@
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//#define STA       //Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//#define USE_NEOPIXELS //Decomment this to use Neopixels
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
 #include <FS.h>
-
-// BUTTON --------------
-long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
-long HOLDTIME = 500; // Hold Time in Milliseconds
-const int BTNA_PIN = D3;
-long BTNATIMER = 0;
-boolean ISBTNA = false;
-boolean ISBTNAHOLD = false;
-const int BTNB_PIN = D4;
-long BTNBTIMER = 0;
-boolean ISBTNB = false;
-boolean ISBTNBHOLD = false;
-// end BUTTON-----------
-
-// APA102 --------------
-const int NUMPIXELS = 60;
-uint8_t BRIGHTNESS = 40;
-const int DATA_PIN = D1;
-const int CLOCK_PIN = D2;
-//NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang: CLOCK_PIN : D2 Yellow / DATA_PIN : D1 GREEN
-NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
-//NeoPixelBus<DotStarBgrFeature, DotStarSpi2MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
-// end APA102-----------
-
-// WIFI --------------
-ESP8266WebServer server;
-const char* ssid = "Moto C Plus 1105";
-const char* password = "12345678";
-// end WIFI-----------
-
-// FS --------------
-fs::File UPLOADFILE; // hold uploaded file
-// end FS -----------
-
-// BITMAP --------------
-String BMPPATH = "/welcome.bmp";
-NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
-// end BITMAP -----------
-
-// ANIMATION --------------
-NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
-uint16_t INDEXMIN; //Min index possible
-uint16_t INDEXSTART; //Min index chosen
-uint16_t INDEX; // Current index
-uint16_t INDEXSTOP; //Max index chosen
-uint16_t INDEXMAX; //Max index possible
-HtmlColor COLOR = HtmlColor(0xffffff);
-// end ANIMATION --------------
-
-// RUNTIME --------------
-uint8_t DELAY = 30;
-uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
-uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
-bool ISREPEAT = false;
-bool ISENDOFF = false;
-bool ISENDCOLOR = false;
-bool ISINVERT = false;
-bool ISBOUNCE = false;
-bool ISPAUSE = false;
-bool ISCUT = false;
-// end RUNTIME --------------
+#ifndef STA
+#include <DNSServer.h>
+#endif
 
 //SHADER --------------
 template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
@@ -108,13 +55,84 @@ template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
   private:
     uint8_t _brightness;
 };
+//end SHADER --------------
 
-// create a non-template type to make it easier to be consistent
+// APA102 --------------
+const int NUMPIXELS = 60;
+uint8_t BRIGHTNESS = 40;
+#ifdef USE_NEOPIXELS //Neopixels
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> STRIP(NUMPIXELS); // DMA method :DATA_PIN : RDX0/GPIO3 pin
+NeoBitmapFile<NeoGrbFeature, fs::File> NEOBMPFILE;
+typedef BrightnessShader<NeoGrbFeature::ColorObject> BrightShader;
+#else // Dotstars
+//const int DATA_PIN = D1; const int CLOCK_PIN = D2; //Software SPI :DATA_PIN : D1 / CLOCK_PIN : D2
+//NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); //Software SPI
+NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); //Hardware SPI : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini D7 GREEN D5 Yellow)
+NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
 typedef BrightnessShader<DotStarBgrFeature::ColorObject> BrightShader;
+#endif
+// end APA102-----------
 
-// create an instance of our shader object with the same feature as our buffer
+// SHADER --------------
 BrightShader SHADER;
 // end SHADER --------------
+
+// WIFI/ DNS--------------
+ESP8266WebServer server;
+#ifdef STA // STA Mode
+const char* ssid = "Moto C Plus 1105"; // your wifi ssid for STA mode
+const char* password = "12345678"; // your wifi password for AP mode
+#else // AP Mode
+const char* ssid = "imagePainting"; // wifi ssid for AP mode
+IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
+DNSServer dnsServer;
+const byte DNS_PORT = 53;
+#endif
+// end WIFI/DNS-----------
+
+// FS --------------
+fs::File UPLOADFILE; // hold uploaded file
+// end FS -----------
+
+// BITMAP --------------
+String BMPPATH = "/welcome.bmp";
+// end BITMAP -----------
+
+// ANIMATION --------------
+NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
+uint16_t INDEXMIN; //Min index possible
+uint16_t INDEXSTART; //Min index chosen
+uint16_t INDEX; // Current index
+uint16_t INDEXSTOP; //Max index chosen
+uint16_t INDEXMAX; //Max index possible
+HtmlColor COLOR = HtmlColor(0xffffff);
+// end ANIMATION --------------
+
+// RUNTIME --------------
+uint8_t DELAY = 30;
+uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
+uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
+bool ISREPEAT = false;
+bool ISENDOFF = false;
+bool ISENDCOLOR = false;
+bool ISINVERT = false;
+bool ISBOUNCE = false;
+bool ISPAUSE = false;
+bool ISCUT = false;
+// end RUNTIME --------------
+
+// BUTTON --------------
+long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
+long HOLDTIME = 500; // Hold Time in Milliseconds
+const int BTNA_PIN = D3;
+long BTNATIMER = 0;
+boolean ISBTNA = false;
+boolean ISBTNAHOLD = false;
+const int BTNB_PIN = D4;
+long BTNBTIMER = 0;
+boolean ISBTNB = false;
+boolean ISBTNBHOLD = false;
+// end BUTTON-----------
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void setup()
@@ -125,7 +143,9 @@ void setup()
   // Serial setup
   Serial.begin(115200);
 
-  // Wifi setup
+  // Wifi/DNS setup
+#ifdef STA //STA Mode
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -135,6 +155,15 @@ void setup()
   Serial.println("");
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+#else //AP Mode
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP(ssid);
+  Serial.println("");
+  Serial.print("AP IP address: ");
+  Serial.println(WiFi.softAPIP());
+  dnsServer.start(DNS_PORT, "*", apIP);
+#endif
 
   // Webserver setup
   // list available files
@@ -169,7 +198,12 @@ void setup()
   // called when the url is not defined
   server.onNotFound([]() {
     if (!handleFileRead(server.uri())) {
+#ifdef STA // STA mode : 404
       server.send(404, "text/plain", "404: Not found");
+#else AP // AP mode : Redirecting 
+      const char *metaRefreshStr = "<head><meta http-equiv=\"refresh\" content=\"0; url=http://192.168.1.1/index.html\" /></head><body><p>redirecting...</p></body>";
+      server.send(200, "text/html", metaRefreshStr);
+#endif
     }
   });
 
@@ -189,6 +223,10 @@ void setup()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void loop()
 {
+#ifndef STA //AP mode : DNS
+  dnsServer.processNextRequest();
+#endif
+
   // To handle the webserver
   server.handleClient();
 
