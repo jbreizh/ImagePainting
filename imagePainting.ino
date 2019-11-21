@@ -1,6 +1,9 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//#define STA       //Decomment this to use ImagePainting in STA mode and setup your ssid/password
-//#define USE_NEOPIXELS //Decomment this to use Neopixels
+//#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//Dotstars : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini DATA_PIN=D7(GREEN) CLOCK_PIN=D5 (Yellow))
+//Neopixels : DATA_PIN : RDX0/GPIO3 (Wemos D1 mini DATA_PIN=RX)
+#define FEATURE DotStarBgrFeature // Neopixels : NeoGrbFeature / Dotstars : DotStarBgrFeature
+#define METHOD DotStarSpiMethod // Neopixels :Neo800KbpsMethod / Dotstars : DotStarSpiMethod
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #include <ArduinoJson.h>
@@ -12,6 +15,70 @@
 #ifndef STA
 #include <DNSServer.h>
 #endif
+
+// LED --------------
+const int NUMPIXELS = 60;
+uint8_t BRIGHTNESS = 40;
+NeoPixelBus<FEATURE, METHOD> STRIP(NUMPIXELS);
+// end LED -----------
+
+// WIFI/ DNS --------------
+ESP8266WebServer server;
+#ifdef STA // STA Mode
+const char* ssid = "Moto C Plus 1105"; // your wifi ssid for STA mode
+const char* password = "12345678"; // your wifi password for AP mode
+#else // AP Mode
+const char* ssid = "imagePainting"; // wifi ssid for AP mode
+IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
+DNSServer dnsServer;
+const byte DNS_PORT = 53;
+#endif
+// end WIFI/DNS -----------
+
+// FS --------------
+fs::File UPLOADFILE; // hold uploaded file
+// end FS -----------
+
+// BITMAP --------------
+String BMPPATH = "/welcome.bmp";
+NeoBitmapFile<FEATURE, fs::File> NEOBMPFILE;
+// end BITMAP -----------
+
+// ANIMATION --------------
+NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
+uint16_t INDEXMIN; //Min index possible
+uint16_t INDEXSTART; //Min index chosen
+uint16_t INDEX; // Current index
+uint16_t INDEXSTOP; //Max index chosen
+uint16_t INDEXMAX; //Max index possible
+HtmlColor COLOR = HtmlColor(0xffffff);
+// end ANIMATION --------------
+
+// RUNTIME --------------
+uint8_t DELAY = 30;
+uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
+uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
+bool ISREPEAT = false;
+bool ISENDOFF = false;
+bool ISENDCOLOR = false;
+bool ISINVERT = false;
+bool ISBOUNCE = false;
+bool ISPAUSE = false;
+bool ISCUT = false;
+// end RUNTIME --------------
+
+// BUTTON --------------
+long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
+long HOLDTIME = 500; // Hold Time in Milliseconds
+const int BTNA_PIN = D3; //PIN for the button A
+const int BTNB_PIN = D4; //PIN for the button B
+long BTNATIMER = 0;
+long BTNBTIMER = 0;
+boolean ISBTNA = false;
+boolean ISBTNB = false;
+boolean ISBTNAHOLD = false;
+boolean ISBTNBHOLD = false;
+// end BUTTON-----------
 
 //SHADER --------------
 template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
@@ -55,84 +122,11 @@ template<typename T_COLOR_OBJECT> class BrightnessShader : public NeoShaderBase
   private:
     uint8_t _brightness;
 };
-//end SHADER --------------
 
-// APA102 --------------
-const int NUMPIXELS = 60;
-uint8_t BRIGHTNESS = 40;
-#ifdef USE_NEOPIXELS //Neopixels
-NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> STRIP(NUMPIXELS); // DMA method :DATA_PIN : RDX0/GPIO3 pin
-NeoBitmapFile<NeoGrbFeature, fs::File> NEOBMPFILE;
-typedef BrightnessShader<NeoGrbFeature::ColorObject> BrightShader;
-#else // Dotstars
-//const int DATA_PIN = D1; const int CLOCK_PIN = D2; //Software SPI :DATA_PIN : D1 / CLOCK_PIN : D2
-//NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); //Software SPI
-NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); //Hardware SPI : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini D7 GREEN D5 Yellow)
-NeoBitmapFile<DotStarBgrFeature, fs::File> NEOBMPFILE;
-typedef BrightnessShader<DotStarBgrFeature::ColorObject> BrightShader;
-#endif
-// end APA102-----------
+typedef BrightnessShader<FEATURE::ColorObject> BrightShader;
 
-// SHADER --------------
 BrightShader SHADER;
-// end SHADER --------------
-
-// WIFI/ DNS--------------
-ESP8266WebServer server;
-#ifdef STA // STA Mode
-const char* ssid = "Moto C Plus 1105"; // your wifi ssid for STA mode
-const char* password = "12345678"; // your wifi password for AP mode
-#else // AP Mode
-const char* ssid = "imagePainting"; // wifi ssid for AP mode
-IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
-DNSServer dnsServer;
-const byte DNS_PORT = 53;
-#endif
-// end WIFI/DNS-----------
-
-// FS --------------
-fs::File UPLOADFILE; // hold uploaded file
-// end FS -----------
-
-// BITMAP --------------
-String BMPPATH = "/welcome.bmp";
-// end BITMAP -----------
-
-// ANIMATION --------------
-NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
-uint16_t INDEXMIN; //Min index possible
-uint16_t INDEXSTART; //Min index chosen
-uint16_t INDEX; // Current index
-uint16_t INDEXSTOP; //Max index chosen
-uint16_t INDEXMAX; //Max index possible
-HtmlColor COLOR = HtmlColor(0xffffff);
-// end ANIMATION --------------
-
-// RUNTIME --------------
-uint8_t DELAY = 30;
-uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
-uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
-bool ISREPEAT = false;
-bool ISENDOFF = false;
-bool ISENDCOLOR = false;
-bool ISINVERT = false;
-bool ISBOUNCE = false;
-bool ISPAUSE = false;
-bool ISCUT = false;
-// end RUNTIME --------------
-
-// BUTTON --------------
-long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
-long HOLDTIME = 500; // Hold Time in Milliseconds
-const int BTNA_PIN = D3;
-long BTNATIMER = 0;
-boolean ISBTNA = false;
-boolean ISBTNAHOLD = false;
-const int BTNB_PIN = D4;
-long BTNBTIMER = 0;
-boolean ISBTNB = false;
-boolean ISBTNBHOLD = false;
-// end BUTTON-----------
+//end SHADER --------------
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void setup()
@@ -433,8 +427,8 @@ bool bitmapLoad(String path)
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleFileDelete()
 {
-  // parse parameter from request
-  String path = server.arg("file");
+  // parse file from request
+  String path = server.arg("plain");
 
   // protect system files
   if ( path == "" || path == "/" || path == "/index.html" || path == "/error.bmp" || path == "/welcome.bmp" || path == "/title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");

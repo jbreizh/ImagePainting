@@ -10,9 +10,16 @@
 
 .title {
   display: block;
+  margin-top:0.4em;
   margin-left: auto;
   margin-right: auto;
-  width: 80%;
+  width: 95%;
+}
+
+.canvas {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .status {
@@ -94,7 +101,7 @@
     <td colspan=4><img class="title" src="title.png"></td>
   </tr>
   <tr>
-    <td colspan=4><h2 class="status" id="status"> WELCOME </h1></td>
+    <td colspan=4><h2 class="status" id="textStatus"> WELCOME </h1></td>
   </tr>
   <tr class="top">
     <td><div class="divLeft" >Delete:</div></td>
@@ -119,7 +126,7 @@
   </tr>
    <tr>
     <td></td>
-    <td colspan=2><canvas id="canvas" width="300px" height="150"></canvas></td>
+    <td colspan=2><canvas class="canvas" id="canvas" width="300px" height="150"></canvas></td>
     <td></td>
   </tr>
   <tr>
@@ -189,48 +196,62 @@
 </body>
 
 <script>
-//--------------------------------------------------
+// Variable--------------------------------------------------
+var bitmap=new Image;
+var textStatus = document.getElementById("textStatus");
+var sliderStart = document.getElementById("start");
+var sliderStop = document.getElementById("stop");
+var sliderDelay = document.getElementById("delay");
+var sliderBrightness = document.getElementById("brightness");
+var sliderRepeat = document.getElementById("repeat");
+var sliderPause = document.getElementById("pause");
+var textStart = document.getElementById("textStart");
+var textStop = document.getElementById("textStop");
+var textDelay = document.getElementById("textDelay");
+var textBrightness = document.getElementById("textBrightness");
+var textRepeat = document.getElementById("textRepeat");
+var textPause = document.getElementById("textPause");
+var pickerColor = document.getElementById("color");
+var ckInvert = document.getElementById("isinvert");
+var ckRepeat = document.getElementById("isrepeat");
+var ckBounce = document.getElementById("isbounce");
+var ckPause = document.getElementById("ispause");
+var ckCut = document.getElementById("iscut");
+var ckEndOff = document.getElementById("isendoff");
+var ckEndColor = document.getElementById("isendcolor");
+var selectDelete = document.getElementById("deleteList");
+var selectImage = document.getElementById("imageList");
+var fileInput = document.getElementById("fileInput");
+ 
+// Event--------------------------------------------------
+bitmap.onload = drawBitmap;
+//addEvent(window, "resize", function() {drawBitmap("napoleon.bmp")});
+sliderStart.oninput = function() {updateTextSlider(sliderStart,textStart, "px"); drawBitmap();};
+sliderStop.oninput = function() {updateTextSlider(sliderStop,textStop, "px"); drawBitmap();};
+sliderDelay.oninput =function() {updateTextSlider(sliderDelay,textDelay, "ms");};
+sliderBrightness.oninput =function() {updateTextSlider(sliderBrightness,textBrightness, "%");};
+sliderRepeat.oninput =function() {updateTextSlider(sliderRepeat,textRepeat, "x");};
+sliderPause.oninput =function() {updateTextSlider(sliderPause,textPause, "px");};
+ckRepeat.onclick = function() {updateCheckbox(ckRepeat,ckBounce);};
+ckBounce.onclick = function() {updateCheckbox(ckBounce,ckRepeat);};
+ckPause.onclick = function() {updateCheckbox(ckPause,ckCut);};
+ckCut.onclick = function() {updateCheckbox(ckCut,ckPause);};
+ckEndOff.onclick = function() {updateCheckbox(ckEndOff,ckEndColor);};
+ckEndColor.onclick = function() {updateCheckbox(ckEndColor,ckEndOff);};
+
+// Main --------------------------------------------------
 requestFileList();
 
 //--------------------------------------------------
-var addEvent = function(object, type, callback) {
-    if (object == null || typeof(object) == 'undefined') return;
-    if (object.addEventListener) {
-        object.addEventListener(type, callback, false);
-    } else if (object.attachEvent) {
-        object.attachEvent("on" + type, callback);
-    } else {
-        object["on"+type] = callback;
-    }
-};
-//canvas
-addEvent(window, "resize", function() {drawBitmap(document.getElementById("imageList").value)});
-//slider
-addEvent(document.getElementById("start"), "input", function() {document.getElementById("textStart").innerHTML =document.getElementById("start").value + " px";});
-addEvent(document.getElementById("stop"), "input", function() {document.getElementById("textStop").innerHTML =document.getElementById("stop").value + " px";});
-addEvent(document.getElementById("delay"), "input", function() {document.getElementById("textDelay").innerHTML =document.getElementById("delay").value + " ms";});
-addEvent(document.getElementById("brightness"), "input", function() {document.getElementById("textBrightness").innerHTML =document.getElementById("brightness").value + " %";});
-addEvent(document.getElementById("repeat"), "input", function() {document.getElementById("textRepeat").innerHTML =document.getElementById("repeat").value + " x";});
-addEvent(document.getElementById("pause"), "input", function() {document.getElementById("textPause").innerHTML =document.getElementById("pause").value + " x";});
-//checkbox
-addEvent(document.getElementById("isrepeat"), "click", function() {updateCheckbox('isrepeat','isbounce')});
-addEvent(document.getElementById("isbounce"), "click", function() {updateCheckbox('isbounce','isrepeat')});
-addEvent(document.getElementById("ispause"), "click", function() {updateCheckbox('ispause','iscut')});
-addEvent(document.getElementById("iscut"), "click", function() {updateCheckbox('iscut','ispause')});
-addEvent(document.getElementById("isendoff"), "click", function() {updateCheckbox('isendoff','isendcolor')});
-addEvent(document.getElementById("isendcolor"), "click", function() {updateCheckbox('isendcolor','isendoff')});
-
-
-//--------------------------------------------------
-function setFileList(jsonString, listString)
+function setFileList(jsonString, select)
 {
   var json = JSON.parse(jsonString);
-  document.getElementById(listString).options.length = json.fileList.length;
+  select.options.length = json.fileList.length;
     
   for (i = 0; i < json.fileList.length; i++)
   {
-    document.getElementById(listString).options[i].value = json.fileList[i]; 
-    document.getElementById(listString).options[i].text = json.fileList[i]; 
+    select.options[i].value = json.fileList[i]; 
+    select.options[i].text = json.fileList[i]; 
   }
 }
 
@@ -238,124 +259,119 @@ function setFileList(jsonString, listString)
 function setParameter(jsonString)
 {
   var json = JSON.parse(jsonString);
-  //update start and textStart
-  document.getElementById("start").setAttribute("min", json["indexMin"]);
-  document.getElementById("start").setAttribute("max", json["indexMax"]);
-  document.getElementById("start").value = json["indexStart"];
-  document.getElementById("textStart").innerHTML = json["indexStart"] + " px";
-  //draw the bitmap
-  document.getElementById("imageList").value = json["bmpPath"];
-  drawBitmap(json["bmpPath"]);
-  //update stop and textStop
-  document.getElementById("stop").setAttribute("min", json["indexMin"]);
-  document.getElementById("stop").setAttribute("max", json["indexMax"]);
-  document.getElementById("stop").value = json["indexStop"];
-  document.getElementById("textStop").innerHTML = json["indexStop"] + " px";
-  // update delay, brightness, repeat, pause
-  document.getElementById("delay").value = json["delay"];
-  document.getElementById("textDelay").innerHTML = json["delay"] + " ms";
-  document.getElementById("brightness").value = json["brightness"];
-  document.getElementById("textBrightness").innerHTML = json["brightness"] + " %";
-  document.getElementById("repeat").value = json["repeat"];
-  document.getElementById("textRepeat").innerHTML = json["repeat"] + " x";
-  document.getElementById("pause").value = json["pause"];
-  document.getElementById("textPause").innerHTML = json["pause"] + " px";
-  // update color
-  document.getElementById("color").value = json["color"];
-  // update checkbox parameters
-  document.getElementById("isinvert").checked  = json["isinvert"];
-  document.getElementById("isrepeat").checked  = json["isrepeat"];
-  updateCheckbox('isrepeat','isbounce');
-  document.getElementById("isbounce").checked  = json["isbounce"];
-  updateCheckbox('isbounce','isrepeat');
-  document.getElementById("ispause").checked  = json["ispause"];
-  updateCheckbox('ispause','iscut');
-  document.getElementById("iscut").checked  = json["iscut"];
-  updateCheckbox('iscut','ispause');
-  document.getElementById("isendoff").checked  = json["isendoff"];
-  updateCheckbox('isendoff','isendcolor');
-  document.getElementById("isendcolor").checked  = json["isendcolor"];
-  updateCheckbox('isendcolor','isendoff');
+  // set parameters values
+  sliderStart.setAttribute("min", json["indexMin"]);
+  sliderStart.setAttribute("max", json["indexMax"]);
+  sliderStart.value = json["indexStart"];
+  sliderStop.setAttribute("min", json["indexMin"]);
+  sliderStop.setAttribute("max", json["indexMax"]);
+  sliderStop.value = json["indexStop"];
+  selectImage.value = json["bmpPath"];
+  bitmap.src=json["bmpPath"];
+  sliderDelay.value = json["delay"];
+  sliderBrightness.value = json["brightness"];
+  sliderRepeat.value = json["repeat"];
+  sliderPause.value = json["pause"];
+  pickerColor.value = json["color"];
+  ckInvert.checked  = json["isinvert"];
+  ckRepeat.checked  = json["isrepeat"];
+  ckBounce.checked  = json["isbounce"];
+  ckPause.checked  = json["ispause"];
+  ckCut.checked  = json["iscut"];
+  ckEndOff.checked  = json["isendoff"];
+  ckEndColor.checked  = json["isendcolor"];
+  // check parameter
+  updateTextSlider(sliderStart,textStart, "px");
+  updateTextSlider(sliderStop,textStop, "px");
+  updateTextSlider(sliderDelay,textDelay, "ms");
+  updateTextSlider(sliderBrightness,textBrightness, "%");
+  updateTextSlider(sliderRepeat,textRepeat, "x");
+  updateTextSlider(sliderPause,textPause, "px");
+  updateCheckbox(ckRepeat,ckBounce);
+  updateCheckbox(ckBounce,ckRepeat);
+  updateCheckbox(ckPause,ckCut);
+  updateCheckbox(ckCut,ckPause);
+  updateCheckbox(ckEndOff,ckEndColor);
+  updateCheckbox(ckEndColor,ckEndOff);
 }
 
 //--------------------------------------------------
 function getParameter()
 {
   var json = new Object();
-  // load text parameters
-  json.delay = document.getElementById("delay").value;
-  json.brightness = document.getElementById("brightness").value;
-  json.repeat = document.getElementById("repeat").value;
-  json.pause = document.getElementById("pause").value;
-  // load text parameters
-  json.color = document.getElementById("color").value;
-  // load checkbox parameters
-  json.isrepeat = document.getElementById("isrepeat").checked;
-  json.isbounce = document.getElementById("isbounce").checked;
-  json.ispause = document.getElementById("ispause").checked;
-  json.iscut = document.getElementById("iscut").checked;
-  json.isinvert = document.getElementById("isinvert").checked;
-  json.isendoff = document.getElementById("isendoff").checked;
-  json.isendcolor = document.getElementById("isendcolor").checked;
-  // load index parameters
-  json.indexStart = document.getElementById("start").value;
-  json.indexStop = document.getElementById("stop").value;
-  // load file parameters
-  json.bmpPath = document.getElementById("imageList").value;
+  // get parameters
+  json.delay = sliderDelay.value;
+  json.brightness = sliderBrightness.value;
+  json.repeat = sliderRepeat.value;
+  json.pause = sliderPause.value;
+  json.color = pickerColor.value;
+  json.isrepeat = ckRepeat.checked;
+  json.isbounce = ckBounce.checked;
+  json.ispause = ckPause.checked;
+  json.iscut = ckCut.checked;
+  json.isinvert = ckInvert.checked;
+  json.isendoff = ckEndOff.checked;
+  json.isendcolor = ckEndColor.checked;
+  json.indexStart = sliderStart.value;
+  json.indexStop = sliderStop.value;
+  json.bmpPath = selectImage.value;
   // convert json to string
   return JSON.stringify(json);
 }
 
 //-------------------------------------------------- The horrible function !!!!
-function drawBitmap(imageSrc)
+function drawBitmap()
 {
   var canvas=document.getElementById("canvas");
   var ctx=canvas.getContext("2d");
-  var image=document.createElement("img");
-  image.src=imageSrc;
-  image.onload=function(){
-    // aspect ratio of the original bitmap
-    var ratio = image.width/image.height;
-    // shitty corrector base on test
-    var corrector = 0.6;
-    // resize the canvas dimension to be same ratio than bitmap but scale to fit in place
-    canvas.width  = corrector*window.innerWidth;
-    canvas.height = corrector*ratio*window.innerWidth;
-    // translate and rotate
-    ctx.translate(canvas.width/2,canvas.height/2);
-    ctx.rotate(-90*Math.PI/180);
-    // draw bitmap strech to fit canvas
-    ctx.drawImage(image,-canvas.height/2,-canvas.width/2,canvas.height,canvas.width);
-  }
+  var ratio = bitmap.width/bitmap.height;
+  // resize the canvas dimension to be same ratio than bitmap but scale to fit in place
+  canvas.width  = sliderStart.offsetWidth;
+  canvas.height = ratio*canvas.width;
+  // save context
+  ctx.save();
+  // translate and rotate
+  ctx.translate(canvas.width/2,canvas.height/2);
+  ctx.rotate(-90*Math.PI/180);
+  // draw bitmap strech to fit canvas
+  ctx.drawImage(bitmap,-canvas.height/2,-canvas.width/2,canvas.height,canvas.width);
+  //restore context
+  ctx.restore();
+  // curtain for the start
+  ctx.fillStyle = "#FF0000";
+  var startIndex = sliderStart.value / sliderStart.max * canvas.width;
+  ctx.fillRect(0, 0, startIndex, canvas.height);
+  // curtain for the start 
+  var stopIndex = sliderStop.value / sliderStop.max * canvas.width;
+  ctx.fillRect( stopIndex,0, canvas.width - stopIndex , canvas.height);
 }
 
 //--------------------------------------------------
 function updateCheckbox(checkboxFrom, checkboxTo)
 {
-  if(document.getElementById(checkboxFrom).checked)
+  if(checkboxFrom.checked)
   {
-    document.getElementById(checkboxTo).disabled = true;
-    document.getElementById(checkboxTo).parentNode.style.color = "grey";
+    checkboxTo.disabled = true;
+    checkboxTo.parentNode.style.color = "grey";
   }
   else
   {
-    document.getElementById(checkboxTo).disabled = false;
-    document.getElementById(checkboxTo).parentNode.style.color = "white";
+    checkboxTo.disabled = false;
+    checkboxTo.parentNode.style.color = "white";
   }
 }
 
 //--------------------------------------------------
-function updateTextSlider(sliderString, textSliderString, unit)
+function updateTextSlider(slider, textSlider, unit)
 {
-  document.getElementById(textSliderString).innerHTML =document.getElementById(sliderString).value + unit;
+  textSlider.innerHTML = slider.value + unit;
 }
 
 //--------------------------------------------------
 function updateStatus(message, color)
 {
-  // update status content and color
-  document.getElementById("status").innerHTML = message;
-  document.getElementById("status").style.color = color;
+  textStatus.innerHTML = message;
+  textStatus.style.color = color;
 }
 
 //--------------------------------------------------
@@ -366,8 +382,8 @@ function requestFileList()
   {
     if (this.status == 200)
     {
-      setFileList(this.responseText,"deleteList");
-      setFileList(this.responseText,"imageList");
+      setFileList(this.responseText,selectDelete);
+      setFileList(this.responseText,selectImage);
       requestParameterRead();
     }      
   };
@@ -404,16 +420,14 @@ function requestFileDelete()
     updateStatus("DELETE ERROR : CONNECTION LOST", "red");
   };
   
-  var params = "file="+document.getElementById("deleteList").value;
   xhr.open("DELETE", "/delete", true);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send(params);
+  xhr.send(selectDelete.value);
 }
 
 //--------------------------------------------------
 function requestFileUpload()
 {
-    var fileInput = document.getElementById("fileInput");
     if (fileInput.files.length == 0)
     {
       updateStatus("UPLOAD ERROR : FILE NOT CHOSEN", "red");
