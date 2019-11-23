@@ -24,33 +24,25 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 
 ## Hardware Assembly
 
-This is my hardware assembly for the Wemos D1 mini for software SPI:
-
-![help4](https://user-images.githubusercontent.com/2498942/69257223-ffb38880-0bba-11ea-9134-2ce36ff309a4.png)
-
-This hardware is 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to 5v for the LED. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius.
+The following hardware assembly are 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to 5v for the LEDs. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius. All the drawing i give are for the Wemos D1 mini and clone, if you use an other ESP8266 board read carefully her spec.
 
 ### LED Strip connection
 
-APA102 are 4 wires SPI driven LED (+5V , DATA, CLOCK , GROUND). This section of the code define the LED strip :
+I have test with success Dotstars (aka APA102) and Neopixels (aka WS2812B). I have selected the fastest METHOD for this two type of LED, but you can find more options at the [NeoPixelBus](https://github.com/Makuna/NeoPixelBus/wiki/NeoPixelBus-object#neo-methods) dedicated page. If you have a problem with color try to select the rigth FEATURE : Brg, Grb, Rgb... are the order of the Red, Green and Blue componement inside each LED which can vary. So FEATURE and METHOD are define by this two macro at the beginning of the sketch :
 
 ```
-// APA102 --------------
-const int NUMPIXELS = 60;
-uint8_t BRIGHTNESS = 40;
-const int DATA_PIN = D1;
-const int CLOCK_PIN = D2;
-NeoPixelBus<DotStarBgrFeature, DotStarMethod> STRIP(NUMPIXELS, CLOCK_PIN, DATA_PIN); // for software bit bang: CLOCK_PIN : D2 Yellow / DATA_PIN : D1 GREEN
-//NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
-//NeoPixelBus<DotStarBgrFeature, DotStarSpi2MhzMethod> STRIP(NUMPIXELS); // for hardware SPI : CLOCK_PIN : D5 Yellow / DATA_PIN : D7 GREEN
-// end APA102-----------
+#define FEATURE DotStarBgrFeature // Neopixels : NeoGrbFeature / Dotstars : DotStarBgrFeature
+#define METHOD DotStarSpiMethod // Neopixels :Neo800KbpsMethod / Dotstars : DotStarSpiMethod
 ```
 
-For the ESP8266, there is 2 way to produce the signal for DATA and CLOCK :
+![help6](https://user-images.githubusercontent.com/2498942/69486316-7c0fcb00-0e4a-11ea-962f-718bfbf4173d.png)
 
-* **Software SPI :** I use pin D1 for DATA and pin D2 for CLOCK, but you can change it.
+* **Neopixels :** FEATURE : Neo***Feature and METHOD : Neo800KbpsMethod. You must use RDX0/GPIO3 PIN (label RX on Wemos D1 mini) as specify [here](https://github.com/Makuna/NeoPixelBus/wiki/ESP8266-NeoMethods#neoesp8266dma800kbpsmethod).
 
-* **Hardware SPI :** You must use the hardware SPI pin from your board (DATA = MOSI and CLOCK = SCLK). For the Wemos D1 mini MOSI is D7 and SCLK is D5. The Hardware SPI is faster than the Software method and will allow a faster refresh time.
+
+![help5](https://user-images.githubusercontent.com/2498942/69486235-0c99db80-0e4a-11ea-9101-3f5566b0bd12.png)
+
+* **Dotstars :** FEATURE : DotStar***Feature and METHOD : DotStarSpiMethod. You must use the hardware SPI pin from your board (DATA = MOSI and CLOCK = SCLK). For the Wemos D1 mini MOSI is D7 and SCLK is D5.
 
 ### Push button connection
 
@@ -68,13 +60,13 @@ This section of the code define the push button :
 // BUTTON --------------
 long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
 long HOLDTIME = 500; // Hold Time in Milliseconds
-const int BTNA_PIN = D3;
+const int BTNA_PIN = D3; //PIN for the button A
+const int BTNB_PIN = D4; //PIN for the button B
 long BTNATIMER = 0;
-boolean ISBTNA = false;
-boolean ISBTNAHOLD = false;
-const int BTNB_PIN = D4;
 long BTNBTIMER = 0;
+boolean ISBTNA = false;
 boolean ISBTNB = false;
+boolean ISBTNAHOLD = false;
 boolean ISBTNBHOLD = false;
 // end BUTTON-----------
 ```
@@ -84,6 +76,43 @@ boolean ISBTNBHOLD = false;
 * **HOLDTIME :** HOLDTIME can be tweak to have a shorter/longer "long click".
 
 * **DEBOUNCETIME :** DEBOUNCETIME can be tweak to have a good button response without false detection.
+
+### USB battery bank connection
+
+![help4](https://user-images.githubusercontent.com/2498942/69486213-b036bc00-0e49-11ea-9d6a-fb457f67a59a.png)
+
+Take care of the polarity to avoid drama. Each LED need around 50mA full brightness, so 3A max for 60 LEDs and 7.2A max for 144 LEDS !!! So USB battery bank are enough and simple for 60 LEDs, but not for 144 LED. In any case, check the output amps of your battery bank and ajust the brightness wisely.
+
+### Wifi
+
+```
+//#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+```
+
+ImagePainting can operate in two separate mode :
+
+* **STA :** As STAtion. In this case, the ESP8266 will connect to your router and be another client of your network. You have to look at the serial monitor of the Arduino IDE during the boot of the ESP8266 to find his IP address. This mode is mainly not interesting, except for debug.
+
+* **AP :** As Access Point. In this case, the ESP8266 will provide his own wifi network and you will connect directly on him. To keep it simple, there is no password and the DNS will route you directly on the right IP. But if there is a problem, go to http://192.168.1.1 to reach your ESP8266. This is the default mode of ImagePainting as it is very unlikely to have a wifi router everywhere.
+
+```
+// WIFI/ DNS --------------
+ESP8266WebServer server;
+#ifdef STA // STA Mode
+const char* ssid = "Moto C Plus 1105"; // your wifi ssid for STA mode
+const char* password = "12345678"; // your wifi password for STA mode
+#else // AP Mode
+const char* ssid = "imagePainting"; // wifi ssid for AP mode
+IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
+DNSServer dnsServer;
+const byte DNS_PORT = 53;
+#endif
+// end WIFI/DNS -----------
+```
+
+* **STA :** you have to set your router ssid and password.
+
+* **AP :** you can change the ssid and ip of the ESP8266, but what the point...
 
 ## Software Prerequisites And Installing
 
@@ -100,18 +129,9 @@ You need to install the following board/tool/library :
 
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - The JSON library for Arduino
 
-### Wifi
+### Flash instruction
 
-```
-// WIFI --------------
-ESP8266WebServer server;
-const char* ssid = "Moto C Plus 1105";
-const char* password = "12345678";
-// end WIFI-----------
-```
-
-* **ssid :** your router ssid
-* **password :** your router password
+Tweak the code for your hardware and wifi and flash ImagePainting from the Arduino IDE. Don't forget to upload the data by clicking to "ESP8266 Sketch Data Upload". You can also tweak the SPIFFS to have more space for yours Bitmaps.
 
 ## Use ImagePainting
 
@@ -165,9 +185,9 @@ I try my best to show you some possibility of ImagePainting.
 
 ## About Picture
 
-![bitmapExplanation](https://user-images.githubusercontent.com/2498942/68552286-a3f83b00-0415-11ea-8ec8-e8d4f2450843.jpg)
+ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation.
 
-ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation :
+![bitmapExplanation](https://user-images.githubusercontent.com/2498942/68552286-a3f83b00-0415-11ea-8ec8-e8d4f2450843.jpg)
 
 * Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
 * Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
@@ -176,4 +196,7 @@ ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So
 ## Bitmap Pack
 
 I have put you resize version of the original Bitmap pack from [pixelstick](http://www.thepixelstick.com/index.html). This Bitmap pack come originaly at 200px wide and i resize it at 60px and 144px to fit standard LED strip.
+
+![help8](https://user-images.githubusercontent.com/2498942/69486401-9e561880-0e4b-11ea-8fd5-3fc7776f90fc.png)
+
 Thanks [pixelstick](http://www.thepixelstick.com/index.html) for this nice Bitmap pack.
