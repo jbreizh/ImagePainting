@@ -3,6 +3,7 @@
 <head>
   <title>IMAGEPAINTING</title>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
 .body {
    background-color: black;
@@ -339,23 +340,24 @@ function getParameter()
 //-------------------------------------------------- The horrible function !!!!
 function drawBitmap()
 {
+  // vertical and horizontal desire size
+  var hPercent = 0.6; // 60%
+  var vPercent = 0.25; //30%
+  // store actual windows width and height
+  var windowWidth = Math.min(window.innerWidth, window.screen.width); //for smartphone orientation change
+  var windowHeight= window.innerHeight;
+  // calculate how to scale the bitmap to fit in space
+  var bitmapScale = Math.min(hPercent*windowWidth/bitmap.height, vPercent*windowHeight/bitmap.width);
+  // calculate scale dimension of the bitmap
+  var bitmapWidth = bitmapScale*bitmap.height;
+  var bitmapHeight = bitmapScale*bitmap.width;
+  // canvas
   var canvas=document.getElementById("canvas");
   var ctx=canvas.getContext("2d");
-  // vertical and horizontal desire size in %
-  var hPercent = 0.6;
-  var vPercent = 0.3 / hPercent;
-  // store actual windows width and height
-  var windowWidth = document.getElementById("table").scrollWidth;//document.documentElement.scrollWidth;
-  var windowHeight = document.getElementById("table").scrollHeight; //document.documentElement.scrollHeight;
-  // calculate
-  var canvasScale = Math.min(windowWidth/bitmap.height , vPercent*windowHeight/bitmap.width);
-  //
-  var bitmapWidth = hPercent*canvasScale*bitmap.height;
-  var bitmapHeight = hPercent*canvasScale*bitmap.width;
-  //
+  // calculate the canvas dimension
   canvas.width = hPercent*windowWidth;
-  canvas.height = hPercent*vPercent*windowHeight; 
-  // initialize canvas
+  canvas.height = vPercent*windowHeight; 
+  // initialize canvas in black
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   // save context
   ctx.save();
@@ -371,11 +373,11 @@ function drawBitmap()
   // curtain size
   var bitmapHstart = ( canvas.width - bitmapWidth) / 2;
   var bitmapVstart = ( canvas.height - bitmapHeight) / 2;
-  var startIndex = sliderStart.value / sliderStart.max * bitmapWidth;
-  var stopIndex = sliderStop.value / sliderStop.max * bitmapWidth;
+  var curtainStart = sliderStart.value / sliderStart.max * bitmapWidth;
+  var curtainStop = sliderStop.value / sliderStop.max * bitmapWidth;
   // draw curtain
-  ctx.fillRect(bitmapHstart, bitmapVstart, startIndex, bitmapHeight);
-  ctx.fillRect( bitmapHstart+stopIndex, bitmapVstart, bitmapWidth - stopIndex , bitmapHeight);
+  ctx.fillRect(bitmapHstart, bitmapVstart, curtainStart, bitmapHeight);
+  ctx.fillRect( bitmapHstart+curtainStop, bitmapVstart, bitmapWidth - curtainStop , bitmapHeight);
 }
 
 //--------------------------------------------------
