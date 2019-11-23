@@ -96,7 +96,7 @@
 </head>
 
 <body class="body">
-  <table class="table">
+  <table class="table" id="table">
   <tr>
     <td colspan=4><img class="title" src="title.png"></td>
   </tr>
@@ -107,17 +107,17 @@
     <td><div class="divLeft" >Delete:</div></td>
     <td colspan=2>
     <select  class="input" id="deleteList"><option value=""></option></select></td>
-    <td><button class="button buttonOff" onclick="requestFileDelete()">Delete</button></td>
+    <td><button class="button buttonOff" id="btnDelete">Delete</button></td>
   </tr>
   <tr>
     <td><div class="divLeft" >Upload:</div></td>
     <td colspan=2><input class="input white" id="fileInput" type="file" /></td>
-    <td><button class="button buttonOn" onclick="requestFileUpload()">Upload</button></td>
+    <td><button class="button buttonOn" id="btnUpload">Upload</button></td>
   </tr>
   <tr class="top">
     <td><div class="divLeft" >Image:</div></td>
-    <td colspan=2><select  class="input" id="imageList" onchange="requestParameterWrite()"><option value=""></option></select></td>
-    <td><button class="button buttonOn" onclick="requestParameterWrite()">Write</button></td>
+    <td colspan=2><select  class="input" id="imageList"><option value=""></option></select></td>
+    <td><button class="button buttonOn" id="btnWrite">Write</button></td>
   </tr>
   <tr>
     <td><div class="divLeft" >Start:</div></td>
@@ -127,7 +127,7 @@
    <tr>
     <td></td>
     <td colspan=2><canvas class="canvas" id="canvas" width="300px" height="150"></canvas></td>
-    <td></td>
+    <td></td> 
   </tr>
   <tr>
     <td><div class="divLeft">Stop:</div></td>
@@ -175,7 +175,7 @@
   <tr>
     <td><div class="divLeft">Color:</div></td>
     <td colspan=2><input class="input" type="color" id="color"/></td>
-    <td><div class="divRight"></div></td>
+    <td></td>
   </tr>
   <tr> 
     <td></td>
@@ -187,10 +187,10 @@
   
   <table class="table">
   <tr>
-    <td><button class="button buttonLight" onclick="requestAction('/light')">Light</button></td>
-    <td><button class="button buttonOff" onclick="requestAction('/burn')">Burn</button></td>
-    <td><button class="button buttonOff" onclick="requestAction('/stop')">Stop</button></td>
-    <td><button class="button buttonOn" onclick="requestAction('/play')">Play</button></td>
+    <td><button class="button buttonLight" id="btnLight">Light</button></td>
+    <td><button class="button buttonOff" id="btnBurn">Burn</button></td>
+    <td><button class="button buttonOff" id="btnStop">Stop</button></td>
+    <td><button class="button buttonOn" id="btnPlay">Play</button></td>
   </tr>
   </table>
 </body>
@@ -222,12 +222,21 @@ var ckEndColor = document.getElementById("isendcolor");
 var selectDelete = document.getElementById("deleteList");
 var selectImage = document.getElementById("imageList");
 var fileInput = document.getElementById("fileInput");
- 
+var btnLight = document.getElementById("btnLight");
+var btnBurn = document.getElementById("btnBurn");
+var btnStop = document.getElementById("btnStop");
+var btnPlay = document.getElementById("btnPlay");
+var btnDelete = document.getElementById("btnDelete");
+var btnUpload = document.getElementById("btnUpload");
+var btnWrite = document.getElementById("btnWrite");
+
 // Event--------------------------------------------------
 bitmap.onload = drawBitmap;
-//addEvent(window, "resize", function() {drawBitmap("napoleon.bmp")});
-sliderStart.oninput = function() {updateTextSlider(sliderStart,textStart, "px"); drawBitmap();};
-sliderStop.oninput = function() {updateTextSlider(sliderStop,textStop, "px"); drawBitmap();};
+window.onresize = drawBitmap;
+sliderStart.oninput = function() {updateTextSlider(sliderStart,textStart, "px");};
+sliderStart.oninput = drawBitmap;
+sliderStop.oninput = function() {updateTextSlider(sliderStop,textStop, "px");};
+sliderStop.oninput = drawBitmap;
 sliderDelay.oninput =function() {updateTextSlider(sliderDelay,textDelay, "ms");};
 sliderBrightness.oninput =function() {updateTextSlider(sliderBrightness,textBrightness, "%");};
 sliderRepeat.oninput =function() {updateTextSlider(sliderRepeat,textRepeat, "x");};
@@ -238,6 +247,14 @@ ckPause.onclick = function() {updateCheckbox(ckPause,ckCut);};
 ckCut.onclick = function() {updateCheckbox(ckCut,ckPause);};
 ckEndOff.onclick = function() {updateCheckbox(ckEndOff,ckEndColor);};
 ckEndColor.onclick = function() {updateCheckbox(ckEndColor,ckEndOff);};
+btnLight.onclick = function() {requestAction('/light');};
+btnBurn.onclick = function() {requestAction('/burn');};
+btnStop.onclick = function() {requestAction('/stop');};
+btnPlay.onclick = function() {requestAction('/play');};
+btnDelete.onclick = requestFileDelete;
+btnUpload.onclick = requestFileUpload;
+btnWrite.onclick = requestParameterWrite;
+selectImage.onchange = requestParameterWrite;
 
 // Main --------------------------------------------------
 requestFileList();
@@ -324,26 +341,41 @@ function drawBitmap()
 {
   var canvas=document.getElementById("canvas");
   var ctx=canvas.getContext("2d");
-  var ratio = bitmap.width/bitmap.height;
-  // resize the canvas dimension to be same ratio than bitmap but scale to fit in place
-  canvas.width  = sliderStart.offsetWidth;
-  canvas.height = ratio*canvas.width;
+  // vertical and horizontal desire size in %
+  var hPercent = 0.6;
+  var vPercent = 0.3 / hPercent;
+  // store actual windows width and height
+  var windowWidth = document.getElementById("table").scrollWidth;//document.documentElement.scrollWidth;
+  var windowHeight = document.getElementById("table").scrollHeight; //document.documentElement.scrollHeight;
+  // calculate
+  var canvasScale = Math.min(windowWidth/bitmap.height , vPercent*windowHeight/bitmap.width);
+  //
+  var bitmapWidth = hPercent*canvasScale*bitmap.height;
+  var bitmapHeight = hPercent*canvasScale*bitmap.width;
+  //
+  canvas.width = hPercent*windowWidth;
+  canvas.height = hPercent*vPercent*windowHeight; 
+  // initialize canvas
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   // save context
   ctx.save();
   // translate and rotate
   ctx.translate(canvas.width/2,canvas.height/2);
   ctx.rotate(-90*Math.PI/180);
   // draw bitmap strech to fit canvas
-  ctx.drawImage(bitmap,-canvas.height/2,-canvas.width/2,canvas.height,canvas.width);
+  ctx.drawImage(bitmap, -bitmapHeight/2, -bitmapWidth/2, bitmapHeight, bitmapWidth);
   //restore context
   ctx.restore();
-  // curtain for the start
-  ctx.fillStyle = "#FF0000";
-  var startIndex = sliderStart.value / sliderStart.max * canvas.width;
-  ctx.fillRect(0, 0, startIndex, canvas.height);
-  // curtain for the start 
-  var stopIndex = sliderStop.value / sliderStop.max * canvas.width;
-  ctx.fillRect( stopIndex,0, canvas.width - stopIndex , canvas.height);
+  // curtain color
+  ctx.fillStyle = "red";
+  // curtain size
+  var bitmapHstart = ( canvas.width - bitmapWidth) / 2;
+  var bitmapVstart = ( canvas.height - bitmapHeight) / 2;
+  var startIndex = sliderStart.value / sliderStart.max * bitmapWidth;
+  var stopIndex = sliderStop.value / sliderStop.max * bitmapWidth;
+  // draw curtain
+  ctx.fillRect(bitmapHstart, bitmapVstart, startIndex, bitmapHeight);
+  ctx.fillRect( bitmapHstart+stopIndex, bitmapVstart, bitmapWidth - stopIndex , bitmapHeight);
 }
 
 //--------------------------------------------------
