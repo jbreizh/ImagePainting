@@ -18,7 +18,7 @@
 			margin-left: auto;
 			margin-right: auto;
 			max-width: 60vw;
-			max-height: 40vw;
+			height: 30vw;
 		}
 
 		.status {
@@ -49,7 +49,7 @@
 		}
 
 		.label{
-			font-size:  3vw;
+			font-size:  2vw;
 			vertical-align:middle;
 			color: white;
 		}
@@ -59,6 +59,24 @@
 			font-size:  3vw;
 			vertical-align:middle;
 			color: white;
+		}
+
+		.input{
+			width: 100%;
+			font-size:  3vw;
+			vertical-align:middle;
+			text-align: center;
+		}
+
+		.button { 
+			display: block;
+			width: 100%;
+			font-size:  3vw;
+			cursor: pointer;
+		}
+
+		.noborder{
+			border: none;
 		}
 
 		.left{
@@ -81,31 +99,6 @@
 			color: black;
 		}
 
-		.input{
-			width: 100%;
-			font-size:  3vw;
-			vertical-align:middle;
-			text-align: center;
-		}
-
-		.expender { 
-			display: block;
-			margin-left: auto;
-			margin-right: 0;
-			font-size:  3vw;
-			width: 6vw;
-			vertical-align:middle;
-			cursor: pointer;
-		}
-
-		.button { 
-			width: 100%;
-			font-size:  3vw;
-			vertical-align:middle;
-			border-radius: 2vw;
-			cursor: pointer;
-		}
-
 		.b_green {
 			background-color: green;
 		}
@@ -119,7 +112,7 @@
 		}
 
 		.b_blue {
-			background-color: blue;
+			background-color: aqua;
 		}
 
 		.b_black {
@@ -154,8 +147,31 @@
 				<td colspan=5><h2 class="status" id="textStatus"> WELCOME </h1></td>
 				</tr>
 				<tr class="top bottom b_grey">
+					<td colspan=4><div class="div left black">IMAGE</div></td>
+					<td><button class="button noborder" id="collapseImage">-</button></td>
+				</tr>
+				<tr class="image">
+					<td><div class="div left" >Select:</div></td>
+					<td colspan=4><select  class="input" id="selectImage"><option value=""></option></select></td>
+				</tr>
+				<tr class="image">
+					<td><div class="div left" >Start:</div></td>
+					<td colspan=3><input class="input" type="range" id="sliderStart"></td>
+					<td><div class="div right" id="textStart"></div></td>
+				</tr>
+				<tr class="image">
+					<td></td>
+					<td colspan=3><canvas class="canvas" id="canvasImage" width="0px" height="0px"></canvas></td>
+					<td></td> 
+				</tr>
+				<tr class="image">
+					<td><div class="div left">Stop:</div></td>
+					<td colspan=3><input class="input" type="range" id="sliderStop"></td>
+					<td><div class="div right" id="textStop"></div></td>
+				</tr>
+				<tr class="top bottom b_grey">
 					<td colspan=4><div class="div left black">DELETE</div></td>
-					<td><button class="expender b_white" id="collapseDelete">+</button></td>
+					<td><button class="button noborder" id="collapseDelete">+</button></td>
 				</tr>
 				<tr class="delete hide-me">
 					<td><div class="div left" >Select:</div></td>
@@ -168,7 +184,7 @@
 				</tr>
 				<tr class="top bottom b_grey">
 					<td colspan=4><div class="div left black">UPLOAD</div></td>
-					<td><button class="expender" id="collapseUpload">+</button></td>
+					<td><button class="button noborder" id="collapseUpload">+</button></td>
 				</tr>
 				<tr class="upload hide-me">
 					<td><div class="div left">Select:</div></td>
@@ -180,19 +196,15 @@
 				</tr>
 				<tr class="top bottom b_grey">
 					<td colspan=4><div class="div left black">CONVERT</div></td>
-					<td><button class="expender" id="collapseConvert">+</button></td>
+					<td><button class="button noborder" id="collapseConvert">+</button></td>
 				</tr>
 				<tr class="convert hide-me">
 					<td><div class="div left">Select:</div></td>
-					<td colspan=4><input class="input white" id="selectConvert" type="file" /></td>
+					<td colspan=3><input class="input white" id="selectConvert" type="file" /></td>
+					<td><div class="div right" id="textNumPixels"></div></td>
 				</tr>
 				<tr class="convert hide-me"> 
 					<td colspan=5><canvas class="canvas" id="canvasConvert" width="0px" height="0px"></canvas></td> 
-				</tr>
-				<tr class="convert hide-me">
-					<td><div class="div left">Strip Length:</div></td>
-					<td colspan=3><input class="input" id="sliderStripLength" type="range" value="60" min="0" max="200"/></td>
-					<td><div class="div right" id="textStripLength">60px</div></td>
 				</tr>
 				<tr class="convert hide-me">
 					<td><div class="div left" >Action:</div></td>
@@ -201,7 +213,7 @@
 				</tr>
 				<tr class="top bottom b_grey">
 					<td colspan=4><div class="div left black">SETTINGS</div></td>
-					<td><button class="expender" id="collapseSettings">+</button></td>
+					<td><button class="button noborder" id="collapseSettings">+</button></td>
 				</tr>
 				<tr class="settings hide-me">
 					<td><div class="div left">Delay:</div></td>
@@ -229,31 +241,8 @@
 					<td></td>
 				</tr>
 				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">IMAGE</div></td>
-					<td><button class="expender" id="collapseImage">-</button></td>
-				</tr>
-				<tr class="image">
-					<td><div class="div left" >Select:</div></td>
-					<td colspan=4><select  class="input" id="selectImage"><option value=""></option></select></td>
-				</tr>
-				<tr class="image">
-					<td><div class="div left" >Start:</div></td>
-					<td colspan=3><input class="input" type="range" id="sliderStart"></td>
-					<td><div class="div right" id="textStart"></div></td>
-				</tr>
-				<tr class="image">
-					<td></td>
-					<td colspan=3><canvas class="canvas" id="canvasImage" width="0px" height="0px"></canvas></td>
-					<td></td> 
-				</tr>
-				<tr class="image">
-					<td><div class="div left">Stop:</div></td>
-					<td colspan=3><input class="input" type="range" id="sliderStop"></td>
-					<td><div class="div right" id="textStop"></div></td>
-				</tr>
-				<tr class="top bottom b_grey">
 					<td colspan=4><div class="div left black">ACTION</div></td>
-					<td><button class="expender" id="collapseAction">-</button></td>
+					<td><button class="button noborder" id="collapseAction">-</button></td>
 				</tr>
 				<tr class="action"> 
 					<td><div class="div left">Option:</div></td>
@@ -273,8 +262,8 @@
 					<td><div class="div left">Action:</div></td>
 					<td><button class="button b_orange" id="btnLight">Light</button></td>
 					<td><button class="button b_blue" id="btnBurn">Burn</button></td>
-					<td><button class="button b_red" id="btnStop">Stop</button></td>
 					<td><button class="button b_green" id="btnPlay">Play</button></td>
+					<td><button class="button b_red" id="btnStop">Stop</button></td>
 				</tr>
 			</tbody>
 		</table>
@@ -297,8 +286,7 @@ var btnUploadOriginal = document.getElementById("btnUploadOriginal");
 var imgConvert = new Image;
 var canvasConvert = document.getElementById("canvasConvert");
 var selectConvert = document.getElementById("selectConvert");
-var sliderStripLength = document.getElementById("sliderStripLength");
-var textStripLength = document.getElementById("textStripLength");
+var textNumPixels = document.getElementById("textNumPixels");
 var btnDownloadConvert = document.getElementById("btnDownloadConvert");
 var btnUploadConvert = document.getElementById("btnUploadConvert");
 
@@ -353,8 +341,6 @@ btnUploadOriginal.addEventListener('click', uploadOriginal, false);
 // Convert event--------------------------------------------------
 selectConvert.addEventListener('change', drawImage, false);
 imgConvert.addEventListener('load', drawConvertCanvas, false);
-sliderStripLength.addEventListener('input', function() {updateTextSlider(sliderStripLength,textStripLength, "px");}, false);
-sliderStripLength.addEventListener('input', drawConvertCanvas, false);
 btnDownloadConvert.addEventListener('click', downloadConvert, false);
 btnUploadConvert.addEventListener('click', uploadConvert, false);
 
@@ -372,7 +358,6 @@ pickerColor.addEventListener('change', requestParameterWrite, false);
 // Image Event--------------------------------------------------
 selectImage.addEventListener('change', requestParameterWrite, false);
 imgImage.addEventListener('load', drawImageCanvas, false);
-window.onresize = drawImageCanvas;
 sliderStart.addEventListener('input', function() { updateTextSlider(sliderStart,textStart, "px");}, false);
 sliderStop.addEventListener('input', function() { updateTextSlider(sliderStop,textStop, "px");}, false);
 sliderStart.addEventListener('input', drawImageCanvas, false);
@@ -400,13 +385,12 @@ btnStop.addEventListener('click', requestStop, false);
 btnPlay.addEventListener('click', requestPlay, false);
 
 // Collapse event--------------------------------------------------
-collapseDelete.addEventListener('click', function(e) { collapseTable("delete");}, false);
-collapseUpload.addEventListener('click', function(e) { collapseTable("upload");}, false);
-collapseConvert.addEventListener('click', function(e) { collapseTable("convert");}, false);
-collapseSettings.addEventListener('click', function(e) { collapseTable("settings");}, false);
-collapseImage.addEventListener('click', function(e) { collapseTable("image");}, false);
-collapseAction.addEventListener('click', function(e) { collapseTable("action");}, false);
-
+collapseDelete.addEventListener('click', function() { collapseTable("delete");}, false);
+collapseUpload.addEventListener('click', function() { collapseTable("upload");}, false);
+collapseConvert.addEventListener('click', function() { collapseTable("convert");}, false);
+collapseSettings.addEventListener('click', function() { collapseTable("settings");}, false);
+collapseImage.addEventListener('click', function() { collapseTable("image");}, false);
+collapseAction.addEventListener('click', function() { collapseTable("action");}, false);
 collapseDelete.addEventListener('click', toggle, false);
 collapseUpload.addEventListener('click', toggle, false);
 collapseConvert.addEventListener('click', toggle, false);
@@ -466,8 +450,8 @@ function drawConvertCanvas()
 	// canvas
 	var ctx = canvasConvert.getContext("2d");
 	// calculate the canvas dimension
-	canvasConvert.width = sliderStripLength.value;
-	canvasConvert.height = imgConvert.width/imgConvert.height*sliderStripLength.value; 
+	canvasConvert.width = textNumPixels.innerHTML;
+	canvasConvert.height = imgConvert.width/imgConvert.height*textNumPixels.innerHTML; 
 	// initialize canvas in black
 	ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
 	// save context
@@ -475,31 +459,20 @@ function drawConvertCanvas()
 	// translate and rotate
 	ctx.translate(canvasConvert.width/2,canvasConvert.height/2);
 	ctx.rotate(90*Math.PI/180);
-	// draw bitmap strech to fit canvas
+	// draw imgConvert strech to fit canvasConvert
 	ctx.drawImage(imgConvert,-canvasConvert.height/2,-canvasConvert.width/2,canvasConvert.height,canvasConvert.width);
 	//restore context
 	ctx.restore();
 }
 
-//-------------------------------------------------- The horrible function !!!!
+//--------------------------------------------------
 function drawImageCanvas()
 {
 	// canvas
 	var ctx=canvasImage.getContext("2d");
-	// vertical and horizontal desire size
-	var hPercent = 0.6; // 60%
-	var vPercent = 0.25; //30%
-	// store actual windows width and height
-	var windowWidth = Math.min(window.innerWidth, window.screen.width); //for smartphone orientation change
-	var windowHeight= window.innerHeight;
-	// calculate how to scale the bitmap to fit in space
-	var bitmapScale = Math.min(hPercent*windowWidth/imgImage.height, vPercent*windowHeight/imgImage.width);
-	// calculate scale dimension of the bitmap
-	var bitmapWidth = bitmapScale*imgImage.height;
-	var bitmapHeight = bitmapScale*imgImage.width;
 	// calculate the canvas dimension
-	canvasImage.width = hPercent*windowWidth;
-	canvasImage.height = vPercent*windowHeight; 
+	canvasImage.width = imgImage.height;
+	canvasImage.height = imgImage.width; 
 	// initialize canvas in black
 	ctx.fillRect(0, 0, canvasImage.width, canvasImage.height);
 	// save context
@@ -507,20 +480,15 @@ function drawImageCanvas()
 	// translate and rotate
 	ctx.translate(canvasImage.width/2,canvasImage.height/2);
 	ctx.rotate(-90*Math.PI/180);
-	// draw bitmap strech to fit canvas
-	ctx.drawImage(imgImage, -bitmapHeight/2, -bitmapWidth/2, bitmapHeight, bitmapWidth);
+	// draw imgImage in canvasImage
+	ctx.drawImage(imgImage, -canvasImage.height/2, -canvasImage.width/2);
 	//restore context
 	ctx.restore();
 	// curtain color
 	ctx.fillStyle = "red";
-	// curtain size
-	var bitmapHstart = ( canvasImage.width - bitmapWidth) / 2;
-	var bitmapVstart = ( canvasImage.height - bitmapHeight) / 2;
-	var curtainStart = sliderStart.value / sliderStart.max * bitmapWidth;
-	var curtainStop = sliderStop.value / sliderStop.max * bitmapWidth;
 	// draw curtain
-	ctx.fillRect(bitmapHstart, bitmapVstart, curtainStart, bitmapHeight);
-	ctx.fillRect( bitmapHstart+curtainStop, bitmapVstart, bitmapWidth - curtainStop , bitmapHeight);
+	ctx.fillRect(0, 0, sliderStart.value, canvasImage.height);
+	ctx.fillRect(Number(sliderStop.value)+1, 0, canvasImage.width-sliderStop.value, canvasImage.height);
 }
 
 //--------------------------------------------------
@@ -661,6 +629,7 @@ function setParameter(jsonString)
 	ckCut.checked  = json["iscut"];
 	ckEndOff.checked  = json["isendoff"];
 	ckEndColor.checked  = json["isendcolor"];
+	textNumPixels.innerHTML = json["numPixels"];
 	// check parameter
 	updateTextSlider(sliderStart,textStart, "px");
 	updateTextSlider(sliderStop,textStop, "px");
@@ -837,7 +806,7 @@ function uploadOriginal()
 {
 	if (selectUpload.files.length == 0)
 	{
-		updateStatus("UPLOAD ERROR : FILE NOT CHOSEN", "red");
+		updateStatus("UPLOAD ERROR : SELECT A FILE", "red");
 	}
 	else
 	{

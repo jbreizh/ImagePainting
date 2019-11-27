@@ -1,5 +1,5 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
 //Dotstars : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini DATA_PIN=D7(GREEN) CLOCK_PIN=D5 (Yellow))
 //Neopixels : DATA_PIN : RDX0/GPIO3 (Wemos D1 mini DATA_PIN=RX)
 #define FEATURE DotStarBgrFeature // Neopixels : NeoGrbFeature / Dotstars : DotStarBgrFeature
@@ -297,6 +297,7 @@ void handleParameterRead()
   // Store parameter in json document
   jsonDoc["delay"] = DELAY;
   jsonDoc["brightness"] = BRIGHTNESS;
+  jsonDoc["numPixels"] = NUMPIXELS;
   jsonDoc["repeat"] = REPEAT;
   jsonDoc["pause"] = PAUSE;
   char color[9];
