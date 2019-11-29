@@ -1,275 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>IMAGEPAINTING</title>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<style>
-		.title {
-			display: block;
-			margin-top:0.4em;
-			margin-left: auto;
-			margin-right: auto;
-			width: 95%;
-		}
+// IP
+var address = "http://192.168.43.252";
+var numPixels = 0;
 
-		.canvas {
-			display: block;
-			margin-left: auto;
-			margin-right: auto;
-			max-width: 60vw;
-			height: 30vw;
-		}
-
-		.status {
-			width: 100%;
-			font-size:  3vw;
-			vertical-align:middle;
-			text-align: center;
-			color: green;
-		}
-
-		.table{
-			width: 100%;
-			border-collapse:collapse;
-			border: 5px solid white;
-		}
-
-		.top{
-			border-top:5px solid white;
-		}
-
-		.bottom{
-			border-bottom:5px solid white;
-		}
-
-		.hide-me
-		{
-			display: none;
-		}
-
-		.label{
-			font-size:  2vw;
-			vertical-align:middle;
-			color: white;
-		}
-
-		.div{
-			width: 100%;
-			font-size:  3vw;
-			vertical-align:middle;
-			color: white;
-		}
-
-		.input{
-			width: 100%;
-			font-size:  3vw;
-			vertical-align:middle;
-			text-align: center;
-		}
-
-		.button { 
-			display: block;
-			width: 100%;
-			font-size:  3vw;
-			cursor: pointer;
-		}
-
-		.noborder{
-			border: none;
-		}
-
-		.left{
-			text-align: left;
-		}
-
-		.right{
-			text-align: right;
-		}
-
-		.center{
-			text-align: center;
-		}
-
-		.white{
-			color: white;
-		}
-		
-		.black{
-			color: black;
-		}
-
-		.b_green {
-			background-color: green;
-		}
-
-		.b_orange {
-			background-color: orange;
-		}
-
-		.b_red {
-			background-color: red;
-		}
-
-		.b_blue {
-			background-color: aqua;
-		}
-
-		.b_black {
-			background-color: black;
-		}
-
-		.b_grey {
-			background-color: grey;
-		}
-
-		.b_white{
-			background-color: white;
-		}
-
-	</style>
-</head>
-
-<body class="b_black">
-	<table class="table">
-		<colgroup>
-			<col span="1" style="width: 20%;">
-			<col span="1" style="width: 20%;">
-			<col span="1" style="width: 20%;">
-			<col span="1" style="width: 20%;">
-			<col span="1" style="width: 20%;">
-		</colgroup>
-		<tbody>
-			<tr>
-				<td colspan=5><img class="title" src="title.png"></td>
-			</tr>
-			<tr>
-				<td colspan=5><h2 class="status" id="textStatus"> WELCOME </h2></td>
-				</tr>
-				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">IMAGE</div></td>
-					<td><button class="button noborder" id="collapseImage">-</button></td>
-				</tr>
-				<tr class="image">
-					<td><div class="div left" >Select:</div></td>
-					<td colspan=4><select  class="input" id="selectImage"><option value=""></option></select></td>
-				</tr>
-				<tr class="image">
-					<td><div class="div left" >Start:</div></td>
-					<td colspan=3><input class="input" type="range" id="sliderStart"></td>
-					<td><div class="div right" id="textStart"></div></td>
-				</tr>
-				<tr class="image">
-					<td></td>
-					<td colspan=3><canvas class="canvas" id="canvasImage" width="0px" height="0px"></canvas></td>
-					<td></td> 
-				</tr>
-				<tr class="image">
-					<td><div class="div left">Stop:</div></td>
-					<td colspan=3><input class="input" type="range" id="sliderStop"></td>
-					<td><div class="div right" id="textStop"></div></td>
-				</tr>
-				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">DELETE</div></td>
-					<td><button class="button noborder" id="collapseDelete">+</button></td>
-				</tr>
-				<tr class="delete hide-me">
-					<td><div class="div left" >Select:</div></td>
-					<td colspan=4><select  class="input" id="selectDelete"><option value=""></option></select></td>
-				</tr>
-				<tr class="delete hide-me">
-					<td><div class="div left" >Action:</div></td>
-					<td colspan=2><button class="button b_blue" id="btnDownload">Download</button></td>
-					<td colspan=2><button class="button b_red" id="btnDelete">Delete</button></td>
-				</tr>
-				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">UPLOAD</div></td>
-					<td><button class="button noborder" id="collapseUpload">+</button></td>
-				</tr>
-				<tr class="upload hide-me">
-					<td><div class="div left">Select:</div></td>
-					<td colspan=4><input class="input white" id="selectUpload" type="file" /></td>
-				</tr>
-				<tr class="upload hide-me">
-					<td><div class="div left" >Action:</div></td>
-					<td colspan=4><button class="button b_blue" id="btnUploadOriginal">Upload</button></td>
-				</tr>
-				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">CONVERT</div></td>
-					<td><button class="button noborder" id="collapseConvert">+</button></td>
-				</tr>
-				<tr class="convert hide-me">
-					<td><div class="div left">Select:</div></td>
-					<td colspan=3><input class="input white" id="selectConvert" type="file" /></td>
-					<td><div class="div right" id="textNumPixels"></div></td>
-				</tr>
-				<tr class="convert hide-me"> 
-					<td colspan=5><canvas class="canvas" id="canvasConvert" width="0px" height="0px"></canvas></td> 
-				</tr>
-				<tr class="convert hide-me">
-					<td><div class="div left" >Action:</div></td>
-					<td colspan=2><button class="button b_green" id="btnUploadConvert">Upload</button></td>
-					<td colspan=2><button class="button b_orange" id="btnDownloadConvert">Download</button></td>
-				</tr>
-				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">SETTINGS</div></td>
-					<td><button class="button noborder" id="collapseSettings">+</button></td>
-				</tr>
-				<tr class="settings hide-me">
-					<td><div class="div left">Delay:</div></td>
-					<td colspan=3><input class="input" type="range" min="0" max="255" id="sliderDelay"/></td>
-					<td><div class="div right" id="textDelay"></div></td>
-				</tr>
-				<tr class="settings hide-me">
-					<td><div class="div left">Brightness:</div></td>
-					<td colspan=3><input class="input" type="range" min="0" max="255" id="sliderBrightness"/></td>
-					<td><div class="div right" id="textBrightness"></div></td>
-				</tr>
-				<tr class="settings hide-me">
-					<td><div class="div left">Repeat:</div></td>
-					<td colspan=3><input class="input" type="range" min="0" max="255" id="sliderRepeat"/></td>
-					<td><div class="div right" id="textRepeat"></div></td>
-				</tr>
-				<tr class="settings hide-me">
-					<td><div class="div left">Pause:</div></td>
-					<td colspan=3><input class="input" type="range" min="0" max="255" id="sliderPause"/></td>
-					<td><div class="div right" id="textPause"></div></td>
-				</tr>
-				<tr class="settings hide-me">
-					<td><div class="div left">Color:</div></td>
-					<td colspan=3><input class="input" type="color" id="pickerColor"/></td>
-					<td></td>
-				</tr>
-				<tr class="top bottom b_grey">
-					<td colspan=4><div class="div left black">ACTION</div></td>
-					<td><button class="button noborder" id="collapseAction">-</button></td>
-				</tr>
-				<tr class="action"> 
-					<td><div class="div left">Option:</div></td>
-					<td><label class="label" for="ckInvert"><input type="checkbox" id="ckInvert"/>Invert?</label></td>
-					<td><label class="label" for="ckRepeat"><input type="checkbox" id="ckRepeat"/>Repeat?</label></td>
-					<td><label class="label" for="ckPause"><input type="checkbox" id="ckPause"/>Pause?</label></td>
-					<td><label class="label" for="ckEndOff"><input type="checkbox" id="ckEndOff"/>EOff?</label></td>
-				</tr>
-				<tr class="action"> 
-					<td></td>
-					<td></td>
-					<td><label class="label" for="ckBounce"><input type="checkbox" id="ckBounce"/>Bounce?</label></td>
-					<td><label class="label" for="ckCut"><input type="checkbox" id="ckCut"/>Cut?</label></td>
-					<td><label class="label" for="ckEndColor"><input type="checkbox" id="ckEndColor"/>EColor?</label></td>
-				</tr>
-				<tr class="action">
-					<td><div class="div left">Action:</div></td>
-					<td><button class="button b_orange" id="btnLight">Light</button></td>
-					<td><button class="button b_blue" id="btnBurn">Burn</button></td>
-					<td><button class="button b_green" id="btnPlay">Play</button></td>
-					<td><button class="button b_red" id="btnStop">Stop</button></td>
-				</tr>
-			</tbody>
-		</table>
-	</body>
-
-	<script>
 // Status Variable--------------------------------------------------
 var textStatus = document.getElementById("textStatus");
 
@@ -286,7 +18,6 @@ var btnUploadOriginal = document.getElementById("btnUploadOriginal");
 var imgConvert = new Image;
 var canvasConvert = document.getElementById("canvasConvert");
 var selectConvert = document.getElementById("selectConvert");
-var textNumPixels = document.getElementById("textNumPixels");
 var btnDownloadConvert = document.getElementById("btnDownloadConvert");
 var btnUploadConvert = document.getElementById("btnUploadConvert");
 
@@ -322,14 +53,6 @@ var btnLight = document.getElementById("btnLight");
 var btnBurn = document.getElementById("btnBurn");
 var btnStop = document.getElementById("btnStop");
 var btnPlay = document.getElementById("btnPlay");
-
-// Collapse Variable --------------------------------------------------
-var collapseDelete = document.getElementById("collapseDelete");
-var collapseUpload = document.getElementById("collapseUpload");
-var collapseConvert = document.getElementById("collapseConvert");
-var collapseSettings = document.getElementById("collapseSettings");
-var collapseImage = document.getElementById("collapseImage");
-var collapseAction = document.getElementById("collapseAction");
 
 // Delete event--------------------------------------------------
 btnDelete.addEventListener('click', requestFileDelete, false);
@@ -384,44 +107,9 @@ btnBurn.addEventListener('click', requestBurn, false);
 btnStop.addEventListener('click', requestStop, false);
 btnPlay.addEventListener('click', requestPlay, false);
 
-// Collapse event--------------------------------------------------
-collapseDelete.addEventListener('click', function() { collapseTable("delete");}, false);
-collapseUpload.addEventListener('click', function() { collapseTable("upload");}, false);
-collapseConvert.addEventListener('click', function() { collapseTable("convert");}, false);
-collapseSettings.addEventListener('click', function() { collapseTable("settings");}, false);
-collapseImage.addEventListener('click', function() { collapseTable("image");}, false);
-collapseAction.addEventListener('click', function() { collapseTable("action");}, false);
-collapseDelete.addEventListener('click', toggle, false);
-collapseUpload.addEventListener('click', toggle, false);
-collapseConvert.addEventListener('click', toggle, false);
-collapseSettings.addEventListener('click', toggle, false);
-collapseImage.addEventListener('click', toggle, false);
-collapseAction.addEventListener('click', toggle, false);
 
 // Main --------------------------------------------------
 requestFileList();
-
-// --------------------------------------------------
-function collapseTable(className) {
-	var collapse = document.getElementsByClassName(className);
-
-	for (var i = 0; i < collapse.length; i++)
-	{
-		collapse[i].classList.toggle("hide-me");
-	}
-}
-
-// --------------------------------------------------
-function toggle(e) {
-	if (e.target.innerHTML == "+")
-	{
-		e.target.innerHTML = "-";
-	}
-	else
-	{
-		e.target.innerHTML = "+";
-	}
-}
 
 //--------------------------------------------------
 function drawImage()
@@ -450,8 +138,8 @@ function drawConvertCanvas()
 	// canvas
 	var ctx = canvasConvert.getContext("2d");
 	// calculate the canvas dimension
-	canvasConvert.width = textNumPixels.innerHTML;
-	canvasConvert.height = imgConvert.width/imgConvert.height*textNumPixels.innerHTML; 
+	canvasConvert.width = numPixels;
+	canvasConvert.height = imgConvert.width/imgConvert.height*numPixels; 
 	// initialize canvas in black
 	ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
 	// save context
@@ -552,7 +240,7 @@ function requestFileList()
 	};
 	// send the request
 	xhr.overrideMimeType("application/json");
-	xhr.open("GET", "/list", true);
+	xhr.open("GET", address + "/list", true);
 	xhr.send(null);
 }
 //--------------------------------------------------
@@ -600,7 +288,7 @@ function requestAction(action)
 		updateStatus("ACTION ERROR : CONNECTION LOST", "red");
 	};
 
-	xhr.open("GET", action, true);
+	xhr.open("GET", address + action, true);
 	xhr.send(null);
 }
 
@@ -616,7 +304,7 @@ function setParameter(jsonString)
 	sliderStop.setAttribute("max", json["indexMax"]);
 	sliderStop.value = json["indexStop"];
 	selectImage.value = json["bmpPath"];
-	imgImage.src=json["bmpPath"];
+	imgImage.src= address + json["bmpPath"];
 	sliderDelay.value = json["delay"];
 	sliderBrightness.value = json["brightness"];
 	sliderRepeat.value = json["repeat"];
@@ -629,7 +317,7 @@ function setParameter(jsonString)
 	ckCut.checked  = json["iscut"];
 	ckEndOff.checked  = json["isendoff"];
 	ckEndColor.checked  = json["isendcolor"];
-	textNumPixels.innerHTML = json["numPixels"];
+	numPixels = json["numPixels"];
 	// check parameter
 	updateTextSlider(sliderStart,textStart, "px");
 	updateTextSlider(sliderStop,textStop, "px");
@@ -663,7 +351,7 @@ function requestParameterRead()
 	};
 
 	xhr.overrideMimeType("application/json");
-	xhr.open("GET", "/parameterRead", true);
+	xhr.open("GET", address+"/parameterRead", true);
 	xhr.send(null);
 }
 
@@ -714,7 +402,7 @@ function requestParameterWrite()
 	};
 
 	// send the request
-	xhr.open("POST", "/parameterWrite", true);
+	xhr.open("POST", address+"/parameterWrite", true);
 	xhr.setRequestHeader('Content-type', 'application/json');
 	xhr.send(getParameter());
 }
@@ -750,7 +438,7 @@ function requestFileDelete()
 		updateStatus("DELETE ERROR : CONNECTION LOST", "red");
 	};
 	
-	xhr.open("DELETE", "/delete", true);
+	xhr.open("DELETE", address+"/delete", true);
 	xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	xhr.send(selectDelete.value);
 }
@@ -844,7 +532,7 @@ function requestFileUpload(form)
 		updateStatus("UPLOAD ERROR : CONNECTION LOST", "red");
 	};
 	
-	xhr.open("POST", "/upload", true);
+	xhr.open("POST", address+"/upload", true);
 	xhr.send(form);
 }
 
@@ -924,5 +612,3 @@ toDataURL: function(canvas) {
 	return "data:image/bmp;base64," + btoa(bs);
 }
 };
-</script>
-</html>

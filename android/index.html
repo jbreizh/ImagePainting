@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IMAGEPAINTING</title>
+	<meta charset="utf-8" />
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+	<link rel="stylesheet" href="onsenui-core.min.css">
+	<link rel="stylesheet" href="onsen-css-components.min.css">
+</head>
+
+<body>
+	<ons-page>
+		<ons-toolbar>
+			<div class="center" id="textStatus">WELCOME</div>
+		</ons-toolbar>
+		<ons-list>
+			<ons-list-item expandable>
+				IMAGES
+				<div class="expandable-content">
+					<ons-list-item>
+						<ons-select style="width: 100%;" id="selectImage"><option value=""></option></ons-select>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="left">Start:</div>
+						<ons-range style="width: 100%;" id="sliderStart"></ons-range>
+						<div class="right" id="textStart"></div>
+					</ons-list-item>
+					<ons-list-item>
+						<canvas style="width: 100%;" id="canvasImage" width="0px" height="0px"></canvas>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="left">Stop:</div>
+						<ons-range style="width: 100%;" id="sliderStop"></ons-range>
+						<div class="right" id="textStop"></div>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+
+			<ons-list-item expandable>
+				DELETE
+				<div class="expandable-content">
+					<ons-list-item>
+						<ons-select style="width: 100%;" id="selectDelete"><option value=""></option></ons-select>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnDownload">Download</ons-button>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnDelete">Delete</ons-button>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+			<ons-list-item expandable>
+				UPLOAD
+				<div class="expandable-content">
+					<ons-list-item>
+						<input style="width: 100%;" type="file" id="selectUpload"></input>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnUploadOriginal">Upload</ons-button>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+			<ons-list-item expandable>
+				CONVERT
+				<div class="expandable-content">
+					<ons-list-item>
+						<input style="width: 100%;" type="file" id="selectConvert"></input>
+					</ons-list-item>
+					<ons-list-item>
+						<canvas style="width: 100%;" id="canvasConvert" width="0px" height="0px"></canvas>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnUploadConvert">Upload</ons-button>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnDownloadConvert">Download</ons-button>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+			<ons-list-item expandable>
+				SETTINGS
+				<div class="expandable-content">
+					<ons-list-item>
+						<div class="left">Delay:</div>
+						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderDelay"></ons-range></div>
+						<div class="right" id="textDelay"></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="left">Brigthness:</div>
+						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderBrightness"></ons-range></div>
+						<div class="right" id="textBrightness"></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="left">Repeat:</div>
+						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderRepeat"></ons-range></div>
+						<div class="right" id="textRepeat"></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="left">Pause:</div>
+						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderPause"></ons-range></div>
+						<div class="right" id="textPause"></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="left">Color:</div>
+						<div class="center"><ons-input style="width: 100%;" type="color" id="pickerColor"></ons-input></div>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+			<ons-list-item expandable>
+				OPTIONS
+				<div class="expandable-content">
+					<ons-list-item>
+						<div class="center">Invert?</div>
+						<div class="right"><ons-switch id="ckInvert"></ons-switch></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="center">Repeat?</div>
+						<div class="right"><ons-switch id="ckRepeat"></ons-switch></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="center">Bounce?</div>
+						<div class="right"><ons-switch id="ckBounce"></ons-switch></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="center">Pause?</div>
+						<div class="right"><ons-switch id="ckPause"></ons-switch></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="center">Cut?</div>
+						<div class="right"><ons-switch id="ckCut"></ons-switch></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="center">End Off?</div>
+						<div class="right"><ons-switch id="ckEndOff"></ons-switch></div>
+					</ons-list-item>
+					<ons-list-item>
+						<div class="center">End Color?</div>
+						<div class="right"><ons-switch id="ckEndColor"></ons-switch></div>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+			<ons-list-item expandable>
+				ACTIONS
+				<div class="expandable-content">
+					<ons-list-item>
+						<ons-button modifier="large" id="btnLight">Light</ons-button>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnBurn">Burn</ons-button>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnPlay">Play</ons-button>
+					</ons-list-item>
+					<ons-list-item>
+						<ons-button modifier="large" id="btnStop">Stop</ons-button>
+					</ons-list-item>
+				</div>
+			</ons-list-item>
+		</ons-list>
+	</ons-page>
+</body>
+<script src="imagepainting.js"></script>
+<script src="onsenui.min.js"></script>
+</html>
