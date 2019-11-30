@@ -200,8 +200,7 @@
 				</tr>
 				<tr class="convert hide-me">
 					<td><div class="div left">Select:</div></td>
-					<td colspan=3><input class="input white" id="selectConvert" type="file" /></td>
-					<td><div class="div right" id="textNumPixels"></div></td>
+					<td colspan=4><input class="input white" id="selectConvert" type="file" /></td>
 				</tr>
 				<tr class="convert hide-me"> 
 					<td colspan=5><canvas class="canvas" id="canvasConvert" width="0px" height="0px"></canvas></td> 
@@ -270,6 +269,9 @@
 	</body>
 
 	<script>
+// Variable
+var numPixels = 0;
+
 // Status Variable--------------------------------------------------
 var textStatus = document.getElementById("textStatus");
 
@@ -286,7 +288,6 @@ var btnUploadOriginal = document.getElementById("btnUploadOriginal");
 var imgConvert = new Image;
 var canvasConvert = document.getElementById("canvasConvert");
 var selectConvert = document.getElementById("selectConvert");
-var textNumPixels = document.getElementById("textNumPixels");
 var btnDownloadConvert = document.getElementById("btnDownloadConvert");
 var btnUploadConvert = document.getElementById("btnUploadConvert");
 
@@ -450,8 +451,8 @@ function drawConvertCanvas()
 	// canvas
 	var ctx = canvasConvert.getContext("2d");
 	// calculate the canvas dimension
-	canvasConvert.width = textNumPixels.innerHTML;
-	canvasConvert.height = imgConvert.width/imgConvert.height*textNumPixels.innerHTML; 
+	canvasConvert.width = numPixels;
+	canvasConvert.height = imgConvert.width/imgConvert.height*numPixels; 
 	// initialize canvas in black
 	ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
 	// save context
@@ -629,7 +630,7 @@ function setParameter(jsonString)
 	ckCut.checked  = json["iscut"];
 	ckEndOff.checked  = json["isendoff"];
 	ckEndColor.checked  = json["isendcolor"];
-	textNumPixels.innerHTML = json["numPixels"];
+	numPixels = json["numPixels"];
 	// check parameter
 	updateTextSlider(sliderStart,textStart, "px");
 	updateTextSlider(sliderStop,textStop, "px");
@@ -725,7 +726,7 @@ function downloadFile()
 	var a  = document.createElement('a');
 	a.href = selectDelete.value;
 	a.download = selectDelete.value.substring(1);
-	a.click()
+	a.click();
 }
 
 //--------------------------------------------------
@@ -769,7 +770,7 @@ function downloadConvert()
 		var a  = document.createElement('a');
 		a.href = bitmap;
 		a.download = trimFileName(selectConvert.files[0].name)+ ".bmp";
-		a.click()
+		a.click();
 	}
 }
 

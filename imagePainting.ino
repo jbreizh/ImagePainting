@@ -327,10 +327,6 @@ void handleParameterRead()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void handleParameterWrite()
 {
-  // Html code and msg
-  uint16_t htmlCode;
-  String htmlMsg = "";
-
   // New json document
   StaticJsonDocument<500> jsonDoc;
 
@@ -340,70 +336,59 @@ void handleParameterWrite()
   // Json not right ?
   if (error)
   {
-    // Html code and msg AKA do nothing
-    htmlCode = 500; // Internal Error
-    htmlMsg = "WRITE ERROR : WRONG JSON -> ";
-    htmlMsg += error.c_str();
+    // Error wrong json
+    return server.send(500, "text/html", "WRITE ERROR : WRONG JSON");
   }
+  
   // Running or paused animation ?
-  else if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
+  if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
   {
-    // Html code and msg AKA do nothing
-    htmlCode = 403; // Forbidden
-    htmlMsg = "WRITE ERROR : NOT AVAILABLE";
+    // Error not available
+    return server.send(403, "text/html", "WRITE ERROR : NOT AVAILABLE");
   }
+
+  // Write parameter in the ESP8266
+  if (!jsonDoc["delay"].isNull()) DELAY = jsonDoc["delay"];
+  if (!jsonDoc["brightness"].isNull())
+  {
+    BRIGHTNESS = jsonDoc["brightness"];
+    SHADER.setBrightness(BRIGHTNESS);
+  }
+  if (!jsonDoc["repeat"].isNull()) REPEAT = jsonDoc["repeat"];
+  if (!jsonDoc["pause"].isNull()) PAUSE = jsonDoc["pause"];
+  if (!jsonDoc["color"].isNull())COLOR.Parse<HtmlShortColorNames>(jsonDoc["color"].as<String>());
+  if (!jsonDoc["isrepeat"].isNull())ISREPEAT = jsonDoc["isrepeat"];
+  if (!jsonDoc["isbounce"].isNull())ISBOUNCE = jsonDoc["isbounce"];
+  if (!jsonDoc["ispause"].isNull())ISPAUSE = jsonDoc["ispause"];
+  if (!jsonDoc["iscut"].isNull())ISCUT = jsonDoc["iscut"];
+  if (!jsonDoc["isinvert"].isNull())ISINVERT = jsonDoc["isinvert"];
+  if (!jsonDoc["isendoff"].isNull())ISENDOFF = jsonDoc["isendoff"];
+  if (!jsonDoc["isendcolor"].isNull())ISENDCOLOR = jsonDoc["isendcolor"];
+  if (!jsonDoc["indexStart"].isNull())INDEXSTART = jsonDoc["indexStart"];
+  if (!jsonDoc["indexStop"].isNull())INDEXSTOP = jsonDoc["indexStop"];
+
   // Changing bitmap ?
-  else if (jsonDoc["bmpPath"].as<String>() != BMPPATH)
+  if (!jsonDoc["indexStop"].isNull() && jsonDoc["bmpPath"].as<String>() != BMPPATH)
   {
     //  Args ; path ; type ; bitmap not right ?
-    if ((jsonDoc["bmpPath"].as<String>() == "") || (!SPIFFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
+    if ((!SPIFFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
     {
       // Load /error.bmp
       BMPPATH = "/error.bmp";
       bitmapLoad(BMPPATH);
-
-      // Html code and msg
-      htmlCode = 500; // Internal Error
-      htmlMsg = "WRITE ERROR : BAD ARGS OR FILE OR BITMAP";
+      // Error bitmap
+      return server.send(500, "text/html", "WRITE ERROR : WRONG BITMAP");
     }
     // No problem ?
     else
     {
       // Load the new bitmap
       BMPPATH = jsonDoc["bmpPath"].as<String>();
-
-      // Html code and msg
-      htmlCode = 200; // OK
-      htmlMsg = "WRITE SUCCESS : BITMAP LOAD";
     }
-  }
-  // No problem ?
-  else
-  {
-    // Write parameters in the ESP8266
-    DELAY = jsonDoc["delay"];
-    BRIGHTNESS = jsonDoc["brightness"];
-    SHADER.setBrightness(BRIGHTNESS);
-    REPEAT = jsonDoc["repeat"];
-    PAUSE = jsonDoc["pause"];
-    COLOR.Parse<HtmlShortColorNames>(jsonDoc["color"].as<String>());
-    ISREPEAT = jsonDoc["isrepeat"];
-    ISBOUNCE = jsonDoc["isbounce"];
-    ISPAUSE = jsonDoc["ispause"];
-    ISCUT = jsonDoc["iscut"];
-    ISINVERT = jsonDoc["isinvert"];
-    ISENDOFF = jsonDoc["isendoff"];
-    ISENDCOLOR = jsonDoc["isendcolor"];
-    INDEXSTART = jsonDoc["indexStart"];
-    INDEXSTOP = jsonDoc["indexStop"];
-
-    // Html code and msg
-    htmlCode = 200; // OK
-    htmlMsg = "WRITE SUCCESS : PARAMETERS SET";
   }
 
   // Parameter are write
-  server.send(htmlCode, "text/html", htmlMsg);
+  server.send(200, "text/html",  "WRITE SUCCESS");
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

@@ -1,0 +1,53 @@
+.fa-myMenu{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/menu.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fa-myActions{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/actions.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fa-mySettings{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/settings.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fa-myUpload{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/upload.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fa-myDownload{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/download.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fa-myNetwork{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/network.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+}

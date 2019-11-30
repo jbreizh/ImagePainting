@@ -1,165 +1,242 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>IMAGEPAINTING</title>
+	<title>FILE</title>
 	<meta charset="utf-8" />
 	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
-	<link rel="stylesheet" href="onsenui-core.min.css">
-	<link rel="stylesheet" href="onsen-css-components.min.css">
+	<link rel="stylesheet" href="css/onsenui-core.min.css">
+	<link rel="stylesheet" href="css/onsen-css-components.min.css">
+	<link rel="stylesheet" href="css/imagepainting.css">
 </head>
 
 <body>
-	<ons-page>
-		<ons-toolbar>
-			<div class="center" id="textStatus">WELCOME</div>
-		</ons-toolbar>
-		<ons-list>
-			<ons-list-item expandable>
-				IMAGES
-				<div class="expandable-content">
-					<ons-list-item>
-						<ons-select style="width: 100%;" id="selectImage"><option value=""></option></ons-select>
+	<ons-splitter>
+		<ons-splitter-side id="menu" side="left" width="220px" collapse swipeable>
+			<ons-page>
+				<ons-list>
+					<ons-list-item onclick="fn.load('actions.html')" tappable>
+						<div class="left" ><ons-icon icon="myActions"></ons-icon></div>
+						<div class="center" >Actions</div>
 					</ons-list-item>
-					<ons-list-item>
-						<div class="left">Start:</div>
-						<ons-range style="width: 100%;" id="sliderStart"></ons-range>
-						<div class="right" id="textStart"></div>
+					<ons-list-item onclick="fn.load('settings.html')" tappable>
+						<div class="left" ><ons-icon icon="mySettings"></ons-icon></div>
+						<div class="center" >Settings</div>
 					</ons-list-item>
-					<ons-list-item>
-						<canvas style="width: 100%;" id="canvasImage" width="0px" height="0px"></canvas>
+					<ons-list-item onclick="fn.load('upload.html')" tappable>
+						<div class="left" ><ons-icon icon="myUpload"></ons-icon></div>
+						<div class="center" >Upload</div>
 					</ons-list-item>
-					<ons-list-item>
-						<div class="left">Stop:</div>
-						<ons-range style="width: 100%;" id="sliderStop"></ons-range>
-						<div class="right" id="textStop"></div>
+					<ons-list-item onclick="fn.load('download.html')" tappable>
+						<div class="left" ><ons-icon icon="myDownload"></ons-icon></div>
+						<div class="center" >Download</div>
 					</ons-list-item>
-				</div>
-			</ons-list-item>
+					<ons-list-item onclick="fn.load('network.html')" tappable>
+						<div class="left" ><ons-icon icon="myNetwork"></ons-icon></div>
+						<div class="center" >Network</div>
+					</ons-list-item>
+				</ons-list>
+			</ons-page>
+		</ons-splitter-side>
+		<ons-splitter-content id="content" page="actions.html"></ons-splitter-content>
+	</ons-splitter>
 
-			<ons-list-item expandable>
-				DELETE
-				<div class="expandable-content">
-					<ons-list-item>
-						<ons-select style="width: 100%;" id="selectDelete"><option value=""></option></ons-select>
+	<template id="actions.html">
+		<ons-page id="actions">
+			<ons-toolbar>
+				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
+				<div class="center">Actions</div>
+			</ons-toolbar>
+			<ons-list>
+				<ons-list-header>STATUS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left" style="color: green;" id="textStatus">READY</div>
+				</ons-list-item>
+				<ons-list-header>FILE</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<ons-select style="width: 100%;" id="selectImage"><option value=""></option></ons-select>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Start:</div>
+					<ons-range style="width: 100%;" id="sliderStart"></ons-range>
+					<div class="right" id="textStart"></div>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<div class="center"><canvas style="display: block; margin-left: auto; margin-right: auto; max-width: 100%; height: 40vw;" id="canvasImage" width="0px" height="0px"></canvas></div>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Stop:</div>
+					<ons-range style="width: 100%;" id="sliderStop"></ons-range>
+					<div class="right" id="textStop"></div>
+				</ons-list-item>
+				<ons-list-header>ACTIONS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left" style="width: 40%;"><ons-button modifier="large" style="background-color: yellow; color: black" id="btnLight">Light</ons-button></div>
+					<div class="right" style="width: 40%;"><ons-button modifier="large" style="background-color: orange; color: black" id="btnBurn">Burn</ons-button></div>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<div class="left" style="width: 40%;"><ons-button modifier="large" style="color: black" id="btnPlay">Play</ons-button></div>
+					<div class="right" style="width: 40%;"><ons-button modifier="large" style="background-color: red; color: black" id="btnStop">Stop</ons-button></div>
+				</ons-list-item>
+			</ons-list>
+		</ons-page>
+	</template>
+
+	<template id="settings.html">
+		<ons-page id="settings">
+			<ons-toolbar>
+				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
+				<div class="center">Settings</div>
+			</ons-toolbar>
+			<ons-list>
+				<ons-list-header>STATUS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="letf" style="color: green;" id="textStatus">READY</div>
+				</ons-list-item>
+				<ons-list-header>SETTINGS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Delay:</div>
+					<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderDelay"></ons-range></div>
+					<div class="right" id="textDelay"></div>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Brigthness:</div>
+					<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderBrightness"></ons-range></div>
+					<div class="right" id="textBrightness"></div>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Repeat:</div>
+					<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderRepeat"></ons-range></div>
+					<div class="right" id="textRepeat"></div>
+				</ons-list-item>
+				<ons-list modifier="inset">
+					<ons-list-item modifier="longdivider">
+						<div class="left">Invert?</div>
+						<div class="right"><ons-checkbox id="ckInvert"></ons-checkbox></div>
 					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnDownload">Download</ons-button>
+					<ons-list-item modifier="longdivider">
+						<div class="left">Repeat?</div>
+						<div class="right"><ons-checkbox id="ckRepeat"></ons-checkbox></div>
 					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnDelete">Delete</ons-button>
+					<ons-list-item modifier="longdivider">
+						<div class="left">Bounce?</div>
+						<div class="right"><ons-checkbox id="ckBounce"></ons-checkbox></div>
 					</ons-list-item>
-				</div>
-			</ons-list-item>
-			<ons-list-item expandable>
-				UPLOAD
-				<div class="expandable-content">
-					<ons-list-item>
-						<input style="width: 100%;" type="file" id="selectUpload"></input>
+				</ons-list>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Pause:</div>
+					<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderPause"></ons-range></div>
+					<div class="right" id="textPause"></div>
+				</ons-list-item>
+				<ons-list modifier="inset">
+					<ons-list-item modifier="longdivider">
+						<div class="left">Pause?</div>
+						<div class="right"><ons-checkbox id="ckPause"></ons-checkbox></div>
 					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnUploadOriginal">Upload</ons-button>
+					<ons-list-item modifier="longdivider">
+						<div class="left">Cut?</div>
+						<div class="right"><ons-checkbox id="ckCut"></ons-checkbox></div>
 					</ons-list-item>
-				</div>
-			</ons-list-item>
-			<ons-list-item expandable>
-				CONVERT
-				<div class="expandable-content">
-					<ons-list-item>
-						<input style="width: 100%;" type="file" id="selectConvert"></input>
+				</ons-list>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Color:</div>
+					<div class="center"><ons-input style="width: 100%;" type="color" id="pickerColor"></ons-input></div>
+				</ons-list-item>
+				<ons-list modifier="inset">
+					<ons-list-item modifier="longdivider">
+						<div class="left">End Off?</div>
+						<div class="right"><ons-checkbox id="ckEndOff"></ons-checkbox></div>
 					</ons-list-item>
-					<ons-list-item>
-						<canvas style="width: 100%;" id="canvasConvert" width="0px" height="0px"></canvas>
+					<ons-list-item modifier="longdivider">
+						<div class="left">End Color?</div>
+						<div class="right"><ons-checkbox id="ckEndColor"></ons-checkbox></div>
 					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnUploadConvert">Upload</ons-button>
-					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnDownloadConvert">Download</ons-button>
-					</ons-list-item>
-				</div>
-			</ons-list-item>
-			<ons-list-item expandable>
-				SETTINGS
-				<div class="expandable-content">
-					<ons-list-item>
-						<div class="left">Delay:</div>
-						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderDelay"></ons-range></div>
-						<div class="right" id="textDelay"></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="left">Brigthness:</div>
-						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderBrightness"></ons-range></div>
-						<div class="right" id="textBrightness"></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="left">Repeat:</div>
-						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderRepeat"></ons-range></div>
-						<div class="right" id="textRepeat"></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="left">Pause:</div>
-						<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderPause"></ons-range></div>
-						<div class="right" id="textPause"></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="left">Color:</div>
-						<div class="center"><ons-input style="width: 100%;" type="color" id="pickerColor"></ons-input></div>
-					</ons-list-item>
-				</div>
-			</ons-list-item>
-			<ons-list-item expandable>
-				OPTIONS
-				<div class="expandable-content">
-					<ons-list-item>
-						<div class="center">Invert?</div>
-						<div class="right"><ons-switch id="ckInvert"></ons-switch></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="center">Repeat?</div>
-						<div class="right"><ons-switch id="ckRepeat"></ons-switch></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="center">Bounce?</div>
-						<div class="right"><ons-switch id="ckBounce"></ons-switch></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="center">Pause?</div>
-						<div class="right"><ons-switch id="ckPause"></ons-switch></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="center">Cut?</div>
-						<div class="right"><ons-switch id="ckCut"></ons-switch></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="center">End Off?</div>
-						<div class="right"><ons-switch id="ckEndOff"></ons-switch></div>
-					</ons-list-item>
-					<ons-list-item>
-						<div class="center">End Color?</div>
-						<div class="right"><ons-switch id="ckEndColor"></ons-switch></div>
-					</ons-list-item>
-				</div>
-			</ons-list-item>
-			<ons-list-item expandable>
-				ACTIONS
-				<div class="expandable-content">
-					<ons-list-item>
-						<ons-button modifier="large" id="btnLight">Light</ons-button>
-					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnBurn">Burn</ons-button>
-					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnPlay">Play</ons-button>
-					</ons-list-item>
-					<ons-list-item>
-						<ons-button modifier="large" id="btnStop">Stop</ons-button>
-					</ons-list-item>
-				</div>
-			</ons-list-item>
-		</ons-list>
-	</ons-page>
+				</ons-list>
+			</ons-list>
+		</ons-page>
+	</template>
+
+	<template id="upload.html">
+		<ons-page id="upload">
+			<ons-toolbar>
+				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
+				<div class="center">Upload</div>
+			</ons-toolbar>
+			<ons-list>
+				<ons-list-header>STATUS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left" style="color: green;" id="textStatus">READY</div>
+				</ons-list-item>
+				<ons-list-header>FILE</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<input style="width: 100%;" type="file" id="selectConvert"></input>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<canvas style="display: block; margin-left: auto; margin-right: auto; max-width: 100%; height: 50vw;" id="canvasConvert" width="0px" height="0px"></canvas>
+				</ons-list-item>
+				<ons-list-header>ACTIONS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<ons-button modifier="large" style="background-color: orange; color: black" id="btnUploadOriginal">Upload Original</ons-button>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<ons-button modifier="large" style="background-color: green; color: black" id="btnUploadConvert">Upload Convert</ons-button>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<ons-button modifier="large" style="color: black" id="btnDownloadConvert">Download Convert</ons-button>
+				</ons-list-item>
+			</ons-list>
+		</ons-page>
+	</template>
+
+	<template id="download.html">
+		<ons-page id="download">
+			<ons-toolbar>
+				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
+				<div class="center">Download</div>
+			</ons-toolbar>
+			<ons-list>
+				<ons-list-header>STATUS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left" style="color: green;" id="textStatus">READY</div>
+				</ons-list-item>
+				<ons-list-header>FILE</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<ons-select style="width: 100%;" id="selectDelete"><option value=""></option></ons-select>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<canvas style="display: block; margin-left: auto; margin-right: auto; max-width: 100%; height: 40vw;" id="canvasDelete" width="0px" height="0px"></canvas>
+				</ons-list-item>
+				<ons-list-header>ACTIONS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<ons-button modifier="large"  style="color: black" id="btnDownload">Download</ons-button>
+				</ons-list-item>
+				<ons-list-item modifier="nodivider">
+					<ons-button modifier="large" style="background-color: red; color: black" id="btnDelete">Delete</ons-button>
+				</ons-list-item>
+			</ons-list>
+		</ons-page>
+	</template>
+
+	<template id="network.html">
+		<ons-page id="network">
+			<ons-toolbar>
+				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
+				<div class="center">Network</div>
+			</ons-toolbar>
+			<ons-list>
+				<ons-list-header>ESP8266 ADDRESS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left">Address:</div>
+					<div class="center"><ons-input type="url" style="width: 100%;" id="selectAddress" float></ons-input></div>
+				</ons-list-item>
+				<ons-list-header>ACTIONS</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<ons-button modifier="large" style="background-color: red; color: black" id="btnAddress">SET</ons-button>
+				</ons-list-item>
+			</ons-list>
+		</ons-page>
+	</template>
 </body>
-<script src="imagepainting.js"></script>
-<script src="onsenui.min.js"></script>
+<script src="js/canvastobmp.js"></script>
+<script src="js/imagepainting.js"></script>
+<script src="js/onsenui.min.js"></script>
 </html>
