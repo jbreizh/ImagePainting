@@ -14,7 +14,7 @@ window.fn.load = function(page) {
 };
 
 // Variable
-var address = "http://192.168.43.252";
+var address = "http://192.168.1.1";
 var numPixels = 0;
 
 document.addEventListener('init', function(event) {
