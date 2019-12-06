@@ -5,7 +5,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="css/onsenui-core.min.css">
-	<link rel="stylesheet" href="css/onsen-css-components.min.css">
+	<link rel="stylesheet" id="theme" href="css/onsen-css-components.min.css">
 	<link rel="stylesheet" href="css/imagepainting.css">
 </head>
 
@@ -30,9 +30,9 @@
 						<div class="left" ><ons-icon icon="myDownload"></ons-icon></div>
 						<div class="center" >Download</div>
 					</ons-list-item>
-					<ons-list-item onclick="fn.load('network.html')" tappable>
-						<div class="left" ><ons-icon icon="myNetwork"></ons-icon></div>
-						<div class="center" >Network</div>
+					<ons-list-item onclick="fn.load('system.html')" tappable>
+						<div class="left" ><ons-icon icon="mySystem"></ons-icon></div>
+						<div class="center" >System</div>
 					</ons-list-item>
 				</ons-list>
 			</ons-page>
@@ -45,12 +45,9 @@
 			<ons-toolbar>
 				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
 				<div class="center">Actions</div>
+				<div class="right"><ons-toolbar-button id="btnStatus"><ons-icon id="iconStatus" icon="myStatus"></ons-icon></ons-toolbar-button></div>
 			</ons-toolbar>
 			<ons-list>
-				<ons-list-header>STATUS</ons-list-header>
-				<ons-list-item modifier="nodivider">
-					<div class="left" style="color: green;" id="textStatus">READY</div>
-				</ons-list-item>
 				<ons-list-header>FILE</ons-list-header>
 				<ons-list-item modifier="nodivider">
 					<ons-select style="width: 100%;" id="selectImage"><option value=""></option></ons-select>
@@ -70,14 +67,17 @@
 				</ons-list-item>
 				<ons-list-header>ACTIONS</ons-list-header>
 				<ons-list-item modifier="nodivider">
-					<div class="left" style="width: 40%;"><ons-button modifier="large" style="background-color: yellow; color: black" id="btnLight">Light</ons-button></div>
-					<div class="right" style="width: 40%;"><ons-button modifier="large" style="background-color: orange; color: black" id="btnBurn">Burn</ons-button></div>
+					<div class="left" style="width: 47%;"><ons-button modifier="large" style="background-color: purple;" id="btnLight">Light</ons-button></div>
+					<div class="right" style="width: 47%;"><ons-button modifier="large" style="background-color: orange;" id="btnBurn">Burn</ons-button></div>
 				</ons-list-item>
 				<ons-list-item modifier="nodivider">
-					<div class="left" style="width: 40%;"><ons-button modifier="large" style="color: black" id="btnPlay">Play</ons-button></div>
-					<div class="right" style="width: 40%;"><ons-button modifier="large" style="background-color: red; color: black" id="btnStop">Stop</ons-button></div>
+					<div class="left" style="width: 47%;"><ons-button modifier="large" style="background-color: green;" id="btnPlay">Play</ons-button></div>
+					<div class="right" style="width: 47%;"><ons-button modifier="large" style="background-color: red;" id="btnStop">Stop</ons-button></div>
 				</ons-list-item>
 			</ons-list>
+			<ons-popover cancelable direction="down" id="popoverStatus">
+				<div style="padding: 20px; text-align: center;" id="textStatus">READY</div>
+			</ons-popover>
 		</ons-page>
 	</template>
 
@@ -86,12 +86,9 @@
 			<ons-toolbar>
 				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
 				<div class="center">Settings</div>
+				<div class="right"><ons-toolbar-button id="btnStatus"><ons-icon id="iconStatus" icon="myStatus"></ons-icon></ons-toolbar-button></div>
 			</ons-toolbar>
 			<ons-list>
-				<ons-list-header>STATUS</ons-list-header>
-				<ons-list-item modifier="nodivider">
-					<div class="letf" style="color: green;" id="textStatus">READY</div>
-				</ons-list-item>
 				<ons-list-header>SETTINGS</ons-list-header>
 				<ons-list-item modifier="nodivider">
 					<div class="left">Delay:</div>
@@ -105,7 +102,7 @@
 				</ons-list-item>
 				<ons-list-item modifier="nodivider">
 					<div class="left">Repeat:</div>
-					<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderRepeat"></ons-range></div>
+					<div class="center"><ons-range style="width: 100%;" min="0" max="25" id="sliderRepeat"></ons-range></div>
 					<div class="right" id="textRepeat"></div>
 				</ons-list-item>
 				<ons-list modifier="inset">
@@ -124,7 +121,7 @@
 				</ons-list>
 				<ons-list-item modifier="nodivider">
 					<div class="left">Pause:</div>
-					<div class="center"><ons-range style="width: 100%;" min="0" max="255" id="sliderPause"></ons-range></div>
+					<div class="center"><ons-range style="width: 100%;" min="0" max="25" id="sliderPause"></ons-range></div>
 					<div class="right" id="textPause"></div>
 				</ons-list-item>
 				<ons-list modifier="inset">
@@ -152,6 +149,9 @@
 					</ons-list-item>
 				</ons-list>
 			</ons-list>
+			<ons-popover cancelable direction="down" id="popoverStatus">
+				<div style="padding: 20px; text-align: center;" id="textStatus">READY</div>
+			</ons-popover>
 		</ons-page>
 	</template>
 
@@ -160,12 +160,9 @@
 			<ons-toolbar>
 				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
 				<div class="center">Upload</div>
+				<div class="right"><ons-toolbar-button id="btnStatus"><ons-icon id="iconStatus" icon="myStatus"></ons-icon></ons-toolbar-button></div>
 			</ons-toolbar>
 			<ons-list>
-				<ons-list-header>STATUS</ons-list-header>
-				<ons-list-item modifier="nodivider">
-					<div class="left" style="color: green;" id="textStatus">READY</div>
-				</ons-list-item>
 				<ons-list-header>FILE</ons-list-header>
 				<ons-list-item modifier="nodivider">
 					<input style="width: 100%;" type="file" id="selectConvert"></input>
@@ -175,15 +172,18 @@
 				</ons-list-item>
 				<ons-list-header>ACTIONS</ons-list-header>
 				<ons-list-item modifier="nodivider">
-					<ons-button modifier="large" style="background-color: orange; color: black" id="btnUploadOriginal">Upload Original</ons-button>
+					<ons-button modifier="large" id="btnUploadOriginal">Upload Original</ons-button>
 				</ons-list-item>
 				<ons-list-item modifier="nodivider">
-					<ons-button modifier="large" style="background-color: green; color: black" id="btnUploadConvert">Upload Convert</ons-button>
+					<ons-button modifier="large" id="btnUploadConvert">Upload Convert</ons-button>
 				</ons-list-item>
 				<ons-list-item modifier="nodivider">
-					<ons-button modifier="large" style="color: black" id="btnDownloadConvert">Download Convert</ons-button>
+					<ons-button modifier="large" id="btnDownloadConvert">Download Convert</ons-button>
 				</ons-list-item>
 			</ons-list>
+			<ons-popover cancelable direction="down" id="popoverStatus">
+				<div style="padding: 20px; text-align: center;" id="textStatus">READY</div>
+			</ons-popover>
 		</ons-page>
 	</template>
 
@@ -192,12 +192,9 @@
 			<ons-toolbar>
 				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
 				<div class="center">Download</div>
+				<div class="right"><ons-toolbar-button id="btnStatus"><ons-icon id="iconStatus" icon="myStatus"></ons-icon></ons-toolbar-button></div>
 			</ons-toolbar>
 			<ons-list>
-				<ons-list-header>STATUS</ons-list-header>
-				<ons-list-item modifier="nodivider">
-					<div class="left" style="color: green;" id="textStatus">READY</div>
-				</ons-list-item>
 				<ons-list-header>FILE</ons-list-header>
 				<ons-list-item modifier="nodivider">
 					<ons-select style="width: 100%;" id="selectDelete"><option value=""></option></ons-select>
@@ -207,20 +204,24 @@
 				</ons-list-item>
 				<ons-list-header>ACTIONS</ons-list-header>
 				<ons-list-item modifier="nodivider">
-					<ons-button modifier="large"  style="color: black" id="btnDownload">Download</ons-button>
+					<ons-button modifier="large" id="btnDownload">Download</ons-button>
 				</ons-list-item>
 				<ons-list-item modifier="nodivider">
-					<ons-button modifier="large" style="background-color: red; color: black" id="btnDelete">Delete</ons-button>
+					<ons-button modifier="large" style="background-color: red;" id="btnDelete">Delete</ons-button>
 				</ons-list-item>
 			</ons-list>
+			<ons-popover cancelable direction="down" id="popoverStatus">
+				<div style="padding: 20px; text-align: center;" id="textStatus">READY</div>
+			</ons-popover>
 		</ons-page>
 	</template>
 
-	<template id="network.html">
-		<ons-page id="network">
+	<template id="system.html">
+		<ons-page id="system">
 			<ons-toolbar>
 				<div class="left"><ons-toolbar-button onclick="fn.open()"><ons-icon icon="myMenu"></ons-icon></ons-toolbar-button></div>
-				<div class="center">Network</div>
+				<div class="center">System</div>
+				<div class="right"><ons-toolbar-button id="btnStatus"><ons-icon id="iconStatus" icon="myStatus"></ons-icon></ons-toolbar-button></div>
 			</ons-toolbar>
 			<ons-list>
 				<ons-list-header>ESP8266 ADDRESS</ons-list-header>
@@ -228,13 +229,21 @@
 					<div class="left">Address:</div>
 					<div class="center"><ons-input type="url" style="width: 100%;" id="selectAddress" float></ons-input></div>
 				</ons-list-item>
-				<ons-list-header>ACTIONS</ons-list-header>
 				<ons-list-item modifier="nodivider">
-					<ons-button modifier="large" style="background-color: red; color: black" id="btnAddress">SET</ons-button>
+					<ons-button modifier="large" style="background-color: red;" id="btnAddress">SET</ons-button>
+				</ons-list-item>
+				<ons-list-header>THEME</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<div class="left" style="width: 47%;"><ons-button modifier="large" style="background-color: grey;" id="btnThemeLight">Light</ons-button></div>
+					<div class="right" style="width: 47%;"><ons-button modifier="large" style="background-color: black;" id="btnThemeDark">Dark</ons-button></div>
 				</ons-list-item>
 			</ons-list>
+			<ons-popover cancelable direction="down" id="popoverStatus">
+				<div style="padding: 20px; text-align: center;" id="textStatus">READY</div>
+			</ons-popover>
 		</ons-page>
 	</template>
+
 </body>
 <script src="js/canvastobmp.js"></script>
 <script src="js/imagepainting.js"></script>

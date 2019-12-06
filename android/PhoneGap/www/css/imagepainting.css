@@ -3,8 +3,6 @@
 	height: 24px;
 	background-color: transparent;
 	background-image: url('icons/menu.svg');
-	background-repeat: no-repeat;
-	background-position: center;
 }
 
 .fa-myActions{
@@ -12,8 +10,6 @@
 	height: 24px;
 	background-color: transparent;
 	background-image: url('icons/actions.svg');
-	background-repeat: no-repeat;
-	background-position: center;
 }
 
 .fa-mySettings{
@@ -21,8 +17,6 @@
 	height: 24px;
 	background-color: transparent;
 	background-image: url('icons/settings.svg');
-	background-repeat: no-repeat;
-	background-position: center;
 }
 
 .fa-myUpload{
@@ -30,8 +24,6 @@
 	height: 24px;
 	background-color: transparent;
 	background-image: url('icons/upload.svg');
-	background-repeat: no-repeat;
-	background-position: center;
 }
 
 .fa-myDownload{
@@ -39,15 +31,39 @@
 	height: 24px;
 	background-color: transparent;
 	background-image: url('icons/download.svg');
-	background-repeat: no-repeat;
-	background-position: center;
 }
 
-.fa-myNetwork{
+.fa-mySystem{
 	width: 24px;
 	height: 24px;
 	background-color: transparent;
-	background-image: url('icons/network.svg');
-	background-repeat: no-repeat;
-	background-position: center;
+	background-image: url('icons/system.svg');
+}
+
+.fa-myStatus{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/status.svg');
+}
+
+.fa-myStatusRed{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/statusRed.svg');
+}
+
+.fa-myStatusGreen{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/statusGreen.svg');
+}
+
+.fa-myStatusOrange{
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	background-image: url('icons/statusOrange.svg');
 }

@@ -1,3 +1,5 @@
+//"use strict";
+
 // onsen menu
 window.fn = {};
 
@@ -15,13 +17,17 @@ window.fn.load = function(page) {
 
 // Variable
 var address = "http://192.168.1.1";
+//var address = "http://192.168.43.75";
 var numPixels = 0;
 
 document.addEventListener('init', function(event) {
 	if (event.target.matches('#actions'))
 	{
 		// Status Variable--------------------------------------------------
+		var btnStatus = document.getElementById("btnStatus");
 		var textStatus = document.getElementById("textStatus");
+		var iconStatus = document.getElementById("iconStatus");
+		var popoverStatus = document.getElementById("popoverStatus");
 
 		// Image Variable--------------------------------------------------
 		var imgImage = new Image;
@@ -35,6 +41,9 @@ document.addEventListener('init', function(event) {
 		var btnBurn = document.getElementById("btnBurn");
 		var btnStop = document.getElementById("btnStop");
 		var btnPlay = document.getElementById("btnPlay");
+
+		// Status Event--------------------------------------------------
+		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
 
 		// Image Event--------------------------------------------------
 		selectImage.addEventListener('change', requestParameterWrite, false);
@@ -91,6 +100,14 @@ document.addEventListener('init', function(event) {
 		{
 			textStatus.innerHTML = message;
 			textStatus.style.color = color;
+			if (color == 'red')
+				iconStatus.setAttribute('icon', 'myStatusRed');
+
+			if (color == 'orange')
+				iconStatus.setAttribute('icon', 'myStatusOrange');
+
+			if (color == 'green')
+				iconStatus.setAttribute('icon', 'myStatusGreen');
 		}
 
 		//--------------------------------------------------
@@ -99,7 +116,7 @@ document.addEventListener('init', function(event) {
 			var json = JSON.parse(jsonString);
 			select.options.length = json.fileList.length;
 
-			for (i = 0; i < json.fileList.length; i++)
+			for (var i = 0; i < json.fileList.length; i++)
 			{
 				select.options[i].value = json.fileList[i]; 
 				select.options[i].text = json.fileList[i]; 
@@ -262,7 +279,10 @@ document.addEventListener('init', function(event) {
 	if (event.target.matches('#settings'))
 	{
 		// Status Variable--------------------------------------------------
+		var btnStatus = document.getElementById("btnStatus");
 		var textStatus = document.getElementById("textStatus");
+		var iconStatus = document.getElementById("iconStatus");
+		var popoverStatus = document.getElementById("popoverStatus");
 
 		// Settings Variable--------------------------------------------------
 		var sliderDelay = document.getElementById("sliderDelay");
@@ -283,6 +303,9 @@ document.addEventListener('init', function(event) {
 		var ckCut = document.getElementById("ckCut");
 		var ckEndOff = document.getElementById("ckEndOff");
 		var ckEndColor = document.getElementById("ckEndColor");
+
+		// Status Event--------------------------------------------------
+		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
 
 		// Settings Event--------------------------------------------------
 		sliderDelay.addEventListener('input', function() { updateTextSlider(sliderDelay,textDelay, "ms");}, false);
@@ -337,6 +360,14 @@ document.addEventListener('init', function(event) {
 		{
 			textStatus.innerHTML = message;
 			textStatus.style.color = color;
+			if (color == 'red')
+				iconStatus.setAttribute('icon', 'myStatusRed');
+
+			if (color == 'orange')
+				iconStatus.setAttribute('icon', 'myStatusOrange');
+
+			if (color == 'green')
+				iconStatus.setAttribute('icon', 'myStatusGreen');
 		}
 		
 		//--------------------------------------------------
@@ -444,7 +475,10 @@ document.addEventListener('init', function(event) {
 	if (event.target.matches('#download'))
 	{
 		// Status Variable--------------------------------------------------
+		var btnStatus = document.getElementById("btnStatus");
 		var textStatus = document.getElementById("textStatus");
+		var iconStatus = document.getElementById("iconStatus");
+		var popoverStatus = document.getElementById("popoverStatus");
 
 		// Delete Variable--------------------------------------------------
 		var selectDelete = document.getElementById("selectDelete");
@@ -452,6 +486,9 @@ document.addEventListener('init', function(event) {
 		var canvasDelete =document.getElementById("canvasDelete");
 		var btnDelete = document.getElementById("btnDelete");
 		var btnDownload = document.getElementById("btnDownload");
+
+		// Status Event--------------------------------------------------
+		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
 
 		// Delete event--------------------------------------------------
 		selectDelete.addEventListener('change', setImgDelete, false);
@@ -516,6 +553,14 @@ document.addEventListener('init', function(event) {
 		{
 			textStatus.innerHTML = message;
 			textStatus.style.color = color;
+			if (color == 'red')
+				iconStatus.setAttribute('icon', 'myStatusRed');
+
+			if (color == 'orange')
+				iconStatus.setAttribute('icon', 'myStatusOrange');
+
+			if (color == 'green')
+				iconStatus.setAttribute('icon', 'myStatusGreen');
 		}
 
 		//--------------------------------------------------
@@ -524,7 +569,7 @@ document.addEventListener('init', function(event) {
 			var json = JSON.parse(jsonString);
 			select.options.length = json.fileList.length;
 
-			for (i = 0; i < json.fileList.length; i++)
+			for (var i = 0; i < json.fileList.length; i++)
 			{
 				select.options[i].value = json.fileList[i]; 
 				select.options[i].text = json.fileList[i]; 
@@ -594,7 +639,10 @@ document.addEventListener('init', function(event) {
 	if (event.target.matches('#upload'))
 	{
 		// Status Variable--------------------------------------------------
+		var btnStatus = document.getElementById("btnStatus");
 		var textStatus = document.getElementById("textStatus");
+		var iconStatus = document.getElementById("iconStatus");
+		var popoverStatus = document.getElementById("popoverStatus");
 
 		// Convert Variable--------------------------------------------------
 		var imgConvert = new Image;
@@ -603,6 +651,9 @@ document.addEventListener('init', function(event) {
 		var btnUploadOriginal = document.getElementById("btnUploadOriginal");
 		var btnUploadConvert = document.getElementById("btnUploadConvert");
 		var btnDownloadConvert = document.getElementById("btnDownloadConvert");
+
+		// Status Event--------------------------------------------------
+		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
 
 		// Convert event--------------------------------------------------
 		selectConvert.addEventListener('change', setImgConvert, false);
@@ -701,6 +752,14 @@ document.addEventListener('init', function(event) {
 		{
 			textStatus.innerHTML = message;
 			textStatus.style.color = color;
+			if (color == 'red')
+				iconStatus.setAttribute('icon', 'myStatusRed');
+
+			if (color == 'orange')
+				iconStatus.setAttribute('icon', 'myStatusOrange');
+
+			if (color == 'green')
+				iconStatus.setAttribute('icon', 'myStatusGreen');
 		}
 
 		//--------------------------------------------------
@@ -819,23 +878,32 @@ document.addEventListener('init', function(event) {
 		}
 	}
 
-	if (event.target.matches('#network'))
+	if (event.target.matches('#system'))
 	{
+		// Status Variable--------------------------------------------------
+		var btnStatus = document.getElementById("btnStatus");
+		var textStatus = document.getElementById("textStatus");
+		var iconStatus = document.getElementById("iconStatus");
+		var popoverStatus = document.getElementById("popoverStatus");
+
 		// System Variable--------------------------------------------------
 		var selectAddress = document.getElementById("selectAddress");
 		var btnAddress = document.getElementById("btnAddress");
+		var theme = document.getElementById("theme");
+		var btnThemeLight = document.getElementById("btnThemeLight");
+		var btnThemeDark = document.getElementById("btnThemeDark");
+
+		// Status Event--------------------------------------------------
+		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
 
 		// System Event--------------------------------------------------
-		btnAddress.addEventListener('click', setAddress, false);
+		btnAddress.addEventListener('click', function () { address = selectAddress.value;}, false);
+		btnThemeLight.addEventListener('click',function () {theme.setAttribute('href', 'css/onsen-css-components.min.css'); }, false);
+		btnThemeDark.addEventListener('click',function () {theme.setAttribute('href', 'css/dark-onsen-css-components.min.css'); }, false);
 
 		//Main--------------------------------------------------
 		selectAddress.value = address;
 
-		//--------------------------------------------------
-		function setAddress()
-		{
-			address = selectAddress.value;
-		}
 	}
 
 }, false);
