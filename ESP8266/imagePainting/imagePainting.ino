@@ -1,5 +1,6 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//#define DNS       // Decomment this to use DNS
 //Dotstars : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini DATA_PIN=D7(GREEN) CLOCK_PIN=D5 (Yellow))
 //Neopixels : DATA_PIN : RDX0/GPIO3 (Wemos D1 mini DATA_PIN=RX)
 #define FEATURE DotStarBgrFeature // Neopixels : NeoGrbFeature / Dotstars : DotStarBgrFeature
@@ -12,13 +13,13 @@
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
 #include <FS.h>
-#ifndef STA
+#ifdef DNS
 #include <DNSServer.h>
 #endif
 
 // LED --------------
-const int NUMPIXELS = 60;
-uint8_t BRIGHTNESS = 40;
+const int NUMPIXELS = 119;
+uint8_t BRIGHTNESS = 25;
 NeoPixelBus<FEATURE, METHOD> STRIP(NUMPIXELS);
 // end LED -----------
 
@@ -30,6 +31,8 @@ const char* password = "12345678"; // your wifi password for AP mode
 #else // AP Mode
 const char* ssid = "imagePainting"; // wifi ssid for AP mode
 IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
+#endif
+#ifdef DNS // STA Mode
 DNSServer dnsServer;
 const byte DNS_PORT = 53;
 #endif
@@ -55,7 +58,7 @@ HtmlColor COLOR = HtmlColor(0xffffff);
 // end ANIMATION --------------
 
 // RUNTIME --------------
-uint8_t DELAY = 30;
+uint8_t DELAY = 15;
 uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
 uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
 bool ISREPEAT = false;
@@ -137,7 +140,7 @@ void setup()
   // Serial setup
   Serial.begin(115200);
 
-  // Wifi/DNS setup
+  // Wifi setup
 #ifdef STA //STA Mode
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -153,9 +156,10 @@ void setup()
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
   WiFi.softAP(ssid);
-  Serial.println("");
-  Serial.print("AP IP address: ");
-  Serial.println(WiFi.softAPIP());
+#endif
+
+  // DNS setup
+#ifdef DNS
   dnsServer.start(DNS_PORT, "*", apIP);
 #endif
 
@@ -192,11 +196,11 @@ void setup()
   // called when the url is not defined
   server.onNotFound([]() {
     if (!handleFileRead(server.uri())) {
-#ifdef STA // STA mode : 404
-      server.send(404, "text/plain", "404: Not found");
-#else AP // AP mode : Redirecting 
+#ifdef DNS
       const char *metaRefreshStr = "<head><meta http-equiv=\"refresh\" content=\"0; url=http://192.168.1.1/index.html\" /></head><body><p>redirecting...</p></body>";
       server.send(200, "text/html", metaRefreshStr);
+#else
+      server.send(404, "text/plain", "404: Not found");
 #endif
     }
   });
@@ -217,7 +221,7 @@ void setup()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void loop()
 {
-#ifndef STA //AP mode : DNS
+#ifdef DNS
   dnsServer.processNextRequest();
 #endif
 
@@ -339,7 +343,7 @@ void handleParameterWrite()
     // Error wrong json
     return server.send(500, "text/html", "WRITE ERROR : WRONG JSON");
   }
-  
+
   // Running or paused animation ?
   if (ANIMATIONS.IsAnimationActive(0) || ANIMATIONS.IsPaused())
   {
