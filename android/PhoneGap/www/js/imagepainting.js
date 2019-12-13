@@ -17,7 +17,7 @@ window.fn.load = function(page) {
 
 // Variable
 var address = "http://192.168.1.1";
-//var address = "http://192.168.43.75";
+//var address = "http://192.168.43.186";
 var numPixels = 0;
 
 document.addEventListener('init', function(event) {
@@ -207,7 +207,7 @@ document.addEventListener('init', function(event) {
 			sliderStop.setAttribute("max", json["indexMax"]);
 			sliderStop.value = json["indexStop"];
 			selectImage.value = json["bmpPath"];
-			imgImage.src= address + json["bmpPath"];
+			imgImage.src= address + "/" + json["bmpPath"];
 			// check parameter
 			updateTextSlider(sliderStart,textStart, "px");
 			updateTextSlider(sliderStop,textStop, "px");
@@ -508,7 +508,7 @@ document.addEventListener('init', function(event) {
 			// it's a bitmap
 			if(ext == "bmp")
 			{
-				imgDelete.src = address + selectDelete.value;
+				imgDelete.src = address + "/" + selectDelete.value;
 			}
 			// it isn't a bitmap
 			else
@@ -603,7 +603,7 @@ document.addEventListener('init', function(event) {
 		function requestFileDownload()
 		{
 			var a  = document.createElement('a');
-			a.href = address + selectDelete.value;
+			a.href = address + "/" + selectDelete.value;
 			a.download = selectDelete.value.substring(1);
 			a.click();
 		}

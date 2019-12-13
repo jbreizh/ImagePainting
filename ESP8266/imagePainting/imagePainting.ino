@@ -1,10 +1,11 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//#define STA       // Decomment this to use STA mode instead of AP
 //#define DNS       // Decomment this to use DNS
-//Dotstars : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini DATA_PIN=D7(GREEN) CLOCK_PIN=D5 (Yellow))
-//Neopixels : DATA_PIN : RDX0/GPIO3 (Wemos D1 mini DATA_PIN=RX)
+#define BUTTON      // Decomment this to use BUTTON
 #define FEATURE DotStarBgrFeature // Neopixels : NeoGrbFeature / Dotstars : DotStarBgrFeature
 #define METHOD DotStarSpiMethod // Neopixels :Neo800KbpsMethod / Dotstars : DotStarSpiMethod
+//Dotstars : DATA_PIN : MOSI / CLOCK_PIN :SCK (Wemos D1 mini DATA_PIN=D7(GREEN) CLOCK_PIN=D5 (Yellow))
+//Neopixels : DATA_PIN : RDX0/GPIO3 (Wemos D1 mini DATA_PIN=RX)
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #include <ArduinoJson.h>
@@ -12,7 +13,7 @@
 #include <ESP8266WebServer.h>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
-#include <FS.h>
+#include <LittleFS.h>
 #ifdef DNS
 #include <DNSServer.h>
 #endif
@@ -23,8 +24,11 @@ uint8_t BRIGHTNESS = 25;
 NeoPixelBus<FEATURE, METHOD> STRIP(NUMPIXELS);
 // end LED -----------
 
-// WIFI/ DNS --------------
+// WEBSERVER --------------
 ESP8266WebServer server;
+// end WEBSERVER -----------
+
+// WIFI --------------
 #ifdef STA // STA Mode
 const char* ssid = "Moto C Plus 1105"; // your wifi ssid for STA mode
 const char* password = "12345678"; // your wifi password for AP mode
@@ -32,18 +36,21 @@ const char* password = "12345678"; // your wifi password for AP mode
 const char* ssid = "imagePainting"; // wifi ssid for AP mode
 IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
 #endif
-#ifdef DNS // STA Mode
+// end WIFI -----------
+
+// DNS --------------
+#ifdef DNS
 DNSServer dnsServer;
 const byte DNS_PORT = 53;
 #endif
-// end WIFI/DNS -----------
+// end DNS -----------
 
 // FS --------------
 fs::File UPLOADFILE; // hold uploaded file
 // end FS -----------
 
 // BITMAP --------------
-String BMPPATH = "/welcome.bmp";
+String BMPPATH = "welcome.bmp";
 NeoBitmapFile<FEATURE, fs::File> NEOBMPFILE;
 // end BITMAP -----------
 
@@ -71,6 +78,7 @@ bool ISCUT = false;
 // end RUNTIME --------------
 
 // BUTTON --------------
+#ifdef BUTTON
 long DEBOUNCETIME = 50; //Debouncing Time in Milliseconds
 long HOLDTIME = 500; // Hold Time in Milliseconds
 const int BTNA_PIN = D3; //PIN for the button A
@@ -81,6 +89,7 @@ boolean ISBTNA = false;
 boolean ISBTNB = false;
 boolean ISBTNAHOLD = false;
 boolean ISBTNBHOLD = false;
+#endif
 // end BUTTON-----------
 
 //SHADER --------------
@@ -135,7 +144,7 @@ BrightShader SHADER;
 void setup()
 {
   // FS setup
-  SPIFFS.begin();
+  LittleFS.begin();
 
   // Serial setup
   Serial.begin(115200);
@@ -210,17 +219,21 @@ void setup()
 
   // LED setup
   STRIP.Begin();
+  STRIP.ClearTo(RgbColor(0, 0, 0));
   SHADER.setBrightness(BRIGHTNESS);
   bitmapLoad(BMPPATH);
 
   // Button setup
+#ifdef BUTTON
   pinMode(BTNA_PIN, INPUT_PULLUP);
   pinMode(BTNB_PIN, INPUT_PULLUP);
+#endif
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void loop()
 {
+  // To handle the DNS
 #ifdef DNS
   dnsServer.processNextRequest();
 #endif
@@ -232,6 +245,8 @@ void loop()
   ANIMATIONS.UpdateAnimations();
   STRIP.Show();
 
+  // To handle the buttons
+#ifdef BUTTON
   // To handle the button A
   if (digitalRead(BTNA_PIN) == LOW)
   {
@@ -279,6 +294,7 @@ void loop()
     ISBTNB = false;
     ISBTNBHOLD = false;
   }
+#endif
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -375,10 +391,10 @@ void handleParameterWrite()
   if (!jsonDoc["indexStop"].isNull() && jsonDoc["bmpPath"].as<String>() != BMPPATH)
   {
     //  Args ; path ; type ; bitmap not right ?
-    if ((!SPIFFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
+    if ((!LittleFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
     {
       // Load /error.bmp
-      BMPPATH = "/error.bmp";
+      BMPPATH = "error.bmp";
       bitmapLoad(BMPPATH);
       // Error bitmap
       return server.send(500, "text/html", "WRITE ERROR : WRONG BITMAP");
@@ -398,8 +414,8 @@ void handleParameterWrite()
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 bool bitmapLoad(String path)
 {
-  // Open requested file on SPIFFS
-  fs::File bmpFile = SPIFFS.open(path, "r");
+  // Open requested file on LittleFS
+  fs::File bmpFile = LittleFS.open(path, "r");
 
   // Check and initialize NEOBMPFILE from the BMPFILE
   bool success = NEOBMPFILE.Begin(bmpFile);
@@ -423,20 +439,20 @@ void handleFileDelete()
   String path = server.arg("plain");
 
   // protect system files
-  if ( path == "" || path == "/" || path == "/index.html" || path == "/error.bmp" || path == "/welcome.bmp" || path == "/title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
+  if ( path == "" || path == "/" || path == "index.html" || path == "error.bmp" || path == "welcome.bmp" || path == "title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
 
   // check if the file exists
-  if (!SPIFFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND!");
+  if (!LittleFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND!");
 
   // if delete current bitmap reload defaut bitmap
   if (path == BMPPATH)
   {
-    BMPPATH = "/welcome.bmp";
+    BMPPATH = "welcome.bmp";
     bitmapLoad(BMPPATH);
   }
 
   // Delete the file
-  SPIFFS.remove(path);
+  LittleFS.remove(path);
 
   // File is delete
   server.send(200, "text/plain", "DELETE SUCCESS");
@@ -449,10 +465,10 @@ bool handleFileRead(String path)
   if (path.endsWith("/")) path += "index.html";
 
   // Check if the file exists
-  if (!SPIFFS.exists(path)) return false;
+  if (!LittleFS.exists(path)) return false;
 
   // Open the file
-  fs::File file = SPIFFS.open(path, "r");
+  fs::File file = LittleFS.open(path, "r");
 
   // Display the file on the client's browser
   server.streamFile(file, getContentType(path));
@@ -477,15 +493,15 @@ void handleFileUpload()
     //-------------------------> test for upload?????
 
     //check if the file already exist
-    //if (SPIFFS.exists(filename)) return server.send(415, "text/plain", "UPLOAD ERROR : FILE ALREADY EXIST");
+    //if (LittleFS.exists(filename)) return server.send(415, "text/plain", "UPLOAD ERROR : FILE ALREADY EXIST");
 
-    //check if the file fit in SPIFFS
+    //check if the file fit in LittleFS
     //FSInfo fs_info;
-    //SPIFFS.info(fs_info);
+    //LittleFS.info(fs_info);
     //if (upload.totalSize > ) return server.send(413, "text/plain", "UPLOAD ERROR : NOT ENOUGH SPACE");
 
-    // Open the file for writing in SPIFFS (create if it doesn't exist)
-    UPLOADFILE = SPIFFS.open(filename, "w");
+    // Open the file for writing in LittleFS (create if it doesn't exist)
+    UPLOADFILE = LittleFS.open(filename, "w");
   }
 
   // Upload in progress
@@ -507,7 +523,7 @@ void handleFileUpload()
 void handleFileList()
 {
   // Assuming there are no subdirectories
-  fs::Dir dir = SPIFFS.openDir("/");
+  fs::Dir dir = LittleFS.openDir("/");
 
   // New json document
   StaticJsonDocument<1000> jsonDoc;
@@ -522,10 +538,10 @@ void handleFileList()
     fs::File entry = dir.openFile("r");
 
     // Get the name
-    String name = String(entry.name());//.substring(1);
+    String name = String(entry.name());
 
     // Write the entry in the list (Hide system file)
-    if (!(name == "/index.html" || name == "/title.png"))  fileList.add(name);
+    if (!(name == "index.html" || name == "title.png"))  fileList.add(name);
 
     // Close the entry
     entry.close();
@@ -586,7 +602,7 @@ String play()
 
     // Pause
     PAUSECOUNTER = 2 * PAUSE;
-
+    
     // Launch a new animation
     ANIMATIONS.StartAnimation(0, DELAY, updateAnimation);
 
