@@ -17,8 +17,7 @@ window.fn.load = function(page) {
 
 // Variable
 var address = "http://192.168.1.1";
-//var address = "http://192.168.43.186";
-var numPixels = 0;
+//var address = "http://192.168.43.75";
 
 document.addEventListener('init', function(event) {
 	if (event.target.matches('#actions'))
@@ -645,6 +644,8 @@ document.addEventListener('init', function(event) {
 		var popoverStatus = document.getElementById("popoverStatus");
 
 		// Convert Variable--------------------------------------------------
+		var remainingBytes;
+		var numPixels = 0;
 		var imgConvert = new Image;
 		var canvasConvert = document.getElementById("canvasConvert");
 		var selectConvert = document.getElementById("selectConvert");
@@ -768,6 +769,9 @@ document.addEventListener('init', function(event) {
 			var json = JSON.parse(jsonString);
 			// set parameters values
 			numPixels = json["numPixels"];
+			var usedBytes = json["usedBytes"];
+			var totalBytes = json["totalBytes"];
+			remainingBytes = totalBytes-usedBytes;
 		}
 
 		//--------------------------------------------------
@@ -833,17 +837,37 @@ document.addEventListener('init', function(event) {
 		//--------------------------------------------------
 		function uploadConvert()
 		{
-			var form = new FormData();
-			form.append('file', CanvasToBMP.toBlob(canvasConvert),trimFileName(selectConvert.files[0].name, "bmp"));
-			requestFileUpload(form);
+			// convert canvasConvert to blob
+			var blobConvert = CanvasToBMP.toBlob(canvasConvert);
+			// too big? display an error
+			if (blobConvert.size > remainingBytes)
+			{
+				updateStatus("UPLOAD ERROR : NOT ENOUGH SPACE", "red");
+			}
+			// no problem? send the file
+			else
+			{
+				var form = new FormData();
+				form.append('file', blobConvert,trimFileName(selectConvert.files[0].name, "bmp"));
+				requestFileUpload(form);
+			}
 		}
 
 		//--------------------------------------------------
 		function uploadOriginal()
 		{
-			var form = new FormData();
-			form.append('file', selectConvert.files[0], trimFileName(selectConvert.files[0].name, ""));
-			requestFileUpload(form);
+			// too big? display an error
+			if (selectConvert.files[0].size > remainingBytes)
+			{
+				updateStatus("UPLOAD ERROR : NOT ENOUGH SPACE", "red");
+			}
+			// no problem? send the file
+			else
+			{
+				var form = new FormData();
+				form.append('file', selectConvert.files[0], trimFileName(selectConvert.files[0].name, ""));
+				requestFileUpload(form);
+			}
 		}
 
 		//--------------------------------------------------
@@ -855,6 +879,7 @@ document.addEventListener('init', function(event) {
 				if (this.status == 200)
 				{
 					updateStatus(this.responseText, "green");
+					requestParameterRead();
 				}
 				else
 				{
@@ -892,6 +917,8 @@ document.addEventListener('init', function(event) {
 		var theme = document.getElementById("theme");
 		var btnThemeLight = document.getElementById("btnThemeLight");
 		var btnThemeDark = document.getElementById("btnThemeDark");
+		var canvasSystem = document.getElementById("canvasSystem");
+		var canvasLegend = document.getElementById("canvasLegend");
 
 		// Status Event--------------------------------------------------
 		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
@@ -903,7 +930,71 @@ document.addEventListener('init', function(event) {
 
 		//Main--------------------------------------------------
 		selectAddress.value = address;
+		requestParameterRead();
 
+		//--------------------------------------------------
+		function updateStatus(message, color)
+		{
+			textStatus.innerHTML = message;
+			textStatus.style.color = color;
+			if (color == 'red')
+				iconStatus.setAttribute('icon', 'myStatusRed');
+
+			if (color == 'orange')
+				iconStatus.setAttribute('icon', 'myStatusOrange');
+
+			if (color == 'green')
+				iconStatus.setAttribute('icon', 'myStatusGreen');
+		}
+
+		//--------------------------------------------------
+		function setParameter(jsonString)
+		{
+			var json = JSON.parse(jsonString);
+			// set parameters values
+			var usedBytes = json["usedBytes"];
+			var totalBytes = json["totalBytes"];
+			var remainingBytes = totalBytes - usedBytes;
+			//
+			var myLittleFS = {
+				"Used": usedBytes,
+				"Remaining": remainingBytes,
+			};
+			// 
+			var myChart = new Piechart(
+			{
+				canvas:canvasSystem,
+				data:myLittleFS,
+				colors:["red","green"],
+				legend:canvasLegend
+			}
+			);
+			// draw the chart
+			myChart.draw();
+
+		}
+
+		//--------------------------------------------------
+		function requestParameterRead()
+		{
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function()
+			{
+				if (this.status == 200)
+				{
+					setParameter(this.responseText);
+				}
+			};
+
+			xhr.onerror = function()
+			{
+				updateStatus("READ ERROR : CONNECTION LOST", "red");
+			};
+
+			xhr.overrideMimeType("application/json");
+			xhr.open("GET", address+"/parameterRead", true);
+			xhr.send(null);
+		}
 	}
 
 }, false);

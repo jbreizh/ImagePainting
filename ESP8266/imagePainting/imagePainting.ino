@@ -204,14 +204,7 @@ void setup()
 
   // called when the url is not defined
   server.onNotFound([]() {
-    if (!handleFileRead(server.uri())) {
-#ifdef DNS
-      const char *metaRefreshStr = "<head><meta http-equiv=\"refresh\" content=\"0; url=http://192.168.1.1/index.html\" /></head><body><p>redirecting...</p></body>";
-      server.send(200, "text/html", metaRefreshStr);
-#else
-      server.send(404, "text/plain", "404: Not found");
-#endif
-    }
+    handleFileRead(server.uri());
   });
 
   // Webserver start
@@ -335,7 +328,11 @@ void handleParameterRead()
   jsonDoc["indexStop"] = INDEXSTOP;
   jsonDoc["indexMax"] = INDEXMAX;
   jsonDoc["bmpPath"] = BMPPATH;
-
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+  jsonDoc["usedBytes"] = fs_info.usedBytes;
+  jsonDoc["totalBytes"] = fs_info.totalBytes;
+  
   // convert json document to String
   String msg = "";
   serializeJson(jsonDoc, msg);
@@ -393,8 +390,8 @@ void handleParameterWrite()
     //  Args ; path ; type ; bitmap not right ?
     if ((!LittleFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
     {
-      // Load /error.bmp
-      BMPPATH = "error.bmp";
+      // Load welome.bmp
+      BMPPATH = "welcome.bmp";
       bitmapLoad(BMPPATH);
       // Error bitmap
       return server.send(500, "text/html", "WRITE ERROR : WRONG BITMAP");
@@ -439,10 +436,10 @@ void handleFileDelete()
   String path = server.arg("plain");
 
   // protect system files
-  if ( path == "" || path == "/" || path == "index.html" || path == "error.bmp" || path == "welcome.bmp" || path == "title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
+  if ( path == "" || path == "/" || path == "index.html" || path == "welcome.bmp" || path == "title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
 
   // check if the file exists
-  if (!LittleFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND!");
+  if (!LittleFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND");
 
   // if delete current bitmap reload defaut bitmap
   if (path == BMPPATH)
@@ -459,14 +456,21 @@ void handleFileDelete()
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-bool handleFileRead(String path)
+void handleFileRead(String path)
 {
   // Serve index file when top root path is accessed
   if (path.endsWith("/")) path += "index.html";
 
   // Check if the file exists
-  if (!LittleFS.exists(path)) return false;
-
+#ifdef DNS
+  if (!LittleFS.exists(path))
+  {
+    const char *metaRefreshStr = "<head><meta http-equiv=\"refresh\" content=\"0; url=http://192.168.1.1/index.html\" /></head><body><p>redirecting...</p></body>";
+    return server.send(200, "text/html", metaRefreshStr);
+  }
+#else
+  if (!LittleFS.exists(path)) return server.send(404, "text/plain", "READ ERROR : FILE NOT FOUND");
+#endif
   // Open the file
   fs::File file = LittleFS.open(path, "r");
 
@@ -475,7 +479,6 @@ bool handleFileRead(String path)
 
   // Close the file
   file.close();
-  return true;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -490,15 +493,11 @@ void handleFileUpload()
     String filename = upload.filename;
     if (!filename.startsWith("/")) filename = "/" + filename;
 
-    //-------------------------> test for upload?????
-
     //check if the file already exist
-    //if (LittleFS.exists(filename)) return server.send(415, "text/plain", "UPLOAD ERROR : FILE ALREADY EXIST");
-
-    //check if the file fit in LittleFS
-    //FSInfo fs_info;
-    //LittleFS.info(fs_info);
-    //if (upload.totalSize > ) return server.send(413, "text/plain", "UPLOAD ERROR : NOT ENOUGH SPACE");
+    //if (LittleFS.exists(filename))
+    //{
+    //  return server.send(500, "text/plain", "UPLOAD ERROR : FILE ALREADY EXIST");
+    //}
 
     // Open the file for writing in LittleFS (create if it doesn't exist)
     UPLOADFILE = LittleFS.open(filename, "w");
@@ -514,6 +513,7 @@ void handleFileUpload()
   // Upload end
   else if (upload.status == UPLOAD_FILE_END)
   {
+    //Close the file
     if (UPLOADFILE)
       UPLOADFILE.close();
   }
@@ -602,7 +602,7 @@ String play()
 
     // Pause
     PAUSECOUNTER = 2 * PAUSE;
-    
+
     // Launch a new animation
     ANIMATIONS.StartAnimation(0, DELAY, updateAnimation);
 
@@ -667,7 +667,7 @@ void burn()
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-void updateAnimation(const AnimationParam& param)
+void updateAnimation(const AnimationParam & param)
 {
   // Wait for this animation to complete,
   if (param.state == AnimationState_Completed)

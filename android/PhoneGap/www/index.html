@@ -224,6 +224,11 @@
 				<div class="right"><ons-toolbar-button id="btnStatus"><ons-icon id="iconStatus" icon="myStatus"></ons-icon></ons-toolbar-button></div>
 			</ons-toolbar>
 			<ons-list>
+				<ons-list-header>ESP8266 FILSYSTEM</ons-list-header>
+				<ons-list-item modifier="nodivider">
+					<canvas style="display: block; margin-left: auto; margin-right: auto; max-width: 100%; height: 50vw;" id="canvasSystem" width="300px" height="300px">></canvas>
+					<div id="canvasLegend"></div>
+				</ons-list-item>
 				<ons-list-header>ESP8266 ADDRESS</ons-list-header>
 				<ons-list-item modifier="nodivider">
 					<div class="left">Address:</div>
@@ -232,7 +237,7 @@
 				<ons-list-item modifier="nodivider">
 					<ons-button modifier="large" style="background-color: red;" id="btnAddress">SET</ons-button>
 				</ons-list-item>
-				<ons-list-header>THEME</ons-list-header>
+				<ons-list-header>APPLICATION THEME</ons-list-header>
 				<ons-list-item modifier="nodivider">
 					<div class="left" style="width: 47%;"><ons-button modifier="large" style="background-color: grey;" id="btnThemeLight">Light</ons-button></div>
 					<div class="right" style="width: 47%;"><ons-button modifier="large" style="background-color: black;" id="btnThemeDark">Dark</ons-button></div>
@@ -245,6 +250,7 @@
 	</template>
 
 </body>
+<script src="js/pieChart.js"></script>
 <script src="js/canvastobmp.js"></script>
 <script src="js/imagepainting.js"></script>
 <script src="js/onsenui.min.js"></script>
