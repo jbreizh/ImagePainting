@@ -37,14 +37,18 @@ I have test with success Dotstars (aka APA102) and Neopixels (aka WS2812B). I ha
 
 ![help6](https://user-images.githubusercontent.com/2498942/69486316-7c0fcb00-0e4a-11ea-962f-718bfbf4173d.png)
 
-* **Neopixels :** FEATURE : Neo***Feature and METHOD : Neo800KbpsMethod. You must use RDX0/GPIO3 PIN (label RX on Wemos D1 mini) as specify [here](https://github.com/Makuna/NeoPixelBus/wiki/ESP8266-NeoMethods#neoesp8266dma800kbpsmethod).
+* **Neopixels :** FEATURE : Neo###Feature and METHOD : Neo800KbpsMethod. You must use RDX0/GPIO3 PIN (label RX on Wemos D1 mini) as specify [here](https://github.com/Makuna/NeoPixelBus/wiki/ESP8266-NeoMethods#neoesp8266dma800kbpsmethod).
 
 
 ![help5](https://user-images.githubusercontent.com/2498942/69486235-0c99db80-0e4a-11ea-9101-3f5566b0bd12.png)
 
-* **Dotstars :** FEATURE : DotStar***Feature and METHOD : DotStarSpiMethod. You must use the hardware SPI pin from your board (DATA = MOSI and CLOCK = SCLK). For the Wemos D1 mini MOSI is D7 and SCLK is D5.
+* **Dotstars :** FEATURE : DotStar###Feature and METHOD : DotStarSpiMethod. You must use the hardware SPI pin from your board (DATA = MOSI and CLOCK = SCLK). For the Wemos D1 mini MOSI is D7 and SCLK is D5.
 
 ### Push button connection
+
+```
+#define BUTTON      // Decomment this to use BUTTON
+```
 
 The 2 push buttons are optionals. ImagePainting always work from the webpage and you still need your smartphone to upload Bitmap or tweak parameters. However, it's more convenient to launch your animation with a button than clicking on a touch screen.
 
@@ -86,7 +90,7 @@ Take care of the polarity to avoid drama. Each LED need around 50mA full brightn
 ### Wifi
 
 ```
-//#define STA       // Decomment this to use ImagePainting in STA mode and setup your ssid/password
+//#define STA       // Decomment this to use STA mode instead of AP
 ```
 
 ImagePainting can operate in two separate mode :
@@ -96,23 +100,25 @@ ImagePainting can operate in two separate mode :
 * **AP :** As Access Point. In this case, the ESP8266 will provide his own wifi network and you will connect directly on him. To keep it simple, there is no password and the DNS will route you directly on the right IP. But if there is a problem, go to http://192.168.1.1 to reach your ESP8266. This is the default mode of ImagePainting as it is very unlikely to have a wifi router everywhere.
 
 ```
-// WIFI/ DNS --------------
-ESP8266WebServer server;
+// WIFI --------------
 #ifdef STA // STA Mode
 const char* ssid = "Moto C Plus 1105"; // your wifi ssid for STA mode
-const char* password = "12345678"; // your wifi password for STA mode
+const char* password = "12345678"; // your wifi password for AP mode
 #else // AP Mode
 const char* ssid = "imagePainting"; // wifi ssid for AP mode
 IPAddress apIP(192, 168, 1, 1); // wifi IP for AP mode
-DNSServer dnsServer;
-const byte DNS_PORT = 53;
 #endif
-// end WIFI/DNS -----------
+// end WIFI -----------
 ```
 
-* **STA :** you have to set your router ssid and password.
+* **SSID and PASSWORD :** you have to set your router ssid and password if you use STA mode.
 
-* **AP :** you can change the ssid and ip of the ESP8266, but what the point...
+### DNS
+
+```
+//#define DNS       // Decomment this to use DNS
+```
+DNS can be usefull in AP mode to retrieve easily the webpage when connected to the ESP8266. In my test, it's not so efficient on android as notification use a browser that not very html5 compatible. It don't hurt the code so i let it as an option, but i don't use it anymore.
 
 ## Software Prerequisites And Installing
 
@@ -122,8 +128,7 @@ You need to install the following board/tool/library :
 
 * [ESP8266](https://github.com/esp8266/Arduino) - The ESP8266 core for Arduino
 
-* [arduino-esp8266fs-plugin](https://github.com/esp8266/arduino-esp8266fs-plugin) - The Arduino plugin for uploading
- files to ESP8266 file system
+* [arduino-esp8266littlefs-plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) - The Arduino plugin to upload LittleFS filesystems to ESP8266
  
 * [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) - The Adafruit enhanced NeoPixel support library
 
@@ -131,49 +136,82 @@ You need to install the following board/tool/library :
 
 ### Flash instruction
 
-Tweak the code for your hardware and wifi and flash ImagePainting from the Arduino IDE. Don't forget to upload the data by clicking to "ESP8266 Sketch Data Upload". You can also tweak the SPIFFS to have more space for yours Bitmaps.
+* Tweak the code for your hardware and wifi.
+
+* Tweak the ESP8266 to max out its possibility. For exemple, for the Wemos D1, the CPU can be set to 160Mhz and the FS to 3MB.
+
+* Flash ImagePainting from the Arduino IDE.
+
+* Upload the data by clicking to "ESP8266 LittleFS Data Upload". 
+
+### Install the app
+
+The compile app (currently for android) can be find in /android/release. This app is compile for AP use as the http://192.168.1.1 is hardcoded. If you need to permanently change this IP (or you don't trust me), you can compile the source with [PhoneGap](https://phonegap.com/).
 
 ## Use ImagePainting
 
-This is the webpage that your ESP8266 serve you :
+I will explain the use from the android app as it is the recommand way to use ImagePainting. I consider the webpage as history and i strongly recommand the app. You can delete index.html and title.png from the data file, if you plan to use the app.
 
-![help3](https://user-images.githubusercontent.com/2498942/68999792-13fb3b00-08c6-11ea-9304-21183b95ae0f.png)
+### Actions screen
 
-### Manage your file
+![action](https://user-images.githubusercontent.com/2498942/71197104-300d4600-2291-11ea-9ccc-bb8528c9db1d.png)
 
-* **Delete :** Select a file on the ESP8266 flash memory to delete it. "error.bmp" and "welcome.bmp" can't be erase as they are system files.
-* **File :** Select a Bitmap and upload it on the ESP8266 flash memory. Keep in mind that SPIFFS is just 1 or 2 MB, so it's not for 4K streaming ;-)
+* **File :** Select a Bitmap on the ESP8266 flash memory.
+  * **Start :** Select the beginning of your animation
+  * **Stop :** Select the end of your animation
+ 
+* **Actions :**
+  * **Light :** Set the LED Strip to **Color** to use it as a flashlight or for special effect. Stop your runnig animation.
+  * **Burn :** Set the LED Strip to the first line of the Bitmap for special effect. Stop your animation.
+  * **Play :** Play or pause your running animation
+  * **Stop :** Turn off your LED Strip. Stop your running animation.
 
-### Manage your picture
+### Settings screen
 
-* **Image :** Select a Bitmap on the ESP8266 flash memory to animate it. In case of problem with the file (see the **About Picture**), you will be send to "error.bmp"
-* **Write :** A cryptic but yet very important button. It set all your option in the ESP8266. So each time you modify something, hit "Write". It never hurt, but you can't write when there is a running or pause animation.
-* **Start :** Select the beginning of your animation (it will be keep when repeat or bounce)
-* **Stop :** Select the end of your animation (it will be keep when repeat or bounce)
-  * **Invert ?** [x] The animation start with the end of the Bitmap
+![settings](https://user-images.githubusercontent.com/2498942/71197106-30a5dc80-2291-11ea-9fb8-94fa9e1a0d1c.png)
 
-### Manage your options
-
-* **Delay :** Time between two frames in ms. Value possible 0ms to 255ms, but no garantee under 10ms
+* **Delay :** Time between two frames in ms.
 * **Brightness :** Brightness of the LED Strip. Value possible 0 (black) to 255 (full)
 
-* **Repeat :** Number of times the Bitmap is animate. Value possible 0 x (0 time so 1 animation) to 255 x (255 times so 256 animations). This value is use by this two chexboxes :
+* **Repeat :** Number of times the Bitmap is animate. This value is use by this three chexboxes :
+  * **Invert ?** [x] The animation start with the end of the Bitmap
   * **Repeat ?** [x] Activate the repetition according to **Repeat**
   * **Bounce ?** [x] Activate the bounce (normal-invert-normal...etc) repetition according to **Repeat**
 
-* **Pause :** Number of line between two pause during the animation. Value possible 0 px (0 px between pause so no pause) to 255 (255 px between pause so 255 lines animate the 255 line pause ...etc). This value is use by this two chexboxes :
+* **Pause :** Number of line between two pause during the animation. This value is use by this two chexboxes :
   * **Pause?** [x] The animation is pause each **Pause** line(s)
   * **Cut?** [x] The animation is cut each **Pause** line(s)
 
 * **Color :** Color use by **Light** and **Endcolor ?**
   * **Endoff ?** [x] Turn off the LED Strip when the animation is pause/stop or end. Usefull when the Bitmap doesn't end with a black line
   * **Endcolor?** [x] Set the LED Strip to **Color** when the animation is pause/stop or end. Usefull for special effect.
-### Manage your action
 
-* **Light :** Set the LED Strip to **Color** to use it as a flashlight or for special effect. Stop your runnig animation.
-* **Burn :** Set the LED Strip to the first line of the Bitmap for special effect. Stop your animation.
-* **Play :** Play from **Start** or pause your running animation
-* **Stop :** Turn off your LED Strip. Stop your running animation.
+### Upload screen
+
+![upload](https://user-images.githubusercontent.com/2498942/71197108-313e7300-2291-11ea-9ac7-f169fd2a0623.png)
+
+* **File :** Select a file on your smartphone. Preview is for image only.
+* **Actions :**
+  * **Upload Original :** Upload selected file directly.
+  * **Upload Convert :** Convert and Upload selected file . 
+  * **Download Convert :** Convert and download to your smartphone.
+
+### Download screen
+
+![download](https://user-images.githubusercontent.com/2498942/71197105-30a5dc80-2291-11ea-9fb0-32700abd8e69.png)
+
+* **File :** Select a file on the ESP8266 flash memory. Preview is for bitmap only.
+* **Actions :**
+  * **Download :** Download selected file to your smartphone.
+  * **Delete :** Delete selected file from ESP8266. "welcome.bmp" can't be erase as system files.
+
+### System screen
+
+![system](https://user-images.githubusercontent.com/2498942/71197107-313e7300-2291-11ea-9b06-2613c42608b5.png)
+
+* **ESP8266 FILSYSTEM :** Memory use on the ESP8266.
+* **ESP8266 ADDRESS :** Address of the ESP8266.
+* **APPLICATION THEME :**
 
 ## Case scenario
 
@@ -192,6 +230,8 @@ ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So
 * Only Bitmap with 24 bits per pixel (or 8 bits per color) are supported. If there is a problem with such a Bitmap, try to save it in bmp3 format.
 * Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
+
+The use of the build in convert tool free you of all this consideration.
 
 ## Bitmap Pack
 
