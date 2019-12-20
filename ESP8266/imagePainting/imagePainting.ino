@@ -1,6 +1,7 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //#define STA       // Decomment this to use STA mode instead of AP
 //#define DNS       // Decomment this to use DNS
+//#define DEBUGER     // Decomment this to debug the code
 #define BUTTON      // Decomment this to use BUTTON
 #define FEATURE DotStarBgrFeature // Neopixels : NeoGrbFeature / Dotstars : DotStarBgrFeature
 #define METHOD DotStarSpiMethod // Neopixels :Neo800KbpsMethod / Dotstars : DotStarSpiMethod
@@ -44,6 +45,12 @@ DNSServer dnsServer;
 const byte DNS_PORT = 53;
 #endif
 // end DNS -----------
+
+// DEBUGER --------------
+#ifdef DEBUGER
+long ANIMETIME;
+#endif
+// end DEBUGER -----------
 
 // FS --------------
 fs::File UPLOADFILE; // hold uploaded file
@@ -332,7 +339,7 @@ void handleParameterRead()
   LittleFS.info(fs_info);
   jsonDoc["usedBytes"] = fs_info.usedBytes;
   jsonDoc["totalBytes"] = fs_info.totalBytes;
-  
+
   // convert json document to String
   String msg = "";
   serializeJson(jsonDoc, msg);
@@ -603,6 +610,10 @@ String play()
     // Pause
     PAUSECOUNTER = 2 * PAUSE;
 
+#ifdef DEBUGER
+    ANIMETIME = millis();
+#endif
+
     // Launch a new animation
     ANIMATIONS.StartAnimation(0, DELAY, updateAnimation);
 
@@ -766,6 +777,11 @@ void updateAnimation(const AnimationParam & param)
         // Blank or color the strip if needed
         if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
         if (ISENDCOLOR) STRIP.ClearTo(SHADER.Apply(0, COLOR));
+
+#ifdef DEBUGER
+        Serial.print("complete time :");
+        Serial.println(millis() - ANIMETIME);
+#endif
       }
     }
   }

@@ -471,6 +471,298 @@ document.addEventListener('init', function(event) {
 		}
 	}
 
+	if (event.target.matches('#upload'))
+	{
+		// Status Variable--------------------------------------------------
+		var btnStatus = document.getElementById("btnStatus");
+		var textStatus = document.getElementById("textStatus");
+		var iconStatus = document.getElementById("iconStatus");
+		var popoverStatus = document.getElementById("popoverStatus");
+
+		// Convert Variable--------------------------------------------------
+		var remainingBytes;
+		var numPixels = 0;
+		var imgConvert = new Image;
+		var canvasConvert = document.getElementById("canvasConvert");
+		var selectConvert = document.getElementById("selectConvert");
+		var selectGamma = document.getElementById("selectGamma");
+		var btnUploadOriginal = document.getElementById("btnUploadOriginal");
+		var btnUploadConvert = document.getElementById("btnUploadConvert");
+		var btnDownloadConvert = document.getElementById("btnDownloadConvert");
+
+		// Status Event--------------------------------------------------
+		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
+
+		// Convert event--------------------------------------------------
+		selectConvert.addEventListener('change', setImgConvert, false);
+		imgConvert.addEventListener('load', drawConvertCanvas, false);
+		selectGamma.addEventListener('change', drawConvertCanvas, false);
+		btnUploadOriginal.addEventListener('click', uploadOriginal, false);
+		btnDownloadConvert.addEventListener('click', downloadConvert, false);
+		btnUploadConvert.addEventListener('click', uploadConvert, false);
+
+		// Main --------------------------------------------------
+		requestParameterRead();
+		setImgConvert();
+
+		//--------------------------------------------------
+		function setImgConvert()
+		{  
+			// no selection
+			if (selectConvert.files.length == 0)
+			{
+				// print the error
+				errorConvertCanvas("No File");
+				// button
+				selectGamma.setAttribute('disabled', '');
+				btnUploadOriginal.setAttribute('disabled', '');
+				btnUploadConvert.setAttribute('disabled', '');
+				btnDownloadConvert.setAttribute('disabled', '');
+				return;
+			}
+			// test the selection
+			var file = selectConvert.files[0];
+			var imageType = /^image\//;
+			// selection is not an image
+			if (!imageType.test(file.type))
+			{
+				// print the error
+				errorConvertCanvas("No Convert");
+				// button
+				selectGamma.setAttribute('disabled', '');
+				btnUploadOriginal.removeAttribute('disabled', '');
+				btnUploadConvert.setAttribute('disabled', '');
+				btnDownloadConvert.setAttribute('disabled', '');
+			}
+			// selection is an image
+			else
+			{
+				// load the image
+				imgConvert.file = file;
+				var reader = new FileReader();
+				reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(imgConvert); 
+				reader.readAsDataURL(file);
+				// button
+				selectGamma.removeAttribute('disabled', '');
+				btnUploadOriginal.removeAttribute('disabled', '');
+				btnUploadConvert.removeAttribute('disabled', '');
+				btnDownloadConvert.removeAttribute('disabled', '');
+			}
+		}
+
+		//--------------------------------------------------
+		function drawConvertCanvas()
+		{
+			// context
+			var ctx = canvasConvert.getContext("2d");
+			// calculate the canvas dimension
+			canvasConvert.width = numPixels;
+			canvasConvert.height = imgConvert.width/imgConvert.height*numPixels; 
+			// initialize canvas in black
+			ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
+			// save context
+			ctx.save();
+			// translate and rotate
+			ctx.translate(canvasConvert.width/2,canvasConvert.height/2);
+			ctx.rotate(90*Math.PI/180);
+			// draw imgConvert strech to fit canvasConvert
+			ctx.drawImage(imgConvert,-canvasConvert.height/2,-canvasConvert.width/2,canvasConvert.height,canvasConvert.width);
+			// restore context
+			ctx.restore();
+			// store canvas in data
+			var imageData = ctx.getImageData(0.0, 0.0, canvasConvert.width, canvasConvert.height);
+			var data = imageData.data;
+			//adjust gamma
+			for (var i = 0; i < data.length; i += 4)
+			{
+				data[i] = 255 * Math.pow((data[i] / 255), selectGamma.value);
+				data[i+1] = 255 * Math.pow((data[i+1] / 255), selectGamma.value);
+				data[i+2] = 255 * Math.pow((data[i+2] / 255), selectGamma.value);
+			}
+			// put data in cavas
+			ctx.putImageData(imageData, 0, 0);
+		}
+
+
+		//--------------------------------------------------
+		function errorConvertCanvas(error)
+		{
+		// context
+		var ctx=canvasConvert.getContext("2d");
+		// calculate the canvas dimension
+		canvasConvert.width = 150;
+		canvasConvert.height = 60; 
+		// initialize canvas in black
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
+		// 
+		ctx.fillStyle = "red";
+		ctx.font = "30px Arial";
+		ctx.textAlign = "center";
+		ctx.fillText(error, canvasConvert.width/2, canvasConvert.height/2);
+	}
+
+		//--------------------------------------------------
+		function updateStatus(message, color)
+		{
+			textStatus.innerHTML = message;
+			textStatus.style.color = color;
+			if (color == 'red')
+				iconStatus.setAttribute('icon', 'myStatusRed');
+
+			if (color == 'orange')
+				iconStatus.setAttribute('icon', 'myStatusOrange');
+
+			if (color == 'green')
+				iconStatus.setAttribute('icon', 'myStatusGreen');
+		}
+
+		//--------------------------------------------------
+		function setParameter(jsonString)
+		{
+			var json = JSON.parse(jsonString);
+			// set parameters values
+			numPixels = json["numPixels"];
+			var usedBytes = json["usedBytes"];
+			var totalBytes = json["totalBytes"];
+			remainingBytes = totalBytes-usedBytes;
+		}
+
+		//--------------------------------------------------
+		function requestParameterRead()
+		{
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function()
+			{
+				if (this.status == 200)
+				{
+					setParameter(this.responseText);
+				}
+			};
+
+			xhr.onerror = function()
+			{
+				updateStatus("READ ERROR : CONNECTION LOST", "red");
+			};
+
+			xhr.overrideMimeType("application/json");
+			xhr.open("GET", address+"/parameterRead", true);
+			xhr.send(null);
+		}
+
+		//--------------------------------------------------
+		function trimFileName(fileName, newExt)
+		{
+			// test
+			var extRegex = /(?:\.([^.]+))?$/;
+			// retrieve current extension
+			var currentExt = extRegex.exec(fileName)[1];
+			// retrieve base name
+			var baseName = fileName.substring(0, fileName.length-(currentExt.length+1));
+			// spiffs support maxi 31 characters (extension include) so we trim the baseName to 20 characters for security
+			if (baseName.length > 20)
+			{
+				baseName=baseName.substring(0, 20);
+			}
+			// 
+			var trimName;
+            // keep current extension 
+            if (newExt == "")
+            {
+            	trimName = baseName+"."+currentExt;
+            }
+			// add the new extension
+			else
+			{
+				trimName =  baseName+"."+newExt;
+			}
+			return trimName;
+		}
+
+		//--------------------------------------------------
+		function downloadConvert()
+		{
+			// convert canvasConvert to blob
+			var bitmap    = CanvasToBMP.toDataURL(canvasConvert);
+			// create a link
+			var a  = document.createElement('a');
+			// set the content of the link
+			a.href = bitmap;
+			// set the name of the link
+			a.download = trimFileName(selectConvert.files[0].name, "bmp");
+			// download the link
+			a.click();
+		}
+
+		//--------------------------------------------------
+		function uploadConvert()
+		{
+			// convert canvasConvert to blob
+			var blobConvert = CanvasToBMP.toBlob(canvasConvert);
+			// too big? display an error
+			if (blobConvert.size > remainingBytes)
+			{
+				updateStatus("UPLOAD ERROR : NOT ENOUGH SPACE", "red");
+			}
+			// no problem? send the file
+			else
+			{
+				var form = new FormData();
+				form.append('file', blobConvert,trimFileName(selectConvert.files[0].name, "bmp"));
+				requestFileUpload(form);
+			}
+		}
+
+		//--------------------------------------------------
+		function uploadOriginal()
+		{
+			// too big? display an error
+			if (selectConvert.files[0].size > remainingBytes)
+			{
+				updateStatus("UPLOAD ERROR : NOT ENOUGH SPACE", "red");
+			}
+			// no problem? send the file
+			else
+			{
+				var form = new FormData();
+				form.append('file', selectConvert.files[0], trimFileName(selectConvert.files[0].name, ""));
+				requestFileUpload(form);
+			}
+		}
+
+		//--------------------------------------------------
+		function requestFileUpload(form)
+		{
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function()
+			{
+				if (this.status == 200)
+				{
+					updateStatus(this.responseText, "green");
+					requestParameterRead();
+				}
+				else
+				{
+					updateStatus("UPLOAD ERROR : UPLOAD FAILED", "red");
+				}
+			};
+			
+			xhr.upload.onprogress = function(evt)
+			{
+				var percentComplete = Math.floor(evt.loaded / evt.total * 100);
+				updateStatus("UPLOAD PROGRESS :"+percentComplete+"%", "orange");
+			};
+			
+			xhr.onerror = function()
+			{
+				updateStatus("UPLOAD ERROR : CONNECTION LOST", "red");
+			};
+			
+			xhr.open("POST", address+"/upload", true);
+			xhr.send(form);
+		}
+	}
+
 	if (event.target.matches('#download'))
 	{
 		// Status Variable--------------------------------------------------
@@ -632,274 +924,6 @@ document.addEventListener('init', function(event) {
 			xhr.open("DELETE", address+"/delete", true);
 			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 			xhr.send(selectDelete.value);
-		}
-	}
-
-	if (event.target.matches('#upload'))
-	{
-		// Status Variable--------------------------------------------------
-		var btnStatus = document.getElementById("btnStatus");
-		var textStatus = document.getElementById("textStatus");
-		var iconStatus = document.getElementById("iconStatus");
-		var popoverStatus = document.getElementById("popoverStatus");
-
-		// Convert Variable--------------------------------------------------
-		var remainingBytes;
-		var numPixels = 0;
-		var imgConvert = new Image;
-		var canvasConvert = document.getElementById("canvasConvert");
-		var selectConvert = document.getElementById("selectConvert");
-		var btnUploadOriginal = document.getElementById("btnUploadOriginal");
-		var btnUploadConvert = document.getElementById("btnUploadConvert");
-		var btnDownloadConvert = document.getElementById("btnDownloadConvert");
-
-		// Status Event--------------------------------------------------
-		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
-
-		// Convert event--------------------------------------------------
-		selectConvert.addEventListener('change', setImgConvert, false);
-		imgConvert.addEventListener('load', drawConvertCanvas, false);
-		btnUploadOriginal.addEventListener('click', uploadOriginal, false);
-		btnDownloadConvert.addEventListener('click', downloadConvert, false);
-		btnUploadConvert.addEventListener('click', uploadConvert, false);
-
-		// Main --------------------------------------------------
-		requestParameterRead();
-		setImgConvert();
-
-		//--------------------------------------------------
-		function setImgConvert()
-		{  
-			// no selection
-			if (selectConvert.files.length == 0)
-			{
-				// print the error
-				errorConvertCanvas("No File");
-				// button
-				btnUploadOriginal.setAttribute('disabled', '');
-				btnUploadConvert.setAttribute('disabled', '');
-				btnDownloadConvert.setAttribute('disabled', '');
-				return;
-			}
-			// test the selection
-			var file = selectConvert.files[0];
-			var imageType = /^image\//;
-			// selection is not an image
-			if (!imageType.test(file.type))
-			{
-				// print the error
-				errorConvertCanvas("No Convert");
-				// button
-				btnUploadOriginal.removeAttribute('disabled', '');
-				btnUploadConvert.setAttribute('disabled', '');
-				btnDownloadConvert.setAttribute('disabled', '');
-			}
-			// selection is an image
-			else
-			{
-				// load the image
-				imgConvert.file = file;
-				var reader = new FileReader();
-				reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(imgConvert); 
-				reader.readAsDataURL(file);
-				// button
-				btnUploadOriginal.removeAttribute('disabled', '');
-				btnUploadConvert.removeAttribute('disabled', '');
-				btnDownloadConvert.removeAttribute('disabled', '');
-			}
-		}
-
-		//--------------------------------------------------
-		function drawConvertCanvas()
-		{
-			// canvas
-			var ctx = canvasConvert.getContext("2d");
-			// calculate the canvas dimension
-			canvasConvert.width = numPixels;
-			canvasConvert.height = imgConvert.width/imgConvert.height*numPixels; 
-			// initialize canvas in black
-			ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
-			// save context
-			ctx.save();
-			// translate and rotate
-			ctx.translate(canvasConvert.width/2,canvasConvert.height/2);
-			ctx.rotate(90*Math.PI/180);
-			// draw imgConvert strech to fit canvasConvert
-			ctx.drawImage(imgConvert,-canvasConvert.height/2,-canvasConvert.width/2,canvasConvert.height,canvasConvert.width);
-			//restore context
-			ctx.restore();
-		}
-
-		//--------------------------------------------------
-		function errorConvertCanvas(error)
-		{
-		// context
-		var ctx=canvasConvert.getContext("2d");
-		// calculate the canvas dimension
-		canvasConvert.width = 150;
-		canvasConvert.height = 60; 
-		// initialize canvas in black
-		ctx.fillStyle = "black";
-		ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
-		// 
-		ctx.fillStyle = "red";
-		ctx.font = "30px Arial";
-		ctx.textAlign = "center";
-		ctx.fillText(error, canvasConvert.width/2, canvasConvert.height/2);
-	}
-
-		//--------------------------------------------------
-		function updateStatus(message, color)
-		{
-			textStatus.innerHTML = message;
-			textStatus.style.color = color;
-			if (color == 'red')
-				iconStatus.setAttribute('icon', 'myStatusRed');
-
-			if (color == 'orange')
-				iconStatus.setAttribute('icon', 'myStatusOrange');
-
-			if (color == 'green')
-				iconStatus.setAttribute('icon', 'myStatusGreen');
-		}
-
-		//--------------------------------------------------
-		function setParameter(jsonString)
-		{
-			var json = JSON.parse(jsonString);
-			// set parameters values
-			numPixels = json["numPixels"];
-			var usedBytes = json["usedBytes"];
-			var totalBytes = json["totalBytes"];
-			remainingBytes = totalBytes-usedBytes;
-		}
-
-		//--------------------------------------------------
-		function requestParameterRead()
-		{
-			var xhr = new XMLHttpRequest();
-			xhr.onload = function()
-			{
-				if (this.status == 200)
-				{
-					setParameter(this.responseText);
-				}
-			};
-
-			xhr.onerror = function()
-			{
-				updateStatus("READ ERROR : CONNECTION LOST", "red");
-			};
-
-			xhr.overrideMimeType("application/json");
-			xhr.open("GET", address+"/parameterRead", true);
-			xhr.send(null);
-		}
-
-		//--------------------------------------------------
-		function trimFileName(fileName, newExt)
-		{
-			var trimName;
-			// test
-			var extRegex = /(?:\.([^.]+))?$/;
-			// retrieve current extension
-			var currentExt = extRegex.exec(fileName)[1];
-			// retrieve base name
-			var baseName = fileName.substring(0, fileName.length-(currentExt.length+1));
-			// spiffs support maxi 31 characters (extension include) so we trim the baseName to 20 characters for security
-			if (baseName.length > 20)
-			{
-				baseName=baseName.substring(0, 20);
-			}
-            // 
-            if (newExt == "")
-            {
-            	trimName = baseName+"."+currentExt;
-            }
-			//
-			else
-			{
-				trimName =  baseName+"."+newExt;
-			}
-			return trimName;
-		}
-
-		//--------------------------------------------------
-		function downloadConvert()
-		{
-			var bitmap    = CanvasToBMP.toDataURL(canvasConvert);
-			var a  = document.createElement('a');
-			a.href = bitmap;
-			a.download = trimFileName(selectConvert.files[0].name, "bmp");
-			a.click();
-		}
-
-		//--------------------------------------------------
-		function uploadConvert()
-		{
-			// convert canvasConvert to blob
-			var blobConvert = CanvasToBMP.toBlob(canvasConvert);
-			// too big? display an error
-			if (blobConvert.size > remainingBytes)
-			{
-				updateStatus("UPLOAD ERROR : NOT ENOUGH SPACE", "red");
-			}
-			// no problem? send the file
-			else
-			{
-				var form = new FormData();
-				form.append('file', blobConvert,trimFileName(selectConvert.files[0].name, "bmp"));
-				requestFileUpload(form);
-			}
-		}
-
-		//--------------------------------------------------
-		function uploadOriginal()
-		{
-			// too big? display an error
-			if (selectConvert.files[0].size > remainingBytes)
-			{
-				updateStatus("UPLOAD ERROR : NOT ENOUGH SPACE", "red");
-			}
-			// no problem? send the file
-			else
-			{
-				var form = new FormData();
-				form.append('file', selectConvert.files[0], trimFileName(selectConvert.files[0].name, ""));
-				requestFileUpload(form);
-			}
-		}
-
-		//--------------------------------------------------
-		function requestFileUpload(form)
-		{
-			var xhr = new XMLHttpRequest();
-			xhr.onload = function()
-			{
-				if (this.status == 200)
-				{
-					updateStatus(this.responseText, "green");
-					requestParameterRead();
-				}
-				else
-				{
-					updateStatus("UPLOAD ERROR : UPLOAD FAILED", "red");
-				}
-			};
-			
-			xhr.upload.onprogress = function(evt)
-			{
-				var percentComplete = Math.floor(evt.loaded / evt.total * 100);
-				updateStatus("UPLOAD PROGRESS :"+percentComplete+"%", "orange");
-			};
-			
-			xhr.onerror = function()
-			{
-				updateStatus("UPLOAD ERROR : CONNECTION LOST", "red");
-			};
-			
-			xhr.open("POST", address+"/upload", true);
-			xhr.send(form);
 		}
 	}
 
