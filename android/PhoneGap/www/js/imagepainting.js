@@ -30,12 +30,15 @@ document.addEventListener('init', function(event) {
 
 		// Image Variable--------------------------------------------------
 		var imgImage = new Image;
+		var delay;
 		var selectImage = document.getElementById("selectImage");
 		var canvasImage =document.getElementById("canvasImage");
 		var sliderStart = document.getElementById("sliderStart");
 		var textStart = document.getElementById("textStart");
 		var sliderStop = document.getElementById("sliderStop");
 		var textStop = document.getElementById("textStop");
+		var sliderDuration = document.getElementById("sliderDuration");
+		var textDuration = document.getElementById("textDuration");
 		var btnLight = document.getElementById("btnLight");
 		var btnBurn = document.getElementById("btnBurn");
 		var btnStop = document.getElementById("btnStop");
@@ -47,12 +50,14 @@ document.addEventListener('init', function(event) {
 		// Image Event--------------------------------------------------
 		selectImage.addEventListener('change', requestParameterWrite, false);
 		imgImage.addEventListener('load', drawImageCanvas, false);
-		sliderStart.addEventListener('input', function() { updateTextSlider(sliderStart,textStart, "px");}, false);
-		sliderStop.addEventListener('input', function() { updateTextSlider(sliderStop,textStop, "px");}, false);
+		sliderStart.addEventListener('input', updateStart, false);
 		sliderStart.addEventListener('input', drawImageCanvas, false);
-		sliderStop.addEventListener('input', drawImageCanvas, false);
 		sliderStart.addEventListener('change', requestParameterWrite, false);
+		sliderStop.addEventListener('input', updateStop, false);
+		sliderStop.addEventListener('input', drawImageCanvas, false);
 		sliderStop.addEventListener('change', requestParameterWrite, false);
+		sliderDuration.addEventListener('input', updateDuration, false);
+		sliderDuration.addEventListener('change', requestParameterWrite, false);
 		btnLight.addEventListener('click', requestLight, false);
 		btnBurn.addEventListener('click', requestBurn, false);
 		btnStop.addEventListener('click', requestStop, false);
@@ -87,11 +92,47 @@ document.addEventListener('init', function(event) {
 			ctx.fillRect(Number(sliderStop.value)+1, 0, canvasImage.width-sliderStop.value, canvasImage.height);
 		}
 
+		//--------------------------------------------------
+		function updateStart()
+		{
+			// check if start < stop
+			if (Number(sliderStop.value) < Number(sliderStart.value))
+			{
+				sliderStop.value = sliderStart.value;
+				textStop.innerHTML = sliderStop.value + "px";
+			}
+			// update textStart
+			textStart.innerHTML = sliderStart.value + "px";
+			// update duration
+			var duration = (sliderStop.value-sliderStart.value)*delay;
+			sliderDuration.setAttribute("max",Math.max(duration,20000));
+			sliderDuration.value = duration;
+			textDuration.innerHTML = sliderDuration.value + "ms";
+		}
 
 		//--------------------------------------------------
-		function updateTextSlider(slider, textSlider, unit)
+		function updateStop()
 		{
-			textSlider.innerHTML = slider.value + unit;
+			// check if start < stop
+			if (Number(sliderStop.value) < Number(sliderStart.value))
+			{
+				sliderStart.value = sliderStop.value;
+				textStart.innerHTML = sliderStart.value + "px";
+			}
+			// update textStop
+			textStop.innerHTML = sliderStop.value + "px";
+			// update duration
+			var duration = (sliderStop.value-sliderStart.value)*delay;
+			sliderDuration.setAttribute("max",Math.max(duration,20000));
+			sliderDuration.value = duration;
+			textDuration.innerHTML = sliderDuration.value + "ms";
+		}
+
+		//--------------------------------------------------
+		function updateDuration()
+		{
+			delay = sliderDuration.value/(sliderStop.value-sliderStart.value);
+			textDuration.innerHTML = sliderDuration.value + "ms";
 		}
 
 		//--------------------------------------------------
@@ -207,9 +248,10 @@ document.addEventListener('init', function(event) {
 			sliderStop.value = json["indexStop"];
 			selectImage.value = json["bmpPath"];
 			imgImage.src= address + "/" + json["bmpPath"];
+			delay = json["delay"];
 			// check parameter
-			updateTextSlider(sliderStart,textStart, "px");
-			updateTextSlider(sliderStop,textStop, "px");
+			updateStart();
+			updateStop();
 		}
 
 		//--------------------------------------------------
@@ -242,6 +284,7 @@ document.addEventListener('init', function(event) {
 			json.indexStart = sliderStart.value;
 			json.indexStop = sliderStop.value;
 			json.bmpPath = selectImage.value;
+			json.delay = delay;
 			// convert json to string
 			return JSON.stringify(json);
 		}

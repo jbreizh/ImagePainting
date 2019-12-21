@@ -392,7 +392,7 @@ void handleParameterWrite()
   if (!jsonDoc["indexStop"].isNull())INDEXSTOP = jsonDoc["indexStop"];
 
   // Changing bitmap ?
-  if (!jsonDoc["indexStop"].isNull() && jsonDoc["bmpPath"].as<String>() != BMPPATH)
+  if (!jsonDoc["bmpPath"].isNull() && jsonDoc["bmpPath"].as<String>() != BMPPATH)
   {
     //  Args ; path ; type ; bitmap not right ?
     if ((!LittleFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
