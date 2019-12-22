@@ -28,17 +28,21 @@ document.addEventListener('init', function(event) {
 		var iconStatus = document.getElementById("iconStatus");
 		var popoverStatus = document.getElementById("popoverStatus");
 
-		// Image Variable--------------------------------------------------
+		// File Variable--------------------------------------------------
 		var imgImage = new Image;
-		var delay;
 		var selectImage = document.getElementById("selectImage");
 		var canvasImage =document.getElementById("canvasImage");
 		var sliderStart = document.getElementById("sliderStart");
 		var textStart = document.getElementById("textStart");
 		var sliderStop = document.getElementById("sliderStop");
 		var textStop = document.getElementById("textStop");
+
+		// Options Variable--------------------------------------------------
+		var delay;
 		var sliderDuration = document.getElementById("sliderDuration");
 		var textDuration = document.getElementById("textDuration");
+
+		// Actions Variable--------------------------------------------------
 		var btnLight = document.getElementById("btnLight");
 		var btnBurn = document.getElementById("btnBurn");
 		var btnStop = document.getElementById("btnStop");
@@ -56,8 +60,12 @@ document.addEventListener('init', function(event) {
 		sliderStop.addEventListener('input', updateStop, false);
 		sliderStop.addEventListener('input', drawImageCanvas, false);
 		sliderStop.addEventListener('change', requestParameterWrite, false);
+
+		// Options Event--------------------------------------------------
 		sliderDuration.addEventListener('input', updateDuration, false);
 		sliderDuration.addEventListener('change', requestParameterWrite, false);
+
+		// Actions Event--------------------------------------------------
 		btnLight.addEventListener('click', requestLight, false);
 		btnBurn.addEventListener('click', requestBurn, false);
 		btnStop.addEventListener('click', requestStop, false);
@@ -522,13 +530,19 @@ document.addEventListener('init', function(event) {
 		var iconStatus = document.getElementById("iconStatus");
 		var popoverStatus = document.getElementById("popoverStatus");
 
-		// Convert Variable--------------------------------------------------
-		var remainingBytes;
-		var numPixels = 0;
+		// Files Variable--------------------------------------------------
 		var imgConvert = new Image;
 		var canvasConvert = document.getElementById("canvasConvert");
 		var selectConvert = document.getElementById("selectConvert");
+
+		// Options Variable--------------------------------------------------
 		var selectGamma = document.getElementById("selectGamma");
+		var ckBottomTop = document.getElementById("ckBottomTop");
+		var sliderPixels = document.getElementById("sliderPixels");
+		var textPixels = document.getElementById("textPixels");
+
+		// Action Variable--------------------------------------------------
+		var remainingBytes;
 		var btnUploadOriginal = document.getElementById("btnUploadOriginal");
 		var btnUploadConvert = document.getElementById("btnUploadConvert");
 		var btnDownloadConvert = document.getElementById("btnDownloadConvert");
@@ -536,10 +550,17 @@ document.addEventListener('init', function(event) {
 		// Status Event--------------------------------------------------
 		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
 
-		// Convert event--------------------------------------------------
+		// File event--------------------------------------------------
 		selectConvert.addEventListener('change', setImgConvert, false);
 		imgConvert.addEventListener('load', drawConvertCanvas, false);
+
+		// Options Event--------------------------------------------------
 		selectGamma.addEventListener('change', drawConvertCanvas, false);
+		ckBottomTop.addEventListener('click', drawConvertCanvas, false);
+		sliderPixels.addEventListener('input', updatePixels, false);
+		sliderPixels.addEventListener('change', drawConvertCanvas, false);
+
+		// Actions Event--------------------------------------------------
 		btnUploadOriginal.addEventListener('click', uploadOriginal, false);
 		btnDownloadConvert.addEventListener('click', downloadConvert, false);
 		btnUploadConvert.addEventListener('click', uploadConvert, false);
@@ -556,8 +577,11 @@ document.addEventListener('init', function(event) {
 			{
 				// print the error
 				errorConvertCanvas("No File");
-				// button
+				// options
 				selectGamma.setAttribute('disabled', '');
+				ckBottomTop.setAttribute('disabled', '');
+				sliderPixels.setAttribute('disabled', '');
+				// actions
 				btnUploadOriginal.setAttribute('disabled', '');
 				btnUploadConvert.setAttribute('disabled', '');
 				btnDownloadConvert.setAttribute('disabled', '');
@@ -571,8 +595,11 @@ document.addEventListener('init', function(event) {
 			{
 				// print the error
 				errorConvertCanvas("No Convert");
-				// button
+				// options
 				selectGamma.setAttribute('disabled', '');
+				ckBottomTop.setAttribute('disabled', '');
+				sliderPixels.setAttribute('disabled', '');
+				// actions
 				btnUploadOriginal.removeAttribute('disabled', '');
 				btnUploadConvert.setAttribute('disabled', '');
 				btnDownloadConvert.setAttribute('disabled', '');
@@ -585,8 +612,11 @@ document.addEventListener('init', function(event) {
 				var reader = new FileReader();
 				reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(imgConvert); 
 				reader.readAsDataURL(file);
-				// button
+				// options
 				selectGamma.removeAttribute('disabled', '');
+				ckBottomTop.removeAttribute('disabled', '');
+				sliderPixels.removeAttribute('disabled', '');
+				// actions
 				btnUploadOriginal.removeAttribute('disabled', '');
 				btnUploadConvert.removeAttribute('disabled', '');
 				btnDownloadConvert.removeAttribute('disabled', '');
@@ -599,17 +629,32 @@ document.addEventListener('init', function(event) {
 			// context
 			var ctx = canvasConvert.getContext("2d");
 			// calculate the canvas dimension
-			canvasConvert.width = numPixels;
-			canvasConvert.height = imgConvert.width/imgConvert.height*numPixels; 
+			canvasConvert.width = sliderPixels.getAttribute("max");
+			if(ckBottomTop.checked)
+			{
+				canvasConvert.height = imgConvert.height/imgConvert.width*sliderPixels.value;
+			}
+			else
+			{
+				canvasConvert.height = imgConvert.width/imgConvert.height*sliderPixels.value;
+			}
 			// initialize canvas in black
 			ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
 			// save context
 			ctx.save();
-			// translate and rotate
+			// translate
 			ctx.translate(canvasConvert.width/2,canvasConvert.height/2);
-			ctx.rotate(90*Math.PI/180);
-			// draw imgConvert strech to fit canvasConvert
-			ctx.drawImage(imgConvert,-canvasConvert.height/2,-canvasConvert.width/2,canvasConvert.height,canvasConvert.width);
+			// rotate and draw
+			if(ckBottomTop.checked)
+			{
+				ctx.rotate(180*Math.PI/180);
+				ctx.drawImage(imgConvert,-sliderPixels.value/2,-canvasConvert.height/2,sliderPixels.value,canvasConvert.height);
+			}
+			else
+			{
+				ctx.rotate(90*Math.PI/180);
+				ctx.drawImage(imgConvert,-canvasConvert.height/2,-sliderPixels.value/2,canvasConvert.height,sliderPixels.value);
+			}
 			// restore context
 			ctx.restore();
 			// store canvas in data
@@ -622,10 +667,9 @@ document.addEventListener('init', function(event) {
 				data[i+1] = 255 * Math.pow((data[i+1] / 255), selectGamma.value);
 				data[i+2] = 255 * Math.pow((data[i+2] / 255), selectGamma.value);
 			}
-			// put data in cavas
+			// put data in canvas
 			ctx.putImageData(imageData, 0, 0);
 		}
-
 
 		//--------------------------------------------------
 		function errorConvertCanvas(error)
@@ -638,12 +682,18 @@ document.addEventListener('init', function(event) {
 		// initialize canvas in black
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, canvasConvert.width, canvasConvert.height);
-		// 
+		// print the error
 		ctx.fillStyle = "red";
 		ctx.font = "30px Arial";
 		ctx.textAlign = "center";
 		ctx.fillText(error, canvasConvert.width/2, canvasConvert.height/2);
 	}
+
+		//--------------------------------------------------
+		function updatePixels()
+		{
+			textPixels.innerHTML = sliderPixels.value + "px";
+		}
 
 		//--------------------------------------------------
 		function updateStatus(message, color)
@@ -665,7 +715,10 @@ document.addEventListener('init', function(event) {
 		{
 			var json = JSON.parse(jsonString);
 			// set parameters values
-			numPixels = json["numPixels"];
+			sliderPixels.setAttribute("max",json["numPixels"]);
+			sliderPixels.value = json["numPixels"];
+			updatePixels();
+
 			var usedBytes = json["usedBytes"];
 			var totalBytes = json["totalBytes"];
 			remainingBytes = totalBytes-usedBytes;

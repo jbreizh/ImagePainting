@@ -150,7 +150,7 @@ The compile app (currently for android) can be find in /android/release. This ap
 
 ## Use ImagePainting
 
-I will explain the use from the android app as it is the recommand way to use ImagePainting. I consider the webpage as history and i strongly recommand the app. You can delete index.html and title.png from the data file, if you plan to use the app.
+I will explain the use from the android app as it is the recommand way to use ImagePainting. I consider the webpage as legacy and i strongly recommand the app. You can delete index.html and title.png from the data file, if you plan to use the app.
 
 ### Actions screen
 
@@ -159,7 +159,10 @@ I will explain the use from the android app as it is the recommand way to use Im
 * **File :** Select a Bitmap on the ESP8266 flash memory.
   * **Start :** Select the beginning of your animation
   * **Stop :** Select the end of your animation
- 
+
+* **Options :**
+  * **Duration :** Show the estimated duration of the animation. If you change the duration, it will change the delay to fit your need.
+
 * **Actions :**
   * **Light :** Set the LED Strip to **Color** to use it as a flashlight or for special effect. Stop your runnig animation.
   * **Burn :** Set the LED Strip to the first line of the Bitmap for special effect. Stop your animation.
@@ -191,10 +194,16 @@ I will explain the use from the android app as it is the recommand way to use Im
 ![upload](https://user-images.githubusercontent.com/2498942/71197108-313e7300-2291-11ea-9ac7-f169fd2a0623.png)
 
 * **File :** Select a file on your smartphone. Preview is for image only.
+
+* **Options :**
+  * **Gamma :** Apply Gamma to the Bitmap which will appear dark on the smartphone than on the LED strip.
+  * **Bottom to top ?** Change animation side from "Left to Right" to "Bottom to Top". Usefull for vertical Bitmap.
+  * **Pixels :** Change the number of pixels. The Bitmap is put in the center of the LED strip.
+
 * **Actions :**
-  * **Upload Original :** Upload selected file directly.
-  * **Upload Convert :** Convert and Upload selected file . 
-  * **Download Convert :** Convert and download to your smartphone.
+  * **Upload Original :** Upload directly selected file to the ESP8266.
+  * **Upload Convert :** Convert and Upload selected image file to the ESP8266. 
+  * **Download Convert :** Convert and Download selected image file to your smartphone.
 
 ### Download screen
 
@@ -231,7 +240,7 @@ ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So
 * Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
 
-The use of the build in convert tool free you of all this consideration.
+Hopefully, the use of the app build in convert tool free you of all this consideration.
 
 ## Bitmap Pack
 
