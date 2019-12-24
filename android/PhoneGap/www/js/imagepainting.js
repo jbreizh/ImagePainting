@@ -344,8 +344,6 @@ document.addEventListener('init', function(event) {
 		var sliderPause = document.getElementById("sliderPause");
 		var textPause = document.getElementById("textPause");
 		var pickerColor = document.getElementById("pickerColor");
-
-		// Action Variable --------------------------------------------------
 		var ckInvert = document.getElementById("ckInvert");
 		var ckRepeat = document.getElementById("ckRepeat");
 		var ckBounce = document.getElementById("ckBounce");
@@ -353,6 +351,10 @@ document.addEventListener('init', function(event) {
 		var ckCut = document.getElementById("ckCut");
 		var ckEndOff = document.getElementById("ckEndOff");
 		var ckEndColor = document.getElementById("ckEndColor");
+
+		// Action Variable --------------------------------------------------
+		var btnSave = document.getElementById("btnSave");
+		var btnRestore = document.getElementById("btnRestore");
 
 		// Status Event--------------------------------------------------
 		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
@@ -367,8 +369,6 @@ document.addEventListener('init', function(event) {
 		sliderRepeat.addEventListener('change', requestParameterWrite, false);
 		sliderPause.addEventListener('change', requestParameterWrite, false);
 		pickerColor.addEventListener('change', requestParameterWrite, false);
-
-		// Action event--------------------------------------------------
 		ckRepeat.addEventListener('click', function() {updateCheckbox(ckRepeat,ckBounce);}, false);
 		ckBounce.addEventListener('click', function() {updateCheckbox(ckBounce,ckRepeat);}, false);
 		ckPause.addEventListener('click', function() {updateCheckbox(ckPause,ckCut);}, false);
@@ -382,6 +382,10 @@ document.addEventListener('init', function(event) {
 		ckCut.addEventListener('click', requestParameterWrite, false);
 		ckEndColor.addEventListener('click', requestParameterWrite, false);
 		ckEndOff.addEventListener('click', requestParameterWrite, false);
+
+		// Action event--------------------------------------------------
+		btnSave.addEventListener('click', requestParameterSave, false);
+		btnRestore.addEventListener('click', requestParameterRestore, false);
 
 		// Main --------------------------------------------------
 		requestParameterRead();
@@ -473,6 +477,31 @@ document.addEventListener('init', function(event) {
 		}
 
 		//--------------------------------------------------
+		function requestParameterSave()
+		{
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function()
+			{
+				if (this.status == 200)
+				{
+					updateStatus(this.responseText, "green");
+				}
+				else
+				{
+					updateStatus(this.responseText, "red");
+				}
+			};
+
+			xhr.onerror = function()
+			{
+				updateStatus("READ ERROR : CONNECTION LOST", "red");
+			};
+
+			xhr.open("GET", address+"/parameterSave", true);
+			xhr.send(null);
+		}
+
+		//--------------------------------------------------
 		function getParameter()
 		{
 			var json = new Object();
@@ -520,6 +549,33 @@ document.addEventListener('init', function(event) {
 			xhr.setRequestHeader('Content-type', 'application/json');
 			xhr.send(getParameter());
 		}
+
+		//--------------------------------------------------
+		function requestParameterRestore()
+		{
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function()
+			{
+				if (this.status == 200)
+				{
+					updateStatus(this.responseText, "green");
+				}
+				else
+				{
+					updateStatus(this.responseText, "red");
+				}
+				requestParameterRead();
+			};
+
+			xhr.onerror = function()
+			{
+				updateStatus("WRITE ERROR : CONNECTION LOST", "red");
+			};
+
+			// send the request
+			xhr.open("GET", address+"/parameterRestore", true);
+			xhr.send(null);
+		}
 	}
 
 	if (event.target.matches('#upload'))
@@ -566,7 +622,7 @@ document.addEventListener('init', function(event) {
 		btnUploadConvert.addEventListener('click', uploadConvert, false);
 
 		// Main --------------------------------------------------
-		requestParameterRead();
+		requestSystemRead();
 		setImgConvert();
 
 		//--------------------------------------------------
@@ -718,14 +774,13 @@ document.addEventListener('init', function(event) {
 			sliderPixels.setAttribute("max",json["numPixels"]);
 			sliderPixels.value = json["numPixels"];
 			updatePixels();
-
 			var usedBytes = json["usedBytes"];
 			var totalBytes = json["totalBytes"];
 			remainingBytes = totalBytes-usedBytes;
 		}
 
 		//--------------------------------------------------
-		function requestParameterRead()
+		function requestSystemRead()
 		{
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function()
@@ -742,7 +797,7 @@ document.addEventListener('init', function(event) {
 			};
 
 			xhr.overrideMimeType("application/json");
-			xhr.open("GET", address+"/parameterRead", true);
+			xhr.open("GET", address+"/systemRead", true);
 			xhr.send(null);
 		}
 
@@ -835,7 +890,7 @@ document.addEventListener('init', function(event) {
 				if (this.status == 200)
 				{
 					updateStatus(this.responseText, "green");
-					requestParameterRead();
+					requestSystemRead();
 				}
 				else
 				{
@@ -1050,7 +1105,7 @@ document.addEventListener('init', function(event) {
 
 		//Main--------------------------------------------------
 		selectAddress.value = address;
-		requestParameterRead();
+		requestSystemRead();
 
 		//--------------------------------------------------
 		function updateStatus(message, color)
@@ -1075,12 +1130,12 @@ document.addEventListener('init', function(event) {
 			var usedBytes = json["usedBytes"];
 			var totalBytes = json["totalBytes"];
 			var remainingBytes = totalBytes - usedBytes;
-			//
+			// set LittleFS parameters
 			var myLittleFS = {
 				"Used": usedBytes,
 				"Remaining": remainingBytes,
 			};
-			// 
+			// set chart parameters
 			var myChart = new Piechart(
 			{
 				canvas:canvasSystem,
@@ -1091,11 +1146,10 @@ document.addEventListener('init', function(event) {
 			);
 			// draw the chart
 			myChart.draw();
-
 		}
 
 		//--------------------------------------------------
-		function requestParameterRead()
+		function requestSystemRead()
 		{
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function()
@@ -1112,7 +1166,7 @@ document.addEventListener('init', function(event) {
 			};
 
 			xhr.overrideMimeType("application/json");
-			xhr.open("GET", address+"/parameterRead", true);
+			xhr.open("GET", address+"/systemRead", true);
 			xhr.send(null);
 		}
 	}

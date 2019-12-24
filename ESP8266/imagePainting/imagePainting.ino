@@ -1,5 +1,5 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//#define STA       // Decomment this to use STA mode instead of AP
+#define STA       // Decomment this to use STA mode instead of AP
 //#define DNS       // Decomment this to use DNS
 //#define DEBUGER     // Decomment this to debug the code
 #define BUTTON      // Decomment this to use BUTTON
@@ -54,6 +54,7 @@ long ANIMETIME;
 
 // FS --------------
 fs::File UPLOADFILE; // hold uploaded file
+const char *CONFIGPATH = "config.json";  // config file
 // end FS -----------
 
 // BITMAP --------------
@@ -206,8 +207,17 @@ void setup()
   // handle parameter Read
   server.on("/parameterRead", HTTP_GET, handleParameterRead);
 
+  // handle parameter Save
+  server.on("/parameterSave", HTTP_GET, handleParameterSave);
+
   // handle parameter Write
   server.on("/parameterWrite", HTTP_POST, handleParameterWrite);
+
+  // handle parameter Restore
+  server.on("/parameterRestore", HTTP_GET, handleParameterRestore);
+
+  // handle parameter Read
+  server.on("/systemRead", HTTP_GET, handleSystemRead);
 
   // called when the url is not defined
   server.onNotFound([]() {
@@ -309,7 +319,36 @@ String getContentType(String filename)
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-void handleParameterRead()
+String systemRead()
+{
+  // New json document
+  StaticJsonDocument<500> jsonDoc;
+
+  // Store system parameter in json document
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+  jsonDoc["usedBytes"] = fs_info.usedBytes;
+  jsonDoc["totalBytes"] = fs_info.totalBytes;
+  jsonDoc["numPixels"] = NUMPIXELS;
+
+  // Convert json document to String and return it
+  String systemParameter = "";
+  serializeJson(jsonDoc, systemParameter);
+  return systemParameter;
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void handleSystemRead()
+{
+  // Read system parameter
+  String systemParameter = systemRead();
+
+  // System parameter are read
+  server.send(200, "application/json", systemParameter);
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+String parameterRead()
 {
   // New json document
   StaticJsonDocument<500> jsonDoc;
@@ -317,7 +356,6 @@ void handleParameterRead()
   // Store parameter in json document
   jsonDoc["delay"] = DELAY;
   jsonDoc["brightness"] = BRIGHTNESS;
-  jsonDoc["numPixels"] = NUMPIXELS;
   jsonDoc["repeat"] = REPEAT;
   jsonDoc["pause"] = PAUSE;
   char color[9];
@@ -335,27 +373,50 @@ void handleParameterRead()
   jsonDoc["indexStop"] = INDEXSTOP;
   jsonDoc["indexMax"] = INDEXMAX;
   jsonDoc["bmpPath"] = BMPPATH;
-  FSInfo fs_info;
-  LittleFS.info(fs_info);
-  jsonDoc["usedBytes"] = fs_info.usedBytes;
-  jsonDoc["totalBytes"] = fs_info.totalBytes;
 
-  // convert json document to String
-  String msg = "";
-  serializeJson(jsonDoc, msg);
-
-  // Parameter are read
-  server.send(200, "application/json", msg);
+  // convert json document to String and return it
+  String parameter = "";
+  serializeJson(jsonDoc, parameter);
+  return parameter;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-void handleParameterWrite()
+void handleParameterRead()
+{
+  // read the parameter
+  String parameter = parameterRead();
+
+  // Parameter are read
+  server.send(200, "application/json", parameter);
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void handleParameterSave()
+{
+  // read the parameter
+  String parameter = parameterRead();
+
+  // Create or open CONFIGPATH
+  File configFile = LittleFS.open(CONFIGPATH, "w");
+
+  // Save parameter in configFile
+  configFile.print(parameter);
+
+  // Close configFile
+  configFile.close();
+
+  // Parameter are save
+  server.send(200, "text/html",  "SAVE SUCCESS");
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void parameterWrite(String stringParameter)
 {
   // New json document
   StaticJsonDocument<500> jsonDoc;
 
   // Convert json String to json object
-  DeserializationError error = deserializeJson(jsonDoc, server.arg("plain"));
+  DeserializationError error = deserializeJson(jsonDoc, stringParameter);
 
   // Json not right ?
   if (error)
@@ -416,6 +477,33 @@ void handleParameterWrite()
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void handleParameterWrite()
+{
+  // Write parameter
+  parameterWrite(server.arg("plain"));
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void handleParameterRestore()
+{
+  // Open CONFIGPATH
+  File configFile = LittleFS.open(CONFIGPATH, "r");
+
+  // read configFile
+  String configString;
+  while (configFile.available())
+  {
+    configString += char(configFile.read());
+  }
+  
+  // Close configFile
+  configFile.close();
+  
+  // Write parameter
+  parameterWrite(configString);
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 bool bitmapLoad(String path)
 {
   // Open requested file on LittleFS
@@ -443,7 +531,7 @@ void handleFileDelete()
   String path = server.arg("plain");
 
   // protect system files
-  if ( path == "" || path == "/" || path == "index.html" || path == "welcome.bmp" || path == "title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
+  if ( path == "" || path == "/" || path == "config.json" || path == "index.html" || path == "welcome.bmp" || path == "title.png") return server.send(500, "text/plain", "DELETE ERROR : SYSTEM FILE");
 
   // check if the file exists
   if (!LittleFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND");
@@ -548,7 +636,7 @@ void handleFileList()
     String name = String(entry.name());
 
     // Write the entry in the list (Hide system file)
-    if (!(name == "index.html" || name == "title.png"))  fileList.add(name);
+    if (!(name == "index.html" || name == "title.png" || name == "config.json")) fileList.add(name);
 
     // Close the entry
     entry.close();

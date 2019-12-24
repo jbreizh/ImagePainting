@@ -196,7 +196,7 @@ I will explain the use from the android app as it is the recommand way to use Im
 * **File :** Select a file on your smartphone. Preview is for image only.
 
 * **Options :**
-  * **Gamma :** Apply Gamma to the Bitmap which will appear dark on the smartphone than on the LED strip.
+  * **Gamma :** Apply Gamma to the Bitmap which will appear darker on the smartphone than on the LED strip.
   * **Bottom to top ?** Change animation side from "Left to Right" to "Bottom to Top". Usefull for vertical Bitmap.
   * **Pixels :** Change the number of pixels. The Bitmap is put in the center of the LED strip.
 
@@ -220,7 +220,7 @@ I will explain the use from the android app as it is the recommand way to use Im
 
 * **ESP8266 FILSYSTEM :** Memory use on the ESP8266.
 * **ESP8266 ADDRESS :** Address of the ESP8266.
-* **APPLICATION THEME :**
+* **APPLICATION THEME :** Chose between Dark or Ligth theme.
 
 ## Case scenario
 
