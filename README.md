@@ -189,6 +189,10 @@ I will explain the use from the android app as it is the recommand way to use Im
   * **Endoff ?** [x] Turn off the LED Strip when the animation is pause/stop or end. Usefull when the Bitmap doesn't end with a black line
   * **Endcolor?** [x] Set the LED Strip to **Color** when the animation is pause/stop or end. Usefull for special effect.
 
+* **Actions :**
+  * **Save :** Save current settings to the ESP8266. This allow you to Restore your settings after a shutdown.
+  * **Restore :** Restore current settings from the ESP8266.
+
 ### Upload screen
 
 ![upload](https://user-images.githubusercontent.com/2498942/71197108-313e7300-2291-11ea-9ac7-f169fd2a0623.png)
@@ -220,7 +224,7 @@ I will explain the use from the android app as it is the recommand way to use Im
 
 * **ESP8266 FILSYSTEM :** Memory use on the ESP8266.
 * **ESP8266 ADDRESS :** Address of the ESP8266.
-* **APPLICATION THEME :** Chose between Dark or Ligth theme.
+* **APPLICATION THEME :** Choose between Dark or Light theme.
 
 ## Case scenario
 
