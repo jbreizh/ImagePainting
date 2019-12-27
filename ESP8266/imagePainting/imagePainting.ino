@@ -21,7 +21,6 @@
 
 // LED --------------
 const int NUMPIXELS = 119;
-uint8_t BRIGHTNESS = 25;
 NeoPixelBus<FEATURE, METHOD> STRIP(NUMPIXELS);
 // end LED -----------
 
@@ -46,21 +45,12 @@ const byte DNS_PORT = 53;
 #endif
 // end DNS -----------
 
-// DEBUGER --------------
-#ifdef DEBUGER
-long ANIMETIME;
-#endif
-// end DEBUGER -----------
-
 // FS --------------
 fs::File UPLOADFILE; // hold uploaded file
 const char *CONFIGPATH = "config.json";  // config file
-// end FS -----------
-
-// BITMAP --------------
 String BMPPATH = "welcome.bmp";
 NeoBitmapFile<FEATURE, fs::File> NEOBMPFILE;
-// end BITMAP -----------
+// end FS -----------
 
 // ANIMATION --------------
 NeoPixelAnimator ANIMATIONS(1); // NeoPixel animation management object
@@ -69,20 +59,23 @@ uint16_t INDEXSTART; //Min index chosen
 uint16_t INDEX; // Current index
 uint16_t INDEXSTOP; //Max index chosen
 uint16_t INDEXMAX; //Max index possible
-HtmlColor COLOR = HtmlColor(0xffffff);
 // end ANIMATION --------------
 
 // RUNTIME --------------
+long COUNTDOWN = 0; long COUNTDOWNCOUNTER;
+bool ISCOUNTDOWN = false;
 uint8_t DELAY = 15;
+uint8_t BRIGHTNESS = 25;
 uint8_t REPEAT = 1; uint8_t REPEATCOUNTER;
-uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
-bool ISREPEAT = false;
-bool ISENDOFF = false;
-bool ISENDCOLOR = false;
 bool ISINVERT = false;
+bool ISREPEAT = false;
 bool ISBOUNCE = false;
+uint8_t PAUSE = 1; uint8_t PAUSECOUNTER;
 bool ISPAUSE = false;
 bool ISCUT = false;
+HtmlColor COLOR = HtmlColor(0xffffff);
+bool ISENDOFF = false;
+bool ISENDCOLOR = false;
 // end RUNTIME --------------
 
 // BUTTON --------------
@@ -216,7 +209,7 @@ void setup()
   // handle parameter Restore
   server.on("/parameterRestore", HTTP_GET, handleParameterRestore);
 
-  // handle parameter Read
+  // handle system Read
   server.on("/systemRead", HTTP_GET, handleSystemRead);
 
   // called when the url is not defined
@@ -356,18 +349,25 @@ String parameterRead()
   // Store parameter in json document
   jsonDoc["delay"] = DELAY;
   jsonDoc["brightness"] = BRIGHTNESS;
+  //
+  jsonDoc["countdown"] = COUNTDOWN;
+  jsonDoc["iscountdown"] = ISCOUNTDOWN;
+  //
   jsonDoc["repeat"] = REPEAT;
+  jsonDoc["isinvert"] = ISINVERT;
+  jsonDoc["isrepeat"] = ISREPEAT;
+  jsonDoc["isbounce"] = ISBOUNCE;
+  //
   jsonDoc["pause"] = PAUSE;
+  jsonDoc["ispause"] = ISPAUSE;
+  jsonDoc["iscut"] = ISCUT;
+  //
   char color[9];
   COLOR.ToNumericalString(color, 9);
   jsonDoc["color"] = color;
-  jsonDoc["isrepeat"] = ISREPEAT;
-  jsonDoc["isbounce"] = ISBOUNCE;
-  jsonDoc["ispause"] = ISPAUSE;
-  jsonDoc["iscut"] = ISCUT;
-  jsonDoc["isinvert"] = ISINVERT;
   jsonDoc["isendoff"] = ISENDOFF;
   jsonDoc["isendcolor"] = ISENDCOLOR;
+  //
   jsonDoc["indexMin"] = INDEXMIN;
   jsonDoc["indexStart"] = INDEXSTART;
   jsonDoc["indexStop"] = INDEXSTOP;
@@ -439,41 +439,63 @@ void parameterWrite(String stringParameter)
     BRIGHTNESS = jsonDoc["brightness"];
     SHADER.setBrightness(BRIGHTNESS);
   }
+  //
+  if (!jsonDoc["countdown"].isNull()) COUNTDOWN = jsonDoc["countdown"];
+  if (!jsonDoc["iscountdown"].isNull())ISCOUNTDOWN = jsonDoc["iscountdown"];
+  //
   if (!jsonDoc["repeat"].isNull()) REPEAT = jsonDoc["repeat"];
-  if (!jsonDoc["pause"].isNull()) PAUSE = jsonDoc["pause"];
-  if (!jsonDoc["color"].isNull())COLOR.Parse<HtmlShortColorNames>(jsonDoc["color"].as<String>());
+  if (!jsonDoc["isinvert"].isNull())ISINVERT = jsonDoc["isinvert"];
   if (!jsonDoc["isrepeat"].isNull())ISREPEAT = jsonDoc["isrepeat"];
   if (!jsonDoc["isbounce"].isNull())ISBOUNCE = jsonDoc["isbounce"];
+  //
+  if (!jsonDoc["pause"].isNull()) PAUSE = jsonDoc["pause"];
   if (!jsonDoc["ispause"].isNull())ISPAUSE = jsonDoc["ispause"];
   if (!jsonDoc["iscut"].isNull())ISCUT = jsonDoc["iscut"];
-  if (!jsonDoc["isinvert"].isNull())ISINVERT = jsonDoc["isinvert"];
+  //
+  if (!jsonDoc["color"].isNull())COLOR.Parse<HtmlShortColorNames>(jsonDoc["color"].as<String>());
   if (!jsonDoc["isendoff"].isNull())ISENDOFF = jsonDoc["isendoff"];
   if (!jsonDoc["isendcolor"].isNull())ISENDCOLOR = jsonDoc["isendcolor"];
+  //
   if (!jsonDoc["indexStart"].isNull())INDEXSTART = jsonDoc["indexStart"];
   if (!jsonDoc["indexStop"].isNull())INDEXSTOP = jsonDoc["indexStop"];
-
-  // Changing bitmap ?
   if (!jsonDoc["bmpPath"].isNull() && jsonDoc["bmpPath"].as<String>() != BMPPATH)
   {
     //  Args ; path ; type ; bitmap not right ?
     if ((!LittleFS.exists(jsonDoc["bmpPath"].as<String>())) || (getContentType(jsonDoc["bmpPath"].as<String>()) != "image/bmp") || (!bitmapLoad(jsonDoc["bmpPath"].as<String>())))
     {
-      // Load welome.bmp
-      BMPPATH = "welcome.bmp";
-      bitmapLoad(BMPPATH);
+      // Load welcome.bmp
+      bitmapLoad("welcome.bmp");
       // Error bitmap
       return server.send(500, "text/html", "WRITE ERROR : WRONG BITMAP");
-    }
-    // No problem ?
-    else
-    {
-      // Load the new bitmap
-      BMPPATH = jsonDoc["bmpPath"].as<String>();
     }
   }
 
   // Parameter are write
   server.send(200, "text/html",  "WRITE SUCCESS");
+}
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+bool bitmapLoad(String path)
+{
+  // Open requested file on LittleFS
+  fs::File bmpFile = LittleFS.open(path, "r");
+
+  // Check and initialize NEOBMPFILE from the BMPFILE
+  bool success = NEOBMPFILE.Begin(bmpFile);
+
+  // Update BMPPATH
+  BMPPATH = path;
+
+  // Update the index possible
+  INDEXMIN = 0;
+  INDEXMAX = NEOBMPFILE.Height() - 1;
+
+  // Update the index chosen
+  INDEXSTART = INDEXMIN;
+  INDEXSTOP = INDEXMAX;
+
+  // Bitmap is loaded
+  return success;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -495,33 +517,12 @@ void handleParameterRestore()
   {
     configString += char(configFile.read());
   }
-  
+
   // Close configFile
   configFile.close();
-  
+
   // Write parameter
   parameterWrite(configString);
-}
-
-//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-bool bitmapLoad(String path)
-{
-  // Open requested file on LittleFS
-  fs::File bmpFile = LittleFS.open(path, "r");
-
-  // Check and initialize NEOBMPFILE from the BMPFILE
-  bool success = NEOBMPFILE.Begin(bmpFile);
-
-  // Update the index possible
-  INDEXMIN = 0;
-  INDEXMAX = NEOBMPFILE.Height() - 1;
-
-  // Update the index chosen
-  INDEXSTART = INDEXMIN;
-  INDEXSTOP = INDEXMAX;
-
-  // Bitmap is loaded
-  return success;
 }
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -537,11 +538,7 @@ void handleFileDelete()
   if (!LittleFS.exists(path)) return server.send(404, "text/plain", "DELETE ERROR : FILE NOT FOUND");
 
   // if delete current bitmap reload defaut bitmap
-  if (path == BMPPATH)
-  {
-    BMPPATH = "welcome.bmp";
-    bitmapLoad(BMPPATH);
-  }
+  if (path == BMPPATH)  bitmapLoad("welcome.bmp");
 
   // Delete the file
   LittleFS.remove(path);
@@ -692,15 +689,14 @@ String play()
     if (ISINVERT) INDEX = INDEXSTOP;
     else INDEX = INDEXSTART;
 
+    // Countdown
+    COUNTDOWNCOUNTER = millis();
+
     // Repeat
     REPEATCOUNTER = REPEAT;
 
     // Pause
     PAUSECOUNTER = 2 * PAUSE;
-
-#ifdef DEBUGER
-    ANIMETIME = millis();
-#endif
 
     // Launch a new animation
     ANIMATIONS.StartAnimation(0, DELAY, updateAnimation);
@@ -777,45 +773,31 @@ void updateAnimation(const AnimationParam & param)
       // Restart the animation
       ANIMATIONS.RestartAnimation(param.index);
 
-      // Pause to do?
-      if (ISPAUSE || ISCUT)
+      // Countdown to do?
+      if (ISCOUNTDOWN && (millis() - COUNTDOWNCOUNTER <= COUNTDOWN))
       {
-        // Is it time to play?
-        if ((PAUSECOUNTER > PAUSE))
+        // Wait
+      }
+      // Pause to do?
+      else if ((ISPAUSE || ISCUT) && (PAUSECOUNTER <= PAUSE))
+      {
+        //Initialisation
+        if (PAUSECOUNTER > 1) PAUSECOUNTER -= 1;
+        else PAUSECOUNTER = 2 * PAUSE;
+
+        // Blank or color the strip if needed
+        if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
+        if (ISENDCOLOR) STRIP.ClearTo(SHADER.Apply(0, COLOR));
+
+        // Cut the bitmap is needed
+        if (ISCUT)
         {
-          // Initialisation
-          PAUSECOUNTER -= 1;
-
-          // Fil the strip : bitmap is crop to fit the strip !!!
-          NEOBMPFILE.Render<BrightShader>(STRIP, SHADER, 0, 0, INDEX, NEOBMPFILE.Width());
-
           // Index
           if (ISINVERT) INDEX -= 1;
           else INDEX += 1;
         }
-        // Is it time to wait?
-        else
-        {
-          //Initialisation
-          PAUSECOUNTER -= 1;
-
-          // Blank or color the strip if needed
-          if (ISENDOFF) STRIP.ClearTo(RgbColor(0, 0, 0));
-          if (ISENDCOLOR) STRIP.ClearTo(SHADER.Apply(0, COLOR));
-
-          // Cut the bitmap is needed
-          if (ISCUT)
-          {
-            // Index
-            if (ISINVERT) INDEX -= 1;
-            else INDEX += 1;
-          }
-
-          // Have waited long enough?
-          if (PAUSECOUNTER == 0) PAUSECOUNTER = 2 * PAUSE;
-        }
       }
-      // No pause to do !!! so let's play
+      // No countdown/pause to do !!! so let's play
       else
       {
         // Fil the strip : bitmap is crop to fit the strip !!!
@@ -824,33 +806,23 @@ void updateAnimation(const AnimationParam & param)
         // Index
         if (ISINVERT) INDEX -= 1;
         else INDEX += 1;
+
+        //
+        if (ISPAUSE || ISCUT) PAUSECOUNTER -= 1;
       }
     }
     // INDEX is out of the limit
     else
     {
       // Repeat to do?
-      if (ISREPEAT && (REPEATCOUNTER > 0))
+      if ((ISREPEAT || ISBOUNCE) && (REPEATCOUNTER > 0))
       {
         // Restart the animation
         ANIMATIONS.RestartAnimation(param.index);
 
         // Initialisation
         REPEATCOUNTER -= 1;
-
-        // Index
-        if (ISINVERT) INDEX = INDEXSTOP;
-        else INDEX = INDEXSTART;
-      }
-      // Bounce to do?
-      else if (ISBOUNCE && (REPEATCOUNTER > 0))
-      {
-        // Restart the animation
-        ANIMATIONS.RestartAnimation(param.index);
-
-        // Initialisation
-        REPEATCOUNTER -= 1;
-        ISINVERT = !ISINVERT; //invert the invert (following ??)
+        if (ISBOUNCE) ISINVERT = !ISINVERT; //invert the invert (following ??)
 
         // Index
         if (ISINVERT) INDEX = INDEXSTOP;
@@ -868,7 +840,7 @@ void updateAnimation(const AnimationParam & param)
 
 #ifdef DEBUGER
         Serial.print("complete time :");
-        Serial.println(millis() - ANIMETIME);
+        Serial.println(millis() - COUNTDOWNCOUNTER);
 #endif
       }
     }

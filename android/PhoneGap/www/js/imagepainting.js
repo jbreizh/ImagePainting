@@ -17,7 +17,7 @@ window.fn.load = function(page) {
 
 // Variable
 var address = "http://192.168.1.1";
-//var address = "http://192.168.43.75";
+//var address = "http://192.168.43.186";
 
 document.addEventListener('init', function(event) {
 	if (event.target.matches('#actions'))
@@ -339,11 +339,14 @@ document.addEventListener('init', function(event) {
 		var textDelay = document.getElementById("textDelay");
 		var sliderBrightness = document.getElementById("sliderBrightness");
 		var textBrightness = document.getElementById("textBrightness");
+		var sliderCountdown = document.getElementById("sliderCountdown");
+		var textCountdown = document.getElementById("textCountdown");
 		var sliderRepeat = document.getElementById("sliderRepeat");
 		var textRepeat = document.getElementById("textRepeat");
 		var sliderPause = document.getElementById("sliderPause");
 		var textPause = document.getElementById("textPause");
 		var pickerColor = document.getElementById("pickerColor");
+		var ckCountdown = document.getElementById("ckCountdown");
 		var ckInvert = document.getElementById("ckInvert");
 		var ckRepeat = document.getElementById("ckRepeat");
 		var ckBounce = document.getElementById("ckBounce");
@@ -362,10 +365,12 @@ document.addEventListener('init', function(event) {
 		// Settings Event--------------------------------------------------
 		sliderDelay.addEventListener('input', function() { updateTextSlider(sliderDelay,textDelay, "ms");}, false);
 		sliderBrightness.addEventListener('input', function() {updateTextSlider(sliderBrightness,textBrightness, "%");}, false);
+		sliderCountdown.addEventListener('input', function() {updateTextSlider(sliderCountdown,textCountdown, "ms");}, false);
 		sliderRepeat.addEventListener('input', function() {updateTextSlider(sliderRepeat,textRepeat, "x");}, false);
 		sliderPause.addEventListener('input', function() {updateTextSlider(sliderPause,textPause, "px");}, false);
 		sliderDelay.addEventListener('change', requestParameterWrite, false);
 		sliderBrightness.addEventListener('change', requestParameterWrite, false);
+		sliderCountdown.addEventListener('change', requestParameterWrite, false);
 		sliderRepeat.addEventListener('change', requestParameterWrite, false);
 		sliderPause.addEventListener('change', requestParameterWrite, false);
 		pickerColor.addEventListener('change', requestParameterWrite, false);
@@ -375,6 +380,7 @@ document.addEventListener('init', function(event) {
 		ckCut.addEventListener('click', function() {updateCheckbox(ckCut,ckPause);}, false);
 		ckEndColor.addEventListener('click', function() {updateCheckbox(ckEndColor,ckEndOff);}, false);
 		ckEndOff.addEventListener('click', function() {updateCheckbox(ckEndOff,ckEndColor);}, false);
+		ckCountdown.addEventListener('click', requestParameterWrite, false);
 		ckInvert.addEventListener('click', requestParameterWrite, false);
 		ckRepeat.addEventListener('click', requestParameterWrite, false);
 		ckBounce.addEventListener('click', requestParameterWrite, false);
@@ -431,19 +437,22 @@ document.addEventListener('init', function(event) {
 			// set parameters values
 			sliderDelay.value = json["delay"];
 			sliderBrightness.value = json["brightness"];
+			sliderCountdown.value = json["countdown"];
+			ckCountdown.checked  = json["iscountdown"];
 			sliderRepeat.value = json["repeat"];
-			sliderPause.value = json["pause"];
-			pickerColor.value = json["color"];
 			ckInvert.checked  = json["isinvert"];
 			ckRepeat.checked  = json["isrepeat"];
 			ckBounce.checked  = json["isbounce"];
+			sliderPause.value = json["pause"];
 			ckPause.checked  = json["ispause"];
 			ckCut.checked  = json["iscut"];
+			pickerColor.value = json["color"];
 			ckEndOff.checked  = json["isendoff"];
 			ckEndColor.checked  = json["isendcolor"];
 			// check parameter
 			updateTextSlider(sliderDelay,textDelay, "ms");
 			updateTextSlider(sliderBrightness,textBrightness, "%");
+			updateTextSlider(sliderCountdown,textCountdown, "ms");
 			updateTextSlider(sliderRepeat,textRepeat, "x");
 			updateTextSlider(sliderPause,textPause, "px");
 			updateCheckbox(ckRepeat,ckBounce);
@@ -508,14 +517,16 @@ document.addEventListener('init', function(event) {
 			// get parameters
 			json.delay = sliderDelay.value;
 			json.brightness = sliderBrightness.value;
+			json.countdown = sliderCountdown.value;
+			json.iscountdown = ckCountdown.checked;
 			json.repeat = sliderRepeat.value;
-			json.pause = sliderPause.value;
-			json.color = pickerColor.value;
+			json.isinvert = ckInvert.checked;
 			json.isrepeat = ckRepeat.checked;
 			json.isbounce = ckBounce.checked;
+			json.pause = sliderPause.value;
 			json.ispause = ckPause.checked;
 			json.iscut = ckCut.checked;
-			json.isinvert = ckInvert.checked;
+			json.color = pickerColor.value;
 			json.isendoff = ckEndOff.checked;
 			json.isendcolor = ckEndColor.checked;
 			// convert json to string
@@ -1087,13 +1098,14 @@ document.addEventListener('init', function(event) {
 		var popoverStatus = document.getElementById("popoverStatus");
 
 		// System Variable--------------------------------------------------
+		var textLedNumber = document.getElementById("textLedNumber");
+		var canvasSystem = document.getElementById("canvasSystem");
+		var canvasLegend = document.getElementById("canvasLegend");
 		var selectAddress = document.getElementById("selectAddress");
 		var btnAddress = document.getElementById("btnAddress");
 		var theme = document.getElementById("theme");
 		var btnThemeLight = document.getElementById("btnThemeLight");
 		var btnThemeDark = document.getElementById("btnThemeDark");
-		var canvasSystem = document.getElementById("canvasSystem");
-		var canvasLegend = document.getElementById("canvasLegend");
 
 		// Status Event--------------------------------------------------
 		btnStatus.addEventListener('click', function () { popoverStatus.show(btnStatus);}, false);
@@ -1127,6 +1139,7 @@ document.addEventListener('init', function(event) {
 		{
 			var json = JSON.parse(jsonString);
 			// set parameters values
+			textLedNumber.innerHTML = json["numPixels"];
 			var usedBytes = json["usedBytes"];
 			var totalBytes = json["totalBytes"];
 			var remainingBytes = totalBytes - usedBytes;

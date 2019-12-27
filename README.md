@@ -174,7 +174,10 @@ I will explain the use from the android app as it is the recommand way to use Im
 ![settings](https://user-images.githubusercontent.com/2498942/71197106-30a5dc80-2291-11ea-9fb8-94fa9e1a0d1c.png)
 
 * **Delay :** Time between two frames in ms.
-* **Brightness :** Brightness of the LED Strip. Value possible 0 (black) to 255 (full)
+* **Brightness :** Brightness of the LED Strip. Value possible 0 (black) to 255 (full).
+
+* **Countdown :** Time in ms before launching the animation. This value is use by this chexboxe :
+  * **Countdown ?** [x] The animation is start after **Countdown** ms.
 
 * **Repeat :** Number of times the Bitmap is animate. This value is use by this three chexboxes :
   * **Invert ?** [x] The animation start with the end of the Bitmap
@@ -186,7 +189,7 @@ I will explain the use from the android app as it is the recommand way to use Im
   * **Cut?** [x] The animation is cut each **Pause** line(s)
 
 * **Color :** Color use by **Light** and **Endcolor ?**
-  * **Endoff ?** [x] Turn off the LED Strip when the animation is pause/stop or end. Usefull when the Bitmap doesn't end with a black line
+  * **Endoff ?** [x] Turn off the LED Strip when the animation is pause/stop or end. Usefull when the Bitmap doesn't end with a black line.
   * **Endcolor?** [x] Set the LED Strip to **Color** when the animation is pause/stop or end. Usefull for special effect.
 
 * **Actions :**
