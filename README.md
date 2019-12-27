@@ -176,19 +176,19 @@ I will explain the use from the android app as it is the recommand way to use Im
 * **Delay :** Time between two frames in ms.
 * **Brightness :** Brightness of the LED Strip. Value possible 0 (black) to 255 (full).
 
-* **Countdown :** Time in ms before launching the animation. This value is use by this chexboxe :
+* **Countdown :** Time in ms before launching the animation. This value is use by this checkbox :
   * **Countdown ?** [x] The animation is start after **Countdown** ms.
 
-* **Repeat :** Number of times the Bitmap is animate. This value is use by this three chexboxes :
+* **Repeat :** Number of times the Bitmap is animate. This value is use by this three checkboxes :
   * **Invert ?** [x] The animation start with the end of the Bitmap
   * **Repeat ?** [x] Activate the repetition according to **Repeat**
   * **Bounce ?** [x] Activate the bounce (normal-invert-normal...etc) repetition according to **Repeat**
 
-* **Pause :** Number of line between two pause during the animation. This value is use by this two chexboxes :
+* **Pause :** Number of line between two pause during the animation. This value is use by this two checkboxes :
   * **Pause?** [x] The animation is pause each **Pause** line(s)
   * **Cut?** [x] The animation is cut each **Pause** line(s)
 
-* **Color :** Color use by **Light** and **Endcolor ?**
+* **Color :** Color use by **Light** and **Endcolor ?**. This value is use by this two checkboxes :
   * **Endoff ?** [x] Turn off the LED Strip when the animation is pause/stop or end. Usefull when the Bitmap doesn't end with a black line.
   * **Endcolor?** [x] Set the LED Strip to **Color** when the animation is pause/stop or end. Usefull for special effect.
 
@@ -204,8 +204,9 @@ I will explain the use from the android app as it is the recommand way to use Im
 
 * **Options :**
   * **Gamma :** Apply Gamma to the Bitmap which will appear darker on the smartphone than on the LED strip.
-  * **Bottom to top ?** Change animation side from "Left to Right" to "Bottom to Top". Usefull for vertical Bitmap.
+  * **Bottom to top ?** [x] Change animation side from "Left to Right" to "Bottom to Top". Usefull for vertical Bitmap.
   * **Pixels :** Change the number of pixels. The Bitmap is put in the center of the LED strip.
+  * **Line Cut :** Cut horizontal black line of the specify width in the Bitmap.
 
 * **Actions :**
   * **Upload Original :** Upload directly selected file to the ESP8266.

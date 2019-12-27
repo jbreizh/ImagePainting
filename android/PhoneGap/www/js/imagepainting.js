@@ -607,6 +607,8 @@ document.addEventListener('init', function(event) {
 		var ckBottomTop = document.getElementById("ckBottomTop");
 		var sliderPixels = document.getElementById("sliderPixels");
 		var textPixels = document.getElementById("textPixels");
+		var sliderLineCut = document.getElementById("sliderLineCut");
+		var textLineCut = document.getElementById("textLineCut");
 
 		// Action Variable--------------------------------------------------
 		var remainingBytes;
@@ -624,8 +626,10 @@ document.addEventListener('init', function(event) {
 		// Options Event--------------------------------------------------
 		selectGamma.addEventListener('change', drawConvertCanvas, false);
 		ckBottomTop.addEventListener('click', drawConvertCanvas, false);
-		sliderPixels.addEventListener('input', updatePixels, false);
+		sliderPixels.addEventListener('input', function() {updateTextSlider(sliderPixels,textPixels, "px");}, false);
 		sliderPixels.addEventListener('change', drawConvertCanvas, false);
+		sliderLineCut.addEventListener('input', function() {updateTextSlider(sliderLineCut,textLineCut, "px");}, false);
+		sliderLineCut.addEventListener('change', drawConvertCanvas, false);
 
 		// Actions Event--------------------------------------------------
 		btnUploadOriginal.addEventListener('click', uploadOriginal, false);
@@ -648,6 +652,7 @@ document.addEventListener('init', function(event) {
 				selectGamma.setAttribute('disabled', '');
 				ckBottomTop.setAttribute('disabled', '');
 				sliderPixels.setAttribute('disabled', '');
+				sliderLineCut.setAttribute('disabled', '');
 				// actions
 				btnUploadOriginal.setAttribute('disabled', '');
 				btnUploadConvert.setAttribute('disabled', '');
@@ -666,6 +671,7 @@ document.addEventListener('init', function(event) {
 				selectGamma.setAttribute('disabled', '');
 				ckBottomTop.setAttribute('disabled', '');
 				sliderPixels.setAttribute('disabled', '');
+				sliderLineCut.setAttribute('disabled', '');
 				// actions
 				btnUploadOriginal.removeAttribute('disabled', '');
 				btnUploadConvert.setAttribute('disabled', '');
@@ -683,6 +689,7 @@ document.addEventListener('init', function(event) {
 				selectGamma.removeAttribute('disabled', '');
 				ckBottomTop.removeAttribute('disabled', '');
 				sliderPixels.removeAttribute('disabled', '');
+				sliderLineCut.removeAttribute('disabled', '');
 				// actions
 				btnUploadOriginal.removeAttribute('disabled', '');
 				btnUploadConvert.removeAttribute('disabled', '');
@@ -730,9 +737,20 @@ document.addEventListener('init', function(event) {
 			//adjust gamma
 			for (var i = 0; i < data.length; i += 4)
 			{
-				data[i] = 255 * Math.pow((data[i] / 255), selectGamma.value);
-				data[i+1] = 255 * Math.pow((data[i+1] / 255), selectGamma.value);
-				data[i+2] = 255 * Math.pow((data[i+2] / 255), selectGamma.value);
+				//cut the line
+				if (i%(4*canvasConvert.width)%(8*sliderLineCut.value)<4*sliderLineCut.value)
+				{
+					data[i] = 0;
+					data[i+1] = 0;
+					data[i+2] = 0;
+				}
+				//adjust gamma
+				else
+				{
+					data[i] = 255 * Math.pow((data[i] / 255), selectGamma.value);
+					data[i+1] = 255 * Math.pow((data[i+1] / 255), selectGamma.value);
+					data[i+2] = 255 * Math.pow((data[i+2] / 255), selectGamma.value);
+				}
 			}
 			// put data in canvas
 			ctx.putImageData(imageData, 0, 0);
@@ -757,9 +775,9 @@ document.addEventListener('init', function(event) {
 	}
 
 		//--------------------------------------------------
-		function updatePixels()
+		function updateTextSlider(slider, textSlider, unit)
 		{
-			textPixels.innerHTML = sliderPixels.value + "px";
+			textSlider.innerHTML = slider.value + unit;
 		}
 
 		//--------------------------------------------------
@@ -784,7 +802,10 @@ document.addEventListener('init', function(event) {
 			// set parameters values
 			sliderPixels.setAttribute("max",json["numPixels"]);
 			sliderPixels.value = json["numPixels"];
-			updatePixels();
+			updateTextSlider(sliderPixels,textPixels, "px");
+			sliderLineCut.setAttribute("max",25);
+			sliderLineCut.value = 0;
+			updateTextSlider(sliderLineCut,textLineCut, "px");
 			var usedBytes = json["usedBytes"];
 			var totalBytes = json["totalBytes"];
 			remainingBytes = totalBytes-usedBytes;
