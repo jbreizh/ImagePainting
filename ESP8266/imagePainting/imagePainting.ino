@@ -1,5 +1,5 @@
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-#define STA       // Decomment this to use STA mode instead of AP
+//#define STA       // Decomment this to use STA mode instead of AP
 //#define DNS       // Decomment this to use DNS
 //#define DEBUGER     // Decomment this to debug the code
 #define BUTTON      // Decomment this to use BUTTON
