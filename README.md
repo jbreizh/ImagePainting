@@ -1,5 +1,11 @@
 # ImagePainting
 
+Old version of ImagePainting, but i want to keep this first version
+
+I strongly advise you to use the new version can be find at [ImagePainting2](https://github.com/jbreizh/imagepainting2).
+
+This version used to work, but is untested now (july 2023).
+
 ## Introduction
 
 Existing project on the topic like Adafruit [NeoPixel Painter](https://learn.adafruit.com/neopixel-painter/overview) or [Light Painting with Raspberry Pi](https://learn.adafruit.com/light-painting-with-raspberry-pi/overview) are great and have been a great source of inspiration/information, but i find those too complicated and unpractical on the field. You need too much hardware and you can't be far from your computer to load other image or tweak parameters.
@@ -8,7 +14,11 @@ My project is base on hardware and use simplicity. All you need is an USB batter
 
 After a simple hardware assembly and flashing my code, all actions (image upload/delete, start, pause, stop, light) and parameters (delay, brightness, repeat, bounce, invert) are send through your webbrowser. So load your smartphone with your picture and you are ready to shoot.
 
-## Hardware Prerequisites
+## Hardware Assembly
+
+The following hardware assembly are 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to 5v for the LEDs. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius. All the drawing i give are for the Wemos D1 mini and clone, if you use an other ESP8266 board read carefully her spec.
+
+### Hardware Prerequisites
 
 ![hardware](https://user-images.githubusercontent.com/2498942/68552594-e7a07400-0418-11ea-9d8a-11a54ea146d7.jpg)
 
@@ -19,10 +29,6 @@ After a simple hardware assembly and flashing my code, all actions (image upload
 * **LED Strip :** I use APA102. It could work on others LEDS like WS2812, but APA102 are better and faster.
 
 * **Push Button (optional) :** Any Push button should be good.
-
-## Hardware Assembly
-
-The following hardware assembly are 100% working for me, but could be improve by adding a capacitor to filter the power and a level schifter to convert the 3.3v logic to 5v for the LEDs. The best option will be this shield [Hex Wemos D1 Mini Wi-Fi LED Controller](https://www.evilgeniuslabs.org/hex-wemos-d1-mini-wifi-led-controller) from Evil Genius. All the drawing i give are for the Wemos D1 mini and clone, if you use an other ESP8266 board read carefully her spec.
 
 ### LED Strip connection
 
@@ -228,17 +234,25 @@ I will explain the use from the android app as it is the recommand way to use Im
 * **ESP8266 ADDRESS :** Address of the ESP8266.
 * **APPLICATION THEME :** Choose between Dark or Light theme.
 
-## Case scenario
+## Settings combination
 
-I try my best to show you some possibility of ImagePainting.
+I try my best to show you what to expect of ImagePainting when using some settings together.
+
+### Repeat and Bounce
 
 ![help1](https://user-images.githubusercontent.com/2498942/69259671-e57ba980-0bbe-11ea-8891-45a0cb5b84b9.png)
+
+### Pause and Cut
 
 ![help2](https://user-images.githubusercontent.com/2498942/68999791-1362a480-08c6-11ea-9d93-aec3192cc787.png)
 
 ## About Picture
 
-ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow this organisation.
+ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So yours pictures has to follow a special organisation/format.
+
+Hopefully, the frontend build in upload tool do all the convertion for you.
+
+### Picture inside the ESP8266
 
 ![bitmapExplanation](https://user-images.githubusercontent.com/2498942/68552286-a3f83b00-0415-11ea-8ec8-e8d4f2450843.jpg)
 
@@ -246,12 +260,6 @@ ESP8266 is not powerful enough to handle compress format as jpeg, png... etc. So
 * Your Bitmap must be rotate by 90°. ImagePainting will display Bitmap line by line from the left to the right. Also don't be fool by the render in the webpage, ImagePainting rotate your Bitmap back.
 * The width of your Bitmap has to be the same than the length of your LED strip or your Bitmap will be crop.
 
-Hopefully, the use of the app build in convert tool free you of all this consideration.
+### Picture pack
 
-## Bitmap Pack
-
-I have put you resize version of the original Bitmap pack from [pixelstick](http://www.thepixelstick.com/index.html). This Bitmap pack come originaly at 200px wide and i resize it at 60px and 144px to fit standard LED strip.
-
-![help8](https://user-images.githubusercontent.com/2498942/69486401-9e561880-0e4b-11ea-8fd5-3fc7776f90fc.png)
-
-Thanks [pixelstick](http://www.thepixelstick.com/index.html) for this nice Bitmap pack.
+I have put you some picture inside a [picture pack](https://github.com/jbreizh/imagePaintingPack). This picture come from the commercial project [Pixelstick](http://www.thepixelstick.com/index.html) and [Magilight](https://www.fotorgear.com/products/magilight).
