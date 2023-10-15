@@ -1,6 +1,6 @@
 # ImagePainting
 
-** WARNING :** This is an old and unsupported version. New version can be found at [ImagePainting3](https://github.com/jbreizh/ImagePainting3)
+**WARNING :** This is an old and unsupported version. New version can be found at [ImagePainting3](https://github.com/jbreizh/ImagePainting3)
 
 ## Introduction
 
