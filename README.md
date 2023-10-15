@@ -1,10 +1,6 @@
 # ImagePainting
 
-Old version of ImagePainting, but i want to keep this first version
-
-I strongly advise you to use the new version can be find at [ImagePainting2](https://github.com/jbreizh/imagepainting2).
-
-This version used to work, but is untested now (july 2023).
+** WARNING :** This is an old and unsupported version. New version can be found at [ImagePainting3](https://github.com/jbreizh/ImagePainting3)
 
 ## Introduction
 
